@@ -1,4 +1,4 @@
-# jass-challenge-client-java ![Build Status](https://travis-ci.org/fluescher/jass-challenge-client-java.svg)
+# jass-challenge-client-java ![Build Status](https://travis-ci.org/webplatformz/jass-challenge-client-java.svg)
 
 This is a Java client for the [Jass challenge server](https://github.com/webplatformz/challenge).
 This client allows you to easily develop a bot for the Jass challenge.
@@ -36,3 +36,5 @@ public interface JassStrategy {
     default void onSessionFinished() {}
 }
 ```
+
+Thanks to [fluescher](https://github.com/fluescher) for creating this skeleton.
