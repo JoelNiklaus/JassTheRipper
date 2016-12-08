@@ -127,7 +127,7 @@ public class RemoteGameSocketTest {
         RemoteGameSocket remoteGameSocket = new RemoteGameSocket(handler);
         remoteGameSocket.onConnect(new WebSocketResponseChannel(session));
 
-        remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_STICH\",\"data\":{\"name\":\"1437909005411\",\"id\":2,\"playedCards\":[{\"number\":13,\"color\":\"DIAMONDS\"},{\"number\":13,\"color\":\"CLUBS\"},{\"number\":12,\"color\":\"CLUBS\"},{\"number\":12,\"color\":\"SPADES\"}],\"teams\":[{\"name\":\"Team 1\",\"points\":2148,\"currentRoundPoints\":348},{\"name\":\"Team 2\",\"points\":2547,\"currentRoundPoints\":108}]}}");
+        remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_STICH\",\"data\":{\"name\":\"1437909005411\",\"id\":\"uid-2\",\"seatId\": 0,\"playedCards\":[{\"number\":13,\"color\":\"DIAMONDS\"},{\"number\":13,\"color\":\"CLUBS\"},{\"number\":12,\"color\":\"CLUBS\"},{\"number\":12,\"color\":\"SPADES\"}],\"teams\":[{\"name\":\"Team 1\",\"points\":2148,\"currentRoundPoints\":348},{\"name\":\"Team 2\",\"points\":2547,\"currentRoundPoints\":108}]}}");
 
         final List<RemoteCard> playedCards = asList(new RemoteCard(13, DIAMONDS), new RemoteCard(13, CLUBS), new RemoteCard(12, CLUBS), new RemoteCard(12, SPADES));
         final List<RemoteTeam> remoteTeams = asList(new RemoteTeam("Team 1", 2148, 348), new RemoteTeam("Team 2", 2547, 108));
@@ -144,7 +144,7 @@ public class RemoteGameSocketTest {
         RemoteGameSocket remoteGameSocket = new RemoteGameSocket(handler);
         remoteGameSocket.onConnect(new WebSocketResponseChannel(session));
 
-        remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_SESSION_JOINED\",\"data\":{\"sessionName\":\"32a340ae-5fcf-4086-84a8-9dc871a960cb\",\"player\":{\"id\":0,\"name\":\"1439103645725\"},\"playersInSession\":[{\"id\":0,\"name\":\"1439103645725\"}]}}");
+        remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_SESSION_JOINED\",\"data\":{\"sessionName\":\"32a340ae-5fcf-4086-84a8-9dc871a960cb\",\"player\":{\"id\":\"uid-0\",\"name\":\"1439103645725\", \"seatId\": 0},\"playersInSession\":[{\"id\":\"uid-0\",\"name\":\"1439103645725\", \"seatId\": 0}]}}");
 
         verify(handler).onPlayerJoined(eq(new PlayerJoinedSession("32a340ae-5fcf-4086-84a8-9dc871a960cb", new RemotePlayer("uid-0", "1439103645725", 0), Collections.singletonList(new RemotePlayer("uid-0", "1439103645725", 0)))));
         verifyNoMoreInteractions(handler);
@@ -157,11 +157,11 @@ public class RemoteGameSocketTest {
         RemoteGameSocket remoteGameSocket = new RemoteGameSocket(handler);
         remoteGameSocket.onConnect(new WebSocketResponseChannel(session));
 
-        remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_TEAMS\",\"data\":[{\"name\":\"Team 1\",\"players\":[{\"name\":\"1437917428074\",\"id\":0},{\"name\":\"1437917436253\",\"id\":2}]},{\"name\":\"Team 2\",\"players\":[{\"name\":\"1437917434340\",\"id\":1},{\"name\":\"1437917437853\",\"id\":3}]}]}");
+        remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_TEAMS\",\"data\":[{\"name\":\"Team 1\",\"players\":[{\"name\":\"1437917428074\",\"id\":\"0\", \"seatId\":0},{\"name\":\"1437917436253\",\"id\":\"2\", \"seatId\":2}]},{\"name\":\"Team 2\",\"players\":[{\"name\":\"1437917434340\",\"id\":\"1\", \"seatId\":1},{\"name\":\"1437917437853\",\"id\":\"3\", \"seatId\": 3}]}]}");
 
         verify(handler).onBroadCastTeams(eq(asList(
-                new RemoteTeam("Team 1", asList(new RemotePlayer("uid-0", "1437917428074", 0), new RemotePlayer("uid-2", "1437917436253", 2))),
-                new RemoteTeam("Team 2", asList(new RemotePlayer("uid-1", "1437917434340", 1), new RemotePlayer("uid-3", "1437917437853", 3))))));
+                new RemoteTeam("Team 1", asList(new RemotePlayer("0", "1437917428074", 0), new RemotePlayer("2", "1437917436253", 2))),
+                new RemoteTeam("Team 2", asList(new RemotePlayer("1", "1437917434340", 1), new RemotePlayer("3", "1437917437853", 3))))));
         verifyNoMoreInteractions(handler);
     }
 

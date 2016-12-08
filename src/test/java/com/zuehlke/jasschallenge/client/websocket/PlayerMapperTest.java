@@ -40,7 +40,7 @@ public class PlayerMapperTest {
 
         final Player foundPlayer = playerMapper.findPlayerById(PLAYER_0_ID);
 
-        assertThat(foundPlayer.getId(), equalTo(0));
+        assertThat(foundPlayer.getId(), equalTo("uid-0"));
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.zuehlke.jasschallenge.messages.type.RemoteTeam;
 import com.zuehlke.jasschallenge.messages.type.Stich;
 import com.zuehlke.jasschallenge.messages.type.TrumpfChoice;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +39,8 @@ class Players {
     }
 
     private void initPlayerOrder() {
-        this.playerOrder = new PlayerOrder(players.get(0), players.get(2), players.get(1), players.get(3));
+        List<Player> orderedBySeat = players.stream().sorted(Comparator.comparingInt(Player::getSeatId)).collect(Collectors.toList());
+        this.playerOrder = new PlayerOrder(orderedBySeat.get(0), orderedBySeat.get(2), orderedBySeat.get(1), orderedBySeat.get(3));
     }
 
     public boolean has2CompleteTeams() {

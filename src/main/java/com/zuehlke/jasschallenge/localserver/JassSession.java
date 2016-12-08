@@ -50,7 +50,7 @@ class JassSession {
 
     private void playNextRound() {
         // deal cards
-        players.getPlayers().stream().forEach(this::dealCards);
+        players.getPlayers().forEach(this::dealCards);
 
         // getTrumpf
         Player nextToPlay = players.getStartPlayer();

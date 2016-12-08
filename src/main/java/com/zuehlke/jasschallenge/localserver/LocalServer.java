@@ -46,11 +46,7 @@ public class LocalServer {
     }
 
     private JassSession getOrCreateSession(String sessionName, SessionType sessionType) {
-        JassSession jassSession = sessions.get(sessionName);
-        if (jassSession == null) {
-            jassSession = new JassSession(sessionType, sessionName);
-            sessions.put(sessionName, jassSession);
-        }
+        JassSession jassSession = sessions.computeIfAbsent(sessionName, k -> new JassSession(sessionType, sessionName));
         return jassSession;
     }
 

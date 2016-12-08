@@ -118,17 +118,13 @@ public class Player {
         Player player = (Player) o;
 
         if (id != null ? !id.equals(player.id) : player.id != null) return false;
-        if (name != null ? !name.equals(player.name) : player.name != null) return false;
-        if (cards != null ? !cards.equals(player.cards) : player.cards != null) return false;
-        return currentJassStrategy != null ? currentJassStrategy.equals(player.currentJassStrategy) : player.currentJassStrategy == null;
+        return name != null ? name.equals(player.name) : player.name == null;
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (cards != null ? cards.hashCode() : 0);
-        result = 31 * result + (currentJassStrategy != null ? currentJassStrategy.hashCode() : 0);
         return result;
     }
 

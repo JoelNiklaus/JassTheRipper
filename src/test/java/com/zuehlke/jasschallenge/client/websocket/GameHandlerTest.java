@@ -33,22 +33,24 @@ public class GameHandlerTest {
     @Test
     public void onRequestCard_returnsTheCardPlayedFromTheLocalPlayer() {
 
-        final Player localPlayer = mock(Player.class);
+        Player localPlayer = mock(Player.class);
         when(localPlayer.makeMove(any(GameSession.class))).thenReturn(new Move(localPlayer, Card.DIAMOND_ACE));
         when(localPlayer.getName()).thenReturn("local");
-        final RemotePlayer remoteLocalPlayer = new RemotePlayer("uid-1", "local", 0);
-        final RemotePlayer remoteOne = new RemotePlayer("uid-2", "remote 1", 1);
-        final RemotePlayer remoteTwo = new RemotePlayer("uid-3", "remote 2", 2);
-        final RemotePlayer remoteThree = new RemotePlayer("uid-4", "remote 3", 3);
-        final List<RemoteTeam> remoteTeams = asList(
+        when(localPlayer.getId()).thenReturn("uid-1");
+
+        RemotePlayer remoteLocalPlayer = new RemotePlayer("uid-1", "local", 0);
+        RemotePlayer remoteOne = new RemotePlayer("uid-2", "remote 1", 2);
+        RemotePlayer remoteTwo = new RemotePlayer("uid-3", "remote 2", 1);
+        RemotePlayer remoteThree = new RemotePlayer("uid-4", "remote 3", 3);
+        List<RemoteTeam> remoteTeams = asList(
                 new RemoteTeam("team a", asList(remoteOne, remoteThree)),
                 new RemoteTeam("team b", asList(remoteLocalPlayer, remoteTwo)));
 
-        final GameHandler gameHandler = new GameHandler(localPlayer, SessionType.TOURNAMENT);
+        GameHandler gameHandler = new GameHandler(localPlayer, SessionType.TOURNAMENT);
         gameHandler.onBroadCastTeams(remoteTeams);
         gameHandler.onBroadCastTrumpf(new TrumpfChoice(Trumpf.OBEABE, null));
 
-        final ChooseCard chooseCard = gameHandler.onRequestCard();
+        ChooseCard chooseCard = gameHandler.onRequestCard();
 
         assertThat(chooseCard.getData(), equalTo(new RemoteCard(14, DIAMONDS)));
     }
