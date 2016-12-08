@@ -14,6 +14,7 @@ import com.zuehlke.jasschallenge.messages.type.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static com.zuehlke.jasschallenge.messages.type.SessionChoice.AUTOJOIN;
@@ -63,8 +64,9 @@ public class GameHandler {
     }
 
     public void onPlayerJoined(PlayerJoinedSession joinedPlayer) {
-        if(localPlayer.getId() == -1) {
+        if(localPlayer.getId() == null) {
             localPlayer.setId(joinedPlayer.getPlayer().getId());
+            localPlayer.setSeatId(joinedPlayer.getPlayer().getSeatId());
         }
     }
 
@@ -76,7 +78,7 @@ public class GameHandler {
     }
 
     private void resetPlayerMapper(Player localPlayer) {
-        localPlayer.setId(-1);
+        localPlayer.setId(null);
         this.playerMapper = new PlayerMapper(localPlayer);
     }
 
@@ -163,7 +165,7 @@ public class GameHandler {
     private List<Player> getPlayersInPlayingOrder(List<RemoteTeam> remoteTeams) {
         return remoteTeams.stream()
                 .flatMap(remoteTeam -> remoteTeam.getPlayers().stream())
-                .sorted((remotePlayer1, remotePlayer2) -> compare(remotePlayer1.getId(), remotePlayer2.getId()))
+                .sorted(Comparator.comparingInt(RemotePlayer::getSeatId))
                 .map(player -> playerMapper.findPlayerById(player.getId()))
                 .collect(toList());
     }

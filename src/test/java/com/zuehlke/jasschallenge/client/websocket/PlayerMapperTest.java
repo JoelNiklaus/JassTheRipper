@@ -10,20 +10,24 @@ import static org.junit.Assert.assertThat;
 
 public class PlayerMapperTest {
 
+    public static final String PLAYER_0_ID = "uid-0";
+    public static final String PLAYER_1_ID = "uid-1";
+    public static final String PLAYER_2_ID = "uid-2";
+
     @Test
     public void mapPlayer_returnsExistingPlayer() {
-        final Player localPlayer = new Player(0, "localPlayer");
+        final Player localPlayer = new Player(PLAYER_0_ID, "localPlayer", 0);
 
-        final Player foundPlayer = new PlayerMapper(localPlayer).mapPlayer(new RemotePlayer(0, "localPlayer"));
+        final Player foundPlayer = new PlayerMapper(localPlayer).mapPlayer(new RemotePlayer(PLAYER_0_ID, "localPlayer", 0));
 
         assertThat(foundPlayer, equalTo(localPlayer));
     }
 
     @Test
     public void mapPlayer_returnsNewlyCreatedPlayer() {
-        final Player localPlayer = new Player(1, "localPlayer");
+        final Player localPlayer = new Player(PLAYER_1_ID, "localPlayer", 1);
 
-        final Player foundPlayer = new PlayerMapper(localPlayer).mapPlayer(new RemotePlayer(0, "unknown"));
+        final Player foundPlayer = new PlayerMapper(localPlayer).mapPlayer(new RemotePlayer(PLAYER_0_ID, "unknown", 0));
 
         assertThat(foundPlayer, not(equalTo(localPlayer)));
     }
@@ -32,25 +36,25 @@ public class PlayerMapperTest {
     public void mapPlayer_returnsPlayer_afterAUnknownPlayerWasMapped() {
         final Player localPlayer = new Player("localPlayer");
         final PlayerMapper playerMapper = new PlayerMapper(localPlayer);
-        playerMapper.mapPlayer(new RemotePlayer(0, "will be created"));
+        playerMapper.mapPlayer(new RemotePlayer(PLAYER_0_ID, "will be created", 0));
 
-        final Player foundPlayer = playerMapper.findPlayerById(0);
+        final Player foundPlayer = playerMapper.findPlayerById(PLAYER_0_ID);
 
         assertThat(foundPlayer.getId(), equalTo(0));
     }
 
     @Test
     public void findPlayerByName_returnsFoundPlayer() {
-        final Player localPlayer = new Player(1, "localPlayer");
+        final Player localPlayer = new Player(PLAYER_1_ID, "localPlayer", 0);
 
-        final Player foundPlayer = new PlayerMapper(localPlayer).findPlayerById(1);
+        final Player foundPlayer = new PlayerMapper(localPlayer).findPlayerById(PLAYER_1_ID);
 
         assertThat(foundPlayer, equalTo(localPlayer));
     }
 
     @Test(expected = RuntimeException.class)
     public void findPlayerByName_throwsException_ifNoSuchPlayerExists() {
-        new PlayerMapper(new Player(1, "localPlayer")).findPlayerById(2);
+        new PlayerMapper(new Player(PLAYER_1_ID, "localPlayer", 1)).findPlayerById(PLAYER_2_ID);
     }
 
 }

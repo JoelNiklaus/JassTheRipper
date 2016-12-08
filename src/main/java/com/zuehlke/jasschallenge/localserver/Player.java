@@ -8,7 +8,8 @@ class Player {
 
     private final ConnectionHandle connectionHandle;
     private String playerName;
-    private int id;
+    private String id;
+    private int seatId;
 
     public Player(ConnectionHandle connectionHandle) {
         this.connectionHandle = connectionHandle;
@@ -30,12 +31,24 @@ class Player {
         return connectionHandle.ask(message, responseClass);
     }
 
-    public int getId() {
+    public ConnectionHandle getConnectionHandle() {
+        return connectionHandle;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public int getSeatId() {
+        return seatId;
+    }
+
+    public void setSeatId(int seatId) {
+        this.seatId = seatId;
     }
 
     @Override

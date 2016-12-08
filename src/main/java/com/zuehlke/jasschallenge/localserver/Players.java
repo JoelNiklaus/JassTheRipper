@@ -8,6 +8,7 @@ import com.zuehlke.jasschallenge.messages.type.TrumpfChoice;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -26,7 +27,6 @@ class Players {
     }
 
     public void playerJoined(Player player) {
-        player.setId(getNextPlayerId());
         if (players.size() >= NUMBER_OF_PLAYERS) {
             throw new IllegalArgumentException("Already 4 players");
         }
@@ -35,20 +35,6 @@ class Players {
             initPlayerOrder();
         }
 
-    }
-
-    private int getNextPlayerId() {
-        int size = players.size();
-        switch (size) {
-            case 1:
-                return 2;
-            case 2:
-                return 1;
-            case 0:
-            case 3:
-            default:
-                return size;
-        }
     }
 
     private void initPlayerOrder() {
@@ -98,7 +84,7 @@ class Players {
     }
 
     RemotePlayer createRemotePlayerFor(Player player) {
-        return new RemotePlayer(player.getId(), player.getName());
+        return new RemotePlayer(player.getId(), player.getName(), player.getSeatId());
     }
 
     public List<RemotePlayer> asRemotePlayers() {
@@ -149,10 +135,10 @@ class Players {
         Player stichPlayer = stichResult.getStichPlayer();
 
         // The team which made the Stich must come first
-        teams.sort((team1, team2) -> team1.getPlayers().stream().mapToInt(RemotePlayer::getId).anyMatch(id -> id == stichPlayer.getId()) ? -1 : 1);
+        teams.sort((team1, team2) -> team1.getPlayers().stream().map(RemotePlayer::getId).anyMatch(id -> Objects.equals(id, stichPlayer.getId())) ? -1 : 1);
 
 
-        Stich stich = new Stich(stichPlayer.getName(), stichPlayer.getId(), stichResult.getPlayedCards(), teams);
+        Stich stich = new Stich(stichPlayer.getName(), stichPlayer.getId(), stichPlayer.getSeatId(), stichResult.getPlayedCards(), teams);
         BroadCastStich message = new BroadCastStich(stich);
         players.forEach(player -> player.notify(message));
     }

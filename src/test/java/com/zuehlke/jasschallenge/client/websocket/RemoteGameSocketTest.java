@@ -131,7 +131,7 @@ public class RemoteGameSocketTest {
 
         final List<RemoteCard> playedCards = asList(new RemoteCard(13, DIAMONDS), new RemoteCard(13, CLUBS), new RemoteCard(12, CLUBS), new RemoteCard(12, SPADES));
         final List<RemoteTeam> remoteTeams = asList(new RemoteTeam("Team 1", 2148, 348), new RemoteTeam("Team 2", 2547, 108));
-        final Stich stich = new Stich("1437909005411", 2, playedCards, remoteTeams);
+        final Stich stich = new Stich("1437909005411", "uid-2", 0, playedCards, remoteTeams);
         verify(handler).onBroadCastStich(stich);
         verifyNoMoreInteractions(handler);
     }
@@ -146,7 +146,7 @@ public class RemoteGameSocketTest {
 
         remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_SESSION_JOINED\",\"data\":{\"sessionName\":\"32a340ae-5fcf-4086-84a8-9dc871a960cb\",\"player\":{\"id\":0,\"name\":\"1439103645725\"},\"playersInSession\":[{\"id\":0,\"name\":\"1439103645725\"}]}}");
 
-        verify(handler).onPlayerJoined(eq(new PlayerJoinedSession("32a340ae-5fcf-4086-84a8-9dc871a960cb", new RemotePlayer(0, "1439103645725"), Collections.singletonList(new RemotePlayer(0, "1439103645725")))));
+        verify(handler).onPlayerJoined(eq(new PlayerJoinedSession("32a340ae-5fcf-4086-84a8-9dc871a960cb", new RemotePlayer("uid-0", "1439103645725", 0), Collections.singletonList(new RemotePlayer("uid-0", "1439103645725", 0)))));
         verifyNoMoreInteractions(handler);
     }
 
@@ -160,8 +160,8 @@ public class RemoteGameSocketTest {
         remoteGameSocket.onWebSocketMessage("{\"type\":\"BROADCAST_TEAMS\",\"data\":[{\"name\":\"Team 1\",\"players\":[{\"name\":\"1437917428074\",\"id\":0},{\"name\":\"1437917436253\",\"id\":2}]},{\"name\":\"Team 2\",\"players\":[{\"name\":\"1437917434340\",\"id\":1},{\"name\":\"1437917437853\",\"id\":3}]}]}");
 
         verify(handler).onBroadCastTeams(eq(asList(
-                new RemoteTeam("Team 1", asList(new RemotePlayer(0, "1437917428074"), new RemotePlayer(2, "1437917436253"))),
-                new RemoteTeam("Team 2", asList(new RemotePlayer(1, "1437917434340"), new RemotePlayer(3, "1437917437853"))))));
+                new RemoteTeam("Team 1", asList(new RemotePlayer("uid-0", "1437917428074", 0), new RemotePlayer("uid-2", "1437917436253", 2))),
+                new RemoteTeam("Team 2", asList(new RemotePlayer("uid-1", "1437917434340", 1), new RemotePlayer("uid-3", "1437917437853", 3))))));
         verifyNoMoreInteractions(handler);
     }
 

@@ -11,12 +11,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 class Application {
+
+    public static final String REMOTE_URL = "ws://jasschallenge.herokuapp.com";
+    public static final String LOCAL_URL = "ws://localhost:3000";
+
     public static void main(String[] args) throws Exception {
         final String name = System.getProperty("name", String.valueOf(System.currentTimeMillis()));
         final Player myLocalPlayer = new Player(name, new RandomJassStrategy());
 
-//        startTournamentGame("ws://localhost:3000", myLocalPlayer, myLocalPartner);
-        startGame("ws://jasschallenge.herokuapp.com", myLocalPlayer, SessionType.SINGLE_GAME);
+//        startTournamentGame(LOCAL_URL, myLocalPlayer, myLocalPartner);
+        startGame(LOCAL_URL, myLocalPlayer, SessionType.SINGLE_GAME);
     }
 
     private static void startTournamentGame(String targetUrl, Player myLocalPlayer, Player myLocalPartner) throws Exception {
@@ -24,7 +28,6 @@ class Application {
         executorService
                 .invokeAll(Arrays.asList(() -> startGame(targetUrl, myLocalPlayer, SessionType.TOURNAMENT),
                                          () -> startGame(targetUrl, myLocalPartner, SessionType.TOURNAMENT)))
-                .stream()
                 .forEach(Application::awaitFuture);
         executorService.shutdown();
     }

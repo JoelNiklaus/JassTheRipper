@@ -31,6 +31,7 @@ public class WebSocketResponseChannel implements ResponseChannel {
 
     private static String toJson(Object obj) {
         try {
+            // TODO danielsuter reuse object mapper
             return new ObjectMapper().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

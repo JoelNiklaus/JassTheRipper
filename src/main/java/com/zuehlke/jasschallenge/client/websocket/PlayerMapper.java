@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.messages.type.RemotePlayer;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,19 +17,19 @@ class PlayerMapper {
     }
 
     public Player mapPlayer(RemotePlayer remotePlayer) {
-        Player player = tryToFindPlayerById(remotePlayer.getId()).orElse(new Player(remotePlayer.getId(), remotePlayer.getName()));
+        Player player = tryToFindPlayerById(remotePlayer.getId()).orElse(new Player(remotePlayer.getId(), remotePlayer.getName(), remotePlayer.getSeatId()));
         allPlayers.add(player);
         return player;
     }
 
-    public Player findPlayerById(int id) {
+    public Player findPlayerById(String id) {
         return tryToFindPlayerById(id)
                 .orElseThrow(() -> new RuntimeException("No Player with id " + id + " found"));
     }
 
-    private Optional<Player> tryToFindPlayerById(int id) {
+    private Optional<Player> tryToFindPlayerById(String id) {
         return allPlayers.stream()
-                .filter(player -> player.getId() == id)
+                .filter(player -> Objects.equals(player.getId(), id))
                 .findFirst();
     }
 }

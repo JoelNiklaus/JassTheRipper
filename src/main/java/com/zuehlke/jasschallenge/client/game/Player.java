@@ -14,14 +14,16 @@ public class Player {
 
     private static final Logger logger = LoggerFactory.getLogger(Player.class);
 
-    private int id = -1;
+    private String id;
     private final String name;
+    private int seatId;
     private final Set<Card> cards;
     private final JassStrategy currentJassStrategy;
 
-    public Player(int id, String name) {
+    public Player(String id, String name, int seatId) {
         this(name);
         this.id = id;
+        this.seatId = seatId;
     }
 
     public Player(String name) {
@@ -34,12 +36,20 @@ public class Player {
         this.currentJassStrategy = strategy;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public int getSeatId() {
+        return seatId;
+    }
+
+    public void setSeatId(int seatId) {
+        this.seatId = seatId;
     }
 
     public String getName() {
@@ -100,7 +110,6 @@ public class Player {
         currentJassStrategy.onSessionStarted(session);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -108,15 +117,18 @@ public class Player {
 
         Player player = (Player) o;
 
-        if (id != player.id) return false;
-        return !(name != null ? !name.equals(player.name) : player.name != null);
-
+        if (id != null ? !id.equals(player.id) : player.id != null) return false;
+        if (name != null ? !name.equals(player.name) : player.name != null) return false;
+        if (cards != null ? !cards.equals(player.cards) : player.cards != null) return false;
+        return currentJassStrategy != null ? currentJassStrategy.equals(player.currentJassStrategy) : player.currentJassStrategy == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (cards != null ? cards.hashCode() : 0);
+        result = 31 * result + (currentJassStrategy != null ? currentJassStrategy.hashCode() : 0);
         return result;
     }
 
