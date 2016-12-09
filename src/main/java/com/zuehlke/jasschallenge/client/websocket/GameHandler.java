@@ -18,7 +18,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static com.zuehlke.jasschallenge.messages.type.SessionChoice.AUTOJOIN;
-import static java.lang.Integer.compare;
 import static java.util.stream.Collectors.toList;
 
 public class GameHandler {

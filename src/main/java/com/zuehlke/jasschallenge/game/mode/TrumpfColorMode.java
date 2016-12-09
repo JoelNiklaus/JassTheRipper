@@ -15,7 +15,6 @@ import static java.lang.String.valueOf;
 class TrumpfColorMode extends Mode {
 
     private final Color trumpfColor;
-    private final GeneralRules generalRules = new GeneralRules();
 
     public TrumpfColorMode(Color trumpfColor) {
 
