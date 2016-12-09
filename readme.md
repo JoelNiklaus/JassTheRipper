@@ -5,16 +5,22 @@ This client allows you to easily develop a bot for the Jass challenge.
 
 ## Getting started
 
-Clone this repository and start (`gradle run`) the [Application](src/main/java/com/zuehlke/jasschallenge/client/Application.java) class:
+Clone this repository and start (`gradle run`) the [Application](src/main/java/com/zuehlke/jasschallenge/Application.java) class:
 
 ``` java
 public class Application {
-    public static void main(String[] args) throws Exception {
-        final String name = "Your bot name here";
-        final Player myLocalPlayer = new Player(name, new RandomMoveJassStrategy());
+    //CHALLENGE2017: Set your bot name
+    private static final String BOT_NAME = "awesomeJavaBot";
+    //CHALLENGE2017: Set your own strategy
+    private static final RandomJassStrategy STRATEGY = new RandomJassStrategy();
 
-        final RemoteGame remoteGame = new RemoteGame("ws://jasschallenge.herokuapp.com", myLocalPlayer, SessionType.SINGLE_GAME);
-        remoteGame.start();
+    private static final String LOCAL_URL = "ws://localhost:3000";
+
+    public static void main(String[] args) throws Exception {
+        String websocketUrl = parseWebsocketUrlOrDefault(args);
+
+        Player myLocalPlayer = new Player(BOT_NAME, STRATEGY);
+        startGame(websocketUrl, myLocalPlayer, SessionType.TOURNAMENT);
     }
 }
 ```
@@ -37,4 +43,24 @@ public interface JassStrategy {
 }
 ```
 
+## Start your own tournament
+To test your bot against other bots, such das the random bot, you need to start your own tournament. 
+
+1. start the challenge server:
+`npm start`
+2. Browse to http://localhosthost:3000
+3. Enter some user name: 
+
+![Alt text](doc/images/chooseUsername.PNG?raw=true "Choose a user name")
+4. Enter some tournament name and press **Enter** 
+
+![Alt text](doc/images/createTournament.PNG?raw=true "Choose a user name")
+
+5. Join your bots, they should appear on the next page
+
+![Alt text](doc/images/tournamentPage.PNG?raw=true "Choose a user name")
+
+
+
+## Contributors ##
 Thanks to [fluescher](https://github.com/fluescher) for creating this skeleton.

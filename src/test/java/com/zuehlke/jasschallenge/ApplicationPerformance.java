@@ -1,34 +1,50 @@
-package com.zuehlke.jasschallenge.client;
+package com.zuehlke.jasschallenge;
 
+import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-class Application {
+/**
+ * Measures performance of java client.
+ */
+class ApplicationPerformance {
 
-    public static final String REMOTE_URL = "ws://jasschallenge.herokuapp.com";
     public static final String LOCAL_URL = "ws://localhost:3000";
 
-    public static void main(String[] args) throws Exception {
-        final String name = System.getProperty("name", String.valueOf(System.currentTimeMillis()));
-        final Player myLocalPlayer = new Player(name, new RandomJassStrategy());
+    private final static String BOT_NAME = "performanceBot";
 
-//        startTournamentGame(LOCAL_URL, myLocalPlayer, myLocalPartner);
-        startGame(LOCAL_URL, myLocalPlayer, SessionType.SINGLE_GAME);
+    public static void main(String[] args) throws Exception {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+        double startNano = System.nanoTime();
+        List<Future<RemoteGame>> futures = new LinkedList<>();
+        for (int i = 0; i < 4; i++) {
+            int finalI = i;
+            futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME + finalI, new RandomJassStrategy()), SessionType.SINGLE_GAME)));
+        }
+        futures.forEach(ApplicationPerformance::awaitFuture);
+        double durationNanos = System.nanoTime() - startNano;
+
+        executorService.shutdown();
+        System.out.println("Duration in seconds " + (durationNanos / 1000000000d));
     }
 
     private static void startTournamentGame(String targetUrl, Player myLocalPlayer, Player myLocalPartner) throws Exception {
-        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         executorService
                 .invokeAll(Arrays.asList(() -> startGame(targetUrl, myLocalPlayer, SessionType.TOURNAMENT),
-                                         () -> startGame(targetUrl, myLocalPartner, SessionType.TOURNAMENT)))
-                .forEach(Application::awaitFuture);
+                        () -> startGame(targetUrl, myLocalPartner, SessionType.TOURNAMENT)))
+                .forEach(ApplicationPerformance::awaitFuture);
         executorService.shutdown();
     }
 
