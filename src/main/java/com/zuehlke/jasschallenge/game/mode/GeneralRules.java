@@ -20,7 +20,7 @@ class GeneralRules {
     public static boolean canPlayCard(Card card, Set<Card> alreadyPlayedCards, Color currentRoundColor, Set<Card> playerCards) {
         return alreadyPlayedCards.isEmpty()
                 || card.getColor() == currentRoundColor
-                || !playerCards.stream().anyMatch(playersCard -> playersCard.getColor() == currentRoundColor);
+                || playerCards.stream().noneMatch(playersCard -> playersCard.getColor() == currentRoundColor);
     }
 
 

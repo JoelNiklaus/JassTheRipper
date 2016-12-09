@@ -24,3 +24,9 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.10.19'
     testCompile 'com.pholser:junit-quickcheck-core:0.5-alpha-3'
 }
+
+run {
+    if (project.hasProperty("myargs") ) {
+        args(myargs.split(','))
+    }
+}

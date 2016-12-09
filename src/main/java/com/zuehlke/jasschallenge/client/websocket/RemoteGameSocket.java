@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 @WebSocket
 public class RemoteGameSocket extends GameSocket {
 
+    private static ObjectMapper objectMapper = new ObjectMapper();
     private final CountDownLatch closeLatch = new CountDownLatch(1);
 
     public RemoteGameSocket(GameHandler handler) {
@@ -45,7 +46,7 @@ public class RemoteGameSocket extends GameSocket {
     }
 
     private static <T> T read(String msg, Class<T> valueType) throws IOException {
-        return new ObjectMapper().readValue(msg, valueType);
+        return objectMapper.readValue(msg, valueType);
     }
 
 }

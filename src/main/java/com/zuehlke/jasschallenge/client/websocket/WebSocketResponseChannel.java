@@ -11,6 +11,7 @@ import java.io.IOException;
 
 public class WebSocketResponseChannel implements ResponseChannel {
 
+    private static ObjectMapper objectMapper = new ObjectMapper();
     private final Session session;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -31,8 +32,7 @@ public class WebSocketResponseChannel implements ResponseChannel {
 
     private static String toJson(Object obj) {
         try {
-            // TODO danielsuter reuse object mapper
-            return new ObjectMapper().writeValueAsString(obj);
+            return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
