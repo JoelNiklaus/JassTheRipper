@@ -1,11 +1,11 @@
-# jass-challenge-client-java ![Build Status](https://travis-ci.org/webplatformz/jass-challenge-client-java.svg)
+# jass-challenge-client-java ![Build Status](https://travis-ci.org/webplatformz/challenge-client-java.svg?branch=master)
 
 This is a Java client for the [Jass challenge server](https://github.com/webplatformz/challenge).
 This client allows you to easily develop a bot for the Jass challenge.
 
 ## Getting started
 
-Clone this repository and start (`gradle run`) the [Application](src/main/java/com/zuehlke/jasschallenge/Application.java) class:
+Clone this repository and start (`gradlew run`) the [Application](src/main/java/com/zuehlke/jasschallenge/Application.java) class:
 
 ``` java
 public class Application {
