@@ -1,7 +1,17 @@
 # jass-challenge-client-java ![Build Status](https://travis-ci.org/webplatformz/challenge-client-java.svg?branch=master)
 
-This is a Java client for the [Jass challenge server](https://github.com/webplatformz/challenge).
+This is a Java client (bot) for the [Jass challenge server](https://github.com/webplatformz/challenge).
 This client allows you to easily develop a bot for the Jass challenge.
+
+###Wiki (Server):
+https://github.com/webplatformz/challenge/wiki
+
+###JassChallenge2017
+If you are an enrolled student in switzerland, you are welcome to participate the **JassChallenge2017** competition in April '17
+
+---------------------- LINK TO OUR REGTISTRATION PAGE ----------------------
+
+
 
 ## Getting started
 
@@ -24,6 +34,9 @@ public class Application {
     }
 }
 ```
+
+The client needs the challenge server to connect to. Clone the challenge server and run npm start. For more information
+go to [Jass challenge server](https://github.com/webplatformz/challenge) repository.
 
 ## Implement your own bot
 
