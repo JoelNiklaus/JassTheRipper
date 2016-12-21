@@ -19,7 +19,7 @@ public class Application {
     //CHALLENGE2017: Set your own strategy
     private static final RandomJassStrategy STRATEGY = new RandomJassStrategy();
 
-    private static final String LOCAL_URL = "ws://localhost:3000";
+    private static final String LOCAL_URL = "ws://127.0.0.1:3000";
 
     public static void main(String[] args) throws Exception {
         String websocketUrl = parseWebsocketUrlOrDefault(args);
