@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
+import java.util.Arrays;
 
 /**
  * Starts one bot in tournament mode. Add your own strategy to compete in the Jass Challenge Tournament 2017!
@@ -25,12 +26,15 @@ public class Application {
         String websocketUrl = parseWebsocketUrlOrDefault(args);
 
         Player myLocalPlayer = new Player(BOT_NAME, STRATEGY);
+
+        System.out.println("Connecting... Server socket URL: " + websocketUrl);
         startGame(websocketUrl, myLocalPlayer, SessionType.TOURNAMENT);
     }
 
 
     private static String parseWebsocketUrlOrDefault(String[] args) {
         if (args.length > 0) {
+            System.out.println("Arguments: " + Arrays.toString(args));
             return args[0];
         }
         return LOCAL_URL;
