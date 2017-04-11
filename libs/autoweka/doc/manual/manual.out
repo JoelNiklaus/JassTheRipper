@@ -1,0 +1,13 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Availability}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{License}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{Requirements}{section.1}% 4
+\BOOKMARK [1][-]{section.2}{User\040Documentation}{}% 5
+\BOOKMARK [2][-]{subsection.2.1}{Using\040the\040GUI}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.2}{Running\040Experiments\040Using\040the\040CLI}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.3}{Saving\040and\040Loading\040Models}{section.2}% 8
+\BOOKMARK [1][-]{section.3}{Developer\040Documentation}{}% 9
+\BOOKMARK [1][-]{appendix.A}{Auto-WEKA\040Configuration\040Space}{}% 10
+\BOOKMARK [2][-]{subsection.A.1}{Classifiers,\040Parameters,\040and\040Parameter\040Ranges}{appendix.A}% 11
+\BOOKMARK [2][-]{subsection.A.2}{Attribute\040Searches,\040Parameters,\040and\040Parameter\040Ranges}{appendix.A}% 12
+\BOOKMARK [2][-]{subsection.A.3}{Attribute\040Evaluations,\040Parameters,\040and\040Parameter\040Ranges}{appendix.A}% 13

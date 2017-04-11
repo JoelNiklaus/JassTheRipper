@@ -1,0 +1,13 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}
+\contentsline {subsection}{\numberline {1.1}Availability}{2}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}License}{2}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}Requirements}{2}{subsection.1.3}
+\contentsline {section}{\numberline {2}User Documentation}{2}{section.2}
+\contentsline {subsection}{\numberline {2.1}Using the GUI}{2}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Running Experiments Using the CLI}{4}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Saving and Loading Models}{8}{subsection.2.3}
+\contentsline {section}{\numberline {3}Developer Documentation}{8}{section.3}
+\contentsline {section}{\numberline {A}Auto-WEKA Configuration Space}{10}{appendix.A}
+\contentsline {subsection}{\numberline {A.1}Classifiers, Parameters, and Parameter Ranges}{10}{subsection.A.1}
+\contentsline {subsection}{\numberline {A.2}Attribute Searches, Parameters, and Parameter Ranges}{18}{subsection.A.2}
+\contentsline {subsection}{\numberline {A.3}Attribute Evaluations, Parameters, and Parameter Ranges}{20}{subsection.A.3}

@@ -1,0 +1,234 @@
+\section{Auto-WEKA Configuration Space}
+\subsection{Classifiers, Parameters, and Parameter Ranges}
+\begin{landscape}
+\begin{longtabu} to \linewidth {XXXX}
+\toprule
+\rowfont\bfseries Classifier & Parameter & Value Range & Default\\
+\\\midrule
+\endhead
+\multicolumn{4}{r}{continued\ldots}\\
+\endfoot
+\\\bottomrule
+\endlastfoot
+J48 & O & true, false & false\\
+ & U & true, false & false\\
+ & B & true, false & false\\
+ & J & true, false & false\\
+ & A & true, false & false\\
+ & S & true, false & false\\
+ & M & 1, 64 & 2\\
+ & C & 0, 1 & 25\\
+\midrule
+DecisionTable & E & acc, rmse, mae, auc & acc\\
+ & I & true, false & false\\
+ & S & BestFirst, GreedyStepwise & BestFirst\\
+ & X & 1, 2, 3, 4 & 1\\
+\midrule
+GaussianProcesses & L & 0001, 1 & 1\\
+ & N & 0, 1, 2 & 0\\
+ & K & NormalizedPolyKernel, PolyKernel, Puk, RBFKernel & NormalizedPolyKernel\\
+ & E & 2, 5 & 0\\
+ & L & true, false & false\\
+ & E & 2, 5 & 0\\
+ & L & true, false & false\\
+ & S & 1, 10 & 0\\
+ & O & 1, 1 & 0\\
+ & C & 0001, 1 & 01\\
+\midrule
+M5P & N & true, false & false\\
+ & M & 1, 64 & 4\\
+ & U & true, false & false\\
+ & R & true, false & false\\
+\midrule
+KStar & B & 1, 100 & 20\\
+ & E & true, false & false\\
+ & M & a, d, m, n & a\\
+\midrule
+LMT & B & true, false & false\\
+ & R & true, false & false\\
+ & C & true, false & false\\
+ & P & true, false & false\\
+ & M & 1, 64 & 15\\
+ & W & 0 & 0\\
+ & W & 0, 1 & 0\\
+ & A & true, false & false\\
+\midrule
+PART & N & 2, 5 & 3\\
+ & M & 1, 64 & 2\\
+ & R & true, false & false\\
+ & B & true, false & false\\
+\midrule
+SMO & C & 5, 5 & 0\\
+ & N & 0, 1, 2 & 0\\
+ & M & true, false & false\\
+ & K & NormalizedPolyKernel, PolyKernel, Puk, RBFKernel & NormalizedPolyKernel\\
+ & E & 2, 5 & 0\\
+ & L & true, false & false\\
+ & E & 2, 5 & 0\\
+ & L & true, false & false\\
+ & S & 1, 10 & 0\\
+ & O & 1, 1 & 0\\
+ & G & 0001, 1 & 01\\
+\midrule
+BayesNet & D & true, false & false\\
+ & Q & K2, HillClimber, LAGDHillClimber, SimulatedAnnealing, TabuSearch, TAN & K2\\
+\midrule
+NaiveBayes & K & true, false & false\\
+ & D & true, false & false\\
+\midrule
+JRip & N & 1, 5 & 0\\
+ & E & true, false & false\\
+ & P & true, false & false\\
+ & O & 1, 5 & 2\\
+\midrule
+SimpleLogistic & S & true, false & false\\
+ & W & 0 & 0\\
+ & W & 0, 1 & 0\\
+ & A & true, false & false\\
+\midrule
+LinearRegression & S & 0, 1, 2 & 0\\
+ & C & true, false & false\\
+ & R & 1e-7, 10 & 1e-7\\
+\midrule
+VotedPerceptron & I & 1, 10 & 1\\
+ & M & 5000, 50000 & 10000\\
+ & E & 2, 5 & 0\\
+\midrule
+SGD & F & 0, 1, 2 & 0\\
+ & L & 00001, 1 & 01\\
+ & R & 1e-12, 10 & 1e-4\\
+ & N & true, false & false\\
+ & M & true, false & false\\
+\midrule
+Logistic & R & 1e-12, 10 & 1e-7\\
+\midrule
+OneR & B & 1, 32 & 6\\
+\midrule
+MultilayerPerceptron & L & 1, 1 & 3\\
+ & M & 1, 1 & 2\\
+ & B & true, false & false\\
+ & H & a, i, o, t & a\\
+ & C & true, false & false\\
+ & R & true, false & false\\
+ & D & true, false & false\\
+ & S & 1 & 1\\
+\midrule
+REPTree & M & 1, 64 & 2\\
+ & V & 1e-5, 1e-1 & 1e-3\\
+ & L & -1 & -1\\
+ & L & 2, 20 & 2\\
+ & P & true, false & false\\
+\midrule
+IBk & E & true, false & false\\
+ & K & 1, 64 & 1\\
+ & X & true, false & false\\
+ & F & true, false & false\\
+ & I & true, false & false\\
+\midrule
+M5Rules & N & true, false & false\\
+ & M & 1, 64 & 4\\
+ & U & true, false & false\\
+ & R & true, false & false\\
+\midrule
+RandomForest & I & 2, 256 & 10\\
+ & K & 0 & 0\\
+ & K & 1, 32 & 2\\
+ & depth & 0 & 0\\
+ & depth & 1, 20 & 2\\
+\midrule
+RandomTree & M & 1, 64 & 1\\
+ & K & 0 & 0\\
+ & K & 2, 32 & 2\\
+ & depth & 0 & 0\\
+ & depth & 2, 20 & 2\\
+ & N & 0 & 0\\
+ & N & 2, 5 & 3\\
+ & U & true, false & false\\
+\midrule
+SMOreg & C & 5, 5 & 0\\
+ & N & 0, 1, 2 & 0\\
+ & I & RegSMOImproved & RegSMOImproved\\
+ & V & true, false & false\\
+ & K & NormalizedPolyKernel, PolyKernel, Puk, RBFKernel & NormalizedPolyKernel\\
+ & E & 2, 5 & 0\\
+ & L & true, false & false\\
+ & E & 2, 5 & 0\\
+ & L & true, false & false\\
+ & S & 1, 10 & 0\\
+ & O & 1, 1 & 0\\
+ & G & 0001, 1 & 01\\
+\midrule
+Vote & R & AVG, PROD, MAJ, MIN, MAX & AVG\\
+ & S & 1 & 1\\
+\midrule
+Stacking & X & 10 & 10\\
+ & S & 1 & 1\\
+\midrule
+Bagging & P & 10, 100 & 100\\
+ & I & 2, 128 & 10\\
+ & S & 1 & 1\\
+ & O & true, false & false\\
+\midrule
+ & P & 100 & 100\\
+ & P & 50, 100 & 100\\
+ & I & 2, 128 & 10\\
+ & Q & true, false & false\\
+ & S & 1 & 1\\
+\midrule
+ & S & 1 & 1\\
+ & S & 0, 0 & 1\\
+ & I & 2, 128 & 10\\
+\midrule
+ & K & -1, 10, 30, 60, 90, 120 & -1\\
+ & U & 0, 1, 2, 3, 4 & 0\\
+ & A & LinearNNSearch & LinearNNSearch\\
+\midrule
+RandomSubSpace & I & 2, 64 & 10\\
+ & P & 1, 0 & 5\\
+ & S & 1 & 1\\
+\midrule
+AttributeSelectedClassifier & S & BestFirst, GreedyStepwise & BestFirst\\
+ & E & CfsSubsetEval & CfsSubsetEval\\
+\midrule
+RandomCommittee & I & 2, 64 & 10\\
+ & S & 1 & 1\\
+\midrule
+\end{longtabu}
+\end{landscape}
+\subsection{Attribute Searches, Parameters, and Parameter Ranges}
+\begin{landscape}
+\begin{longtabu} to \linewidth {XXXX}
+\toprule
+\rowfont\bfseries Attribute Search & Parameter & Value Range & Default\\
+\\\midrule
+\endhead
+\multicolumn{4}{r}{continued\ldots}\\
+\endfoot
+\\\bottomrule
+\endlastfoot
+BestFirst & D & 0, 1, 2 & 1\\
+ & N & 2, 10 & 5\\
+\midrule
+GreedyStepwise & C & true, false & false\\
+ & B & true, false & false\\
+ & R & true, false & false\\
+ & N & 10, 1000 & 30\\
+\midrule
+\end{longtabu}
+\end{landscape}
+\subsection{Attribute Evaluations, Parameters, and Parameter Ranges}
+\begin{landscape}
+\begin{longtabu} to \linewidth {XXXX}
+\toprule
+\rowfont\bfseries Attribute Evaluation & Parameter & Value Range & Default\\
+\\\midrule
+\endhead
+\multicolumn{4}{r}{continued\ldots}\\
+\endfoot
+\\\bottomrule
+\endlastfoot
+CfsSubsetEval & M & true, false & false\\
+ & L & true, false & false\\
+\midrule
+\end{longtabu}
+\end{landscape}
