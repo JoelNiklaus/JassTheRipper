@@ -16,7 +16,7 @@ import java.util.Arrays;
  */
 public class Application {
     //CHALLENGE2017: Set your bot name
-    private static final String BOT_NAME = "awesomeJavaBot";
+    private static final String BOT_NAME = "JassTheRipper";
     //CHALLENGE2017: Set your own strategy
     private static final RandomJassStrategy STRATEGY = new RandomJassStrategy();
 
