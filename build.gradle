@@ -23,6 +23,9 @@ dependencies {
     testCompile 'com.shazam:shazamcrest:0.11'
     testCompile 'org.mockito:mockito-core:1.10.19'
     testCompile 'com.pholser:junit-quickcheck-core:0.5-alpha-3'
+
+    // https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable
+    compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.8.0'
 }
 
 run {
