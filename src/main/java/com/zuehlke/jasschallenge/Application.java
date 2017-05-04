@@ -2,6 +2,7 @@ package com.zuehlke.jasschallenge;
 
 import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 import java.util.Arrays;
@@ -16,9 +17,9 @@ import java.util.Arrays;
  */
 public class Application {
     //CHALLENGE2017: Set your bot name
-    private static final String BOT_NAME = "JassTheRipper";
+    private static final String BOT_NAME = "JassTheRipper1";
     //CHALLENGE2017: Set your own strategy
-    private static final RandomJassStrategy STRATEGY = new RandomJassStrategy();
+    private static final JassTheRipperJassStrategy STRATEGY = new JassTheRipperJassStrategy();
 
     private static final String LOCAL_URL = "ws://127.0.0.1:3000";
 
