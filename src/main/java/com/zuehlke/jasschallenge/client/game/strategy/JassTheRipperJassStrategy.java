@@ -45,6 +45,7 @@ public class JassTheRipperJassStrategy implements JassStrategy {
             prospectiveMode = Mode.topDown();
         if (rateUndeufe(cardStream) > max)
             prospectiveMode = Mode.bottomUp();
+        System.out.println("ChooseTrumpf succeeded!");
         if (max < max_schift_rating_val)
             return Mode.shift();
         return prospectiveMode;
@@ -129,5 +130,4 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 	private void gegenFarbeVerwerfen() {
 
 	}
-
 }
