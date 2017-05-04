@@ -3,7 +3,9 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Round;
+import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import weka.classifiers.functions.MultilayerPerceptron;
 
@@ -19,6 +21,7 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 	private MultilayerPerceptron mlp = new MultilayerPerceptron();
 
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
+	// TODO alle gespielten Karten merken
 
 	// wähle trumpf mit besten voraussetzungen -> ranking
 	// bei drei sicheren stichen -> obeabe oder undeufe
@@ -31,7 +34,7 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 			allPossibleModes.add(Mode.shift());
 		}
 		System.out.println("ChooseTrumpf!");
-		return Mode.topDown();
+		return Mode.from(Trumpf.TRUMPF, Color.CLUBS);
 		//return allPossibleModes.get(new Random().nextInt(allPossibleModes.size()));
 	}
 
