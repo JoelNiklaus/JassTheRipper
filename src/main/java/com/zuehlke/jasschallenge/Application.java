@@ -17,7 +17,7 @@ import java.util.Arrays;
  */
 public class Application {
     //CHALLENGE2017: Set your bot name
-    private static final String BOT_NAME = "JassTheRipper1";
+    private static final String BOT_NAME = "JassTheRipper";
     //CHALLENGE2017: Set your own strategy
     private static final JassTheRipperJassStrategy STRATEGY = new JassTheRipperJassStrategy();
 
@@ -26,10 +26,13 @@ public class Application {
     public static void main(String[] args) throws Exception {
         String websocketUrl = parseWebsocketUrlOrDefault(args);
 
-        Player myLocalPlayer = new Player(BOT_NAME, STRATEGY);
+        Player jassTheRipper = new Player(BOT_NAME, STRATEGY);
+        Player randomJasser = new Player("RandomJasser", new RandomJassStrategy());
 
         System.out.println("Connecting... Server socket URL: " + websocketUrl);
-        startGame(websocketUrl, myLocalPlayer, SessionType.TOURNAMENT);
+        // Change here to run different bot
+        //startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
+		startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
     }
 
 
