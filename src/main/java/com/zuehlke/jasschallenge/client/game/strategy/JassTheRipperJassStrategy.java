@@ -12,12 +12,14 @@ import weka.classifiers.functions.MultilayerPerceptron;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 // TODO Only ML methods or include Jass Knowledge?
 public class JassTheRipperJassStrategy implements JassStrategy {
-    private final int max_schift_rating_val = 30;
+	private final int max_schift_rating_val = 30;
 
 	private MultilayerPerceptron mlp = new MultilayerPerceptron();
 
@@ -30,90 +32,89 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-        System.out.println("ChooseTrumpf!");
-        Stream<Card> cardStream = availableCards.stream();
+		System.out.println("ChooseTrumpf!");
 		int max = 0;
-        Mode prospectiveMode = Mode.from(Trumpf.TRUMPF, Color.CLUBS);
-        for (Color color : Color.values()) {
-            int colorTrumpRating = rate(cardStream, color);
-            if (colorTrumpRating > max) {
-                max = colorTrumpRating;
-                prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
-            }
-        }
-        if (rateObeabe(cardStream) > max)
-            prospectiveMode = Mode.topDown();
-        if (rateUndeufe(cardStream) > max)
-            prospectiveMode = Mode.bottomUp();
-        System.out.println("ChooseTrumpf succeeded!");
-        if (max < max_schift_rating_val)
-            return Mode.shift();
-        return prospectiveMode;
+		Mode prospectiveMode = Mode.from(Trumpf.TRUMPF, Color.CLUBS);
+		for (Color color : Color.values()) {
+			int colorTrumpRating = rate(availableCards, color);
+			if (colorTrumpRating > max) {
+				max = colorTrumpRating;
+				prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
+			}
+		}
+		if (rateObeabe(availableCards) > max)
+			prospectiveMode = Mode.topDown();
+		if (rateUndeufe(availableCards) > max)
+			prospectiveMode = Mode.bottomUp();
+		System.out.println("ChooseTrumpf succeeded!");
+		if (max < max_schift_rating_val)
+			return Mode.shift();
+		return prospectiveMode;
 	}
 
-    private int rate(Stream<Card> cardStream, Color color) {
-	    return 30;
-    }
+	private int rate(Set<Card> cardStream, Color color) {
+		return 30;
+	}
 
-    private int rateObeabe(Stream<Card> cardStream) {
-	    int sum = 0;
-        for (Color color : Color.values()) {
-            sum += rateObeabeColor(cardStream, color);
-        }
-	    return sum;
-    }
+	private int rateObeabe(Set<Card> cards) {
+		int sum = 0;
+		for (Color color : Color.values()) {
+			sum += rateObeabeColor(cards, color);
+		}
+		return sum;
+	}
 
-    private int rateUndeufe(Stream<Card> cardStream) {
-        int sum = 0;
-        for (Color color : Color.values()) {
-            sum += rateUndeufeColor(cardStream, color);
-        }
-        return sum;
-    }
+	private int rateUndeufe(Set<Card> cards) {
+		int sum = 0;
+		for (Color color : Color.values()) {
+			sum += rateUndeufeColor(cards, color);
+		}
+		return sum;
+	}
 
-    /* Ass = 20, König = 12, Königin = 6, Bube = 3, Zehn = 1
-     */
-    private int rateObeabeColor(Stream<Card> cardStream, Color color) {
-        Stream<Card> currentStream = getCardsOfColor(cardStream, color);
-        currentStream.sorted(Comparator.comparing(Card::getRank));
-        if (currentStream.findFirst().isPresent())
-            if (currentStream.findFirst().get().getValue().getRank() >= 8)
-                return 3000;
-        return 5;
-    }
+	/* Ass = 20, König = 12, Königin = 6, Bube = 3, Zehn = 1
+	 */
+	private int rateObeabeColor(Set<Card> cards, Color color) {
+		Set<Card> cardsOfColor = getCardsOfColor(cards, color);
+		List<Card> sortedCards = cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
+		if (sortedCards.stream().findFirst().isPresent())
+			if (sortedCards.stream().findFirst().get().getValue().getRank() >= 8)
+				return 3000;
+		return 5;
+	}
 
-    // Sorts the wrong way round
-    private int rateUndeufeColor(Stream<Card> cardStream, Color color) {
-        Stream<Card> currentStream = getCardsOfColor(cardStream, color);
-        currentStream.sorted(Comparator.comparing(Card::getRank));
-        if (currentStream.findFirst().isPresent())
-            if (currentStream.findFirst().get().getValue().getRank() <= 2)
-                return 300;
-        return 5;
-    }
+	// Sorts the wrong way round
+	private int rateUndeufeColor(Set<Card> cards, Color color) {
+		Set<Card> cardsOfColor = getCardsOfColor(cards, color);
+		List<Card> sortedCards = cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
+		if (sortedCards.stream().findFirst().isPresent())
+			if (sortedCards.stream().findFirst().get().getValue().getRank() <= 2)
+				return 300;
+		return 5;
+	}
 
-    private Stream<Card> getCardsOfColor(Stream<Card> cardStream, Color color) {
-        return cardStream.filter(card -> card.getColor().equals(color));
-    }
+	private Set<Card> getCardsOfColor(Set<Card> cards, Color color) {
+		return cards.stream().filter(card -> card.getColor().equals(color)).collect(Collectors.toSet());
+	}
 
 
-    @Override
+	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		final Game currentGame = session.getCurrentGame();
 		final Round round = currentGame.getCurrentRound();
 		final Mode gameMode = round.getMode();
 
-		return getPossibleCards(availableCards, round, gameMode)
+		return getPossibleCards(availableCards, round, gameMode).stream()
 				.findAny()
 				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
 	}
 
 	private int countNumberOfCardsOfColor(Set<Card> availableCards, Color color) {
-	    return (int) availableCards.stream().filter(card -> card.getColor().equals(color)).count();
-    }
+		return (int) availableCards.stream().filter(card -> card.getColor().equals(color)).count();
+	}
 
-	private Stream<Card> getPossibleCards(Set<Card> availableCards, Round round, Mode gameMode) {
-		return availableCards.stream().filter(card -> gameMode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards));
+	private Set<Card> getPossibleCards(Set<Card> availableCards, Round round, Mode gameMode) {
+		return availableCards.stream().filter(card -> gameMode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).collect(Collectors.toSet());
 	}
 
 	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen
