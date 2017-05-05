@@ -1,0 +1,54 @@
+
+@relation trumpf
+
+@attribute trumpf {hearts, diamonds, clubs, spades, obeabe, undeufe, shift}
+@attribute card1 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card2 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card3 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card4 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card5 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card6 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card7 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card8 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+@attribute card9 {	Hearts_Six, Hearts_Seven, Hearts_Eight, Hearts_Nine, Hearts_Ten, Hearts_Jack, Hearts_Queen, Hearts_King, Hearts_Ace,
+			Diamonds_Six, Diamonds_Seven, Diamonds_Eight, Diamonds_Nine, Diamonds_Ten, Diamonds_Jack, Diamonds_Queen, Diamonds_King, Diamonds_Ace,
+			Clubs_Six, Clubs_Seven, Clubs_Eight, Clubs_Nine, Clubs_Ten, Clubs_Jack, Clubs_Queen, Clubs_King, Clubs_Ace,
+			Spades_Six, Spades_Seven, Spades_Eight, Spades_Nine, Spades_Ten, Spades_Jack, Spades_Queen, Spades_King, Spades_Ace
+}
+
+@data
+obeabe, Spades_Ace, Spades_King, Spades_Queen, Diamonds_King, Diamonds_Six, Hearts_Ace, Hearts_Queen, Hearts_Jack, Hearts_Nine
+
+

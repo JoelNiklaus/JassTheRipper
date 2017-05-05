@@ -8,20 +8,40 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import weka.classifiers.functions.MultilayerPerceptron;
+import weka.core.DenseInstance;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 // TODO Only ML methods or include Jass Knowledge?
 public class JassTheRipperJassStrategy implements JassStrategy {
 	private final int max_schift_rating_val = 30;
 
-	private MultilayerPerceptron mlp = new MultilayerPerceptron();
+	private Instances train;
+	private MultilayerPerceptron mlp;
+
+
+	public JassTheRipperJassStrategy() {
+		mlp = new MultilayerPerceptron();
+		mlp.setLearningRate(0.1);
+		mlp.setMomentum(0.2);
+		mlp.setTrainingTime(50);
+		mlp.setHiddenLayers("3");
+
+		train = MLHelper.loadArff("ml/trumpTrain.arff");
+		try {
+			mlp.buildClassifier(train);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
 	// TODO alle gespielten Karten merken
@@ -32,7 +52,14 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
+		// Machine Learning Version
+		Instance cards = MLHelper.buildInstance(train, availableCards);
+
+		String trumpf = MLHelper.predictTrumpf(mlp, cards);
+
+		// Knowledge Version
 		System.out.println("ChooseTrumpf!");
+		System.out.println(availableCards.toArray()[0].toString());
 		int max = 0;
 		Mode prospectiveMode = Mode.from(Trumpf.TRUMPF, Color.CLUBS);
 		for (Color color : Color.values()) {
