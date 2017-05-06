@@ -3,15 +3,13 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Round;
+import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import weka.classifiers.functions.MultilayerPerceptron;
-import weka.core.DenseInstance;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.converters.ConverterUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -42,6 +40,8 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 		}
 	}
 
+	// TODO Wo sollten die Exceptions gecatcht werden???
+
 
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
 	// TODO alle gespielten Karten merken
@@ -53,9 +53,13 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
 		// Machine Learning Version
-		Instance cards = MLHelper.buildInstance(train, availableCards);
+		Instances cards = MLHelper.buildSingleInstanceInstances(train, availableCards);
 
-		String trumpf = MLHelper.predictTrumpf(mlp, cards);
+		try {
+			Mode trumpf = MLHelper.predictTrumpf(mlp, cards);
+		} catch (InvalidTrumpfException e) {
+			e.printStackTrace();
+		}
 
 		// Knowledge Version
 		System.out.println("ChooseTrumpf!");

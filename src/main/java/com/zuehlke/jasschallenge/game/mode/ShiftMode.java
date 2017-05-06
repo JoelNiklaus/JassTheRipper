@@ -9,6 +9,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.valueOf;
+
 public class ShiftMode extends Mode {
 
     @Override
@@ -49,5 +51,10 @@ public class ShiftMode extends Mode {
     @Override
     public Comparator<Card> createRankComparator() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return valueOf(getTrumpfName());
     }
 }

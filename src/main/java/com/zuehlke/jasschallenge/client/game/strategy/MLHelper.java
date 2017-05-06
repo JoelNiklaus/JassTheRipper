@@ -1,6 +1,10 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
+import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
+import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.Color;
+import com.zuehlke.jasschallenge.game.mode.Mode;
 import weka.classifiers.Classifier;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -25,17 +29,11 @@ public class MLHelper {
 		return data;
 	}
 
-	public static String predictTrumpf(Classifier classifier, Instance cards) {
-		double predictedClass = 0;
-		try {
-			predictedClass = classifier.classifyInstance(cards);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return cards.classAttribute().value((int) predictedClass);
-	}
+	public static Instances buildSingleInstanceInstances(Instances train, Set<Card> availableCards) {
+		Instances newInstances = new Instances(train);
+		newInstances.delete();
+		newInstances.setClassIndex(0);
 
-	public static Instance buildInstance(Instances train, Set<Card> availableCards) {
 		double[] instanceValues = new double[train.numAttributes()];
 		int index = 0;
 
@@ -49,6 +47,39 @@ public class MLHelper {
 			index++;
 		}
 
-		return new DenseInstance(1.0, instanceValues);
+		newInstances.add(new DenseInstance(1.0, instanceValues));
+
+		return newInstances;
 	}
+
+	public static Mode predictTrumpf(Classifier classifier, Instances cards) throws InvalidTrumpfException {
+		double predictedClass = 0;
+		try {
+			predictedClass = classifier.classifyInstance(cards.firstInstance());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return convertStringToMode(cards.classAttribute().value((int) predictedClass));
+	}
+
+	public static Mode convertStringToMode(String trumpf) throws InvalidTrumpfException {
+		switch (trumpf) {
+			case "HEARTS":
+				return Mode.from(Trumpf.TRUMPF, Color.HEARTS);
+			case "DIAMONDS":
+				return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
+			case "CLUBS":
+				return Mode.from(Trumpf.TRUMPF, Color.CLUBS);
+			case "SPADES":
+				return Mode.from(Trumpf.TRUMPF, Color.SPADES);
+			case "OBEABE":
+				return Mode.topDown();
+			case "UNDEUFE":
+				return Mode.bottomUp();
+			case "SCHIEBE":
+				return Mode.shift();
+		}
+		throw new InvalidTrumpfException("Trump not found.");
+	}
+
 }
