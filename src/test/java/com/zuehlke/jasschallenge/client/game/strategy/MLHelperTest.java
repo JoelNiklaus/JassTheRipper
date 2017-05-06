@@ -1,13 +1,13 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.MLHelper;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Test;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.DenseInstance;
-import weka.core.Instance;
 import weka.core.InstanceComparator;
 import weka.core.Instances;
 

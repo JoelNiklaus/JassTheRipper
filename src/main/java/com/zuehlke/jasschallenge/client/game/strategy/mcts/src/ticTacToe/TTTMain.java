@@ -1,11 +1,11 @@
-package ticTacToe;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.ticTacToe;
 
 
 import java.util.Arrays;
 
-import main.FinalSelectionPolicy;
-import main.MCTS;
-import main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.FinalSelectionPolicy;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.MCTS;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 
 public class TTTMain {
 

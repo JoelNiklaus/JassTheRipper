@@ -1,4 +1,4 @@
-package main;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main;
 
 public enum FinalSelectionPolicy {
 	maxChild, // The child with highest SCORE

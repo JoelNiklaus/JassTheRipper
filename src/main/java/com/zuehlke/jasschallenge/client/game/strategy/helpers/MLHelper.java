@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.game.strategy;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
 import com.zuehlke.jasschallenge.game.Trumpf;

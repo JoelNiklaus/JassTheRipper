@@ -4,6 +4,8 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.MLHelper;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
@@ -135,16 +137,21 @@ public class JassTheRipperJassStrategy implements JassStrategy {
 		final Round round = currentGame.getCurrentRound();
 		final Mode gameMode = round.getMode();
 
+		// TODO alle schon gespielten Karten auslesen
+
+		//return MCTSHelper.getCard(availableCards, round, gameMode, null);
+
 		return getPossibleCards(availableCards, round, gameMode).stream()
 				.findAny()
 				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
+				
 	}
 
 	private int countNumberOfCardsOfColor(Set<Card> availableCards, Color color) {
 		return (int) availableCards.stream().filter(card -> card.getColor().equals(color)).count();
 	}
 
-	private Set<Card> getPossibleCards(Set<Card> availableCards, Round round, Mode gameMode) {
+	public Set<Card> getPossibleCards(Set<Card> availableCards, Round round, Mode gameMode) {
 		return availableCards.stream().filter(card -> gameMode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).collect(Collectors.toSet());
 	}
 

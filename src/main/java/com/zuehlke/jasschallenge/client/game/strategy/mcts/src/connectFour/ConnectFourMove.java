@@ -1,6 +1,6 @@
-package connectFour;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.connectFour;
 
-import main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 
 /**
  * Moves are simple to manage for Connect Four. We

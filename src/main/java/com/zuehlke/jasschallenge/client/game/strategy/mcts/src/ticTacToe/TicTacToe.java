@@ -1,10 +1,10 @@
-package ticTacToe;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.ticTacToe;
 
 import java.util.ArrayList;
 
-import main.Board;
-import main.CallLocation;
-import main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Board;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.CallLocation;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 
 public class TicTacToe implements Board {
 	int [][]board;

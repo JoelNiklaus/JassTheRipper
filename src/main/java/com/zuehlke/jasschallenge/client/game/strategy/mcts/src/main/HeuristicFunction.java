@@ -1,4 +1,4 @@
-package main;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main;
 
 /**
  * Create a class implementing this interface and instantiate

@@ -1,4 +1,4 @@
-package connectFour;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.connectFour;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -10,8 +10,8 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import main.MCTS;
-import main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.MCTS;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 
 public class C4Main {
 	static int scorePlayer0 = 0;

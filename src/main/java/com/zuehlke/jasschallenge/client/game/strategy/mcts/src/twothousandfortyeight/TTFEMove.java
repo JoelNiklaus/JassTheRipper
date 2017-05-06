@@ -1,6 +1,6 @@
-package twothousandfortyeight;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.twothousandfortyeight;
 
-import main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 
 public class TTFEMove implements Move {
 	int x;

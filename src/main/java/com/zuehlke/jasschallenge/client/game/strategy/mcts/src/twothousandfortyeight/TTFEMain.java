@@ -1,9 +1,9 @@
-package twothousandfortyeight;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.twothousandfortyeight;
 
 import java.util.Random;
 
-import main.MCTS;
-import main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.MCTS;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 
 public class TTFEMain {
 
