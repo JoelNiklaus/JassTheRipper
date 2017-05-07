@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 
 public class Node {
@@ -15,10 +16,10 @@ public class Node {
 	public double[] pess;
 	public double[] opti;
 	public boolean pruned;
-	
+
 	/**
 	 * This creates the root node
-	 * 
+	 *
 	 * @param b
 	 */
 	public Node(Board b) {
@@ -33,7 +34,7 @@ public class Node {
 
 	/**
 	 * This creates non-root nodes
-	 * 
+	 *
 	 * @param b
 	 * @param m
 	 * @param prnt
@@ -54,20 +55,19 @@ public class Node {
 
 	/**
 	 * Return the upper confidence bound of this state
-	 * 
-	 * @param c
-	 *            typically sqrt(2). Increase to emphasize exploration. Decrease
-	 *            to incr. exploitation
-	 * @param t
+	 *
+	 * @param c typically sqrt(2). Increase to emphasize exploration. Decrease
+	 *          to incr. exploitation
 	 * @return
 	 */
 	public double upperConfidenceBound(double c) {
-		return score[parent.player] / games  + c
+		return score[parent.player] / games + c
 				* Math.sqrt(Math.log(parent.games + 1) / games);
 	}
 
 	/**
 	 * Update the tree with the new score.
+	 *
 	 * @param scr
 	 */
 	public void backPropagateScore(double[] scr) {
@@ -82,9 +82,10 @@ public class Node {
 	/**
 	 * Expand this node by populating its list of
 	 * unvisited child nodes.
+	 *
 	 * @param currentBoard
 	 */
-	public void expandNode(Board currentBoard){
+	public void expandNode(Board currentBoard) {
 		ArrayList<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
 		unvisitedChildren = new ArrayList<Node>();
 		for (int i = 0; i < legalMoves.size(); i++) {
@@ -94,12 +95,11 @@ public class Node {
 	}
 
 	/**
-	 * Set the bounds in the given node and propagate the values 
+	 * Set the bounds in the given node and propagate the values
 	 * back up the tree. When bounds are first created they are
 	 * both equivalent to a player's score.
-	 * 
-	 * @param optimistic
-	 * @param pessimistic
+	 *
+	 * @param score
 	 */
 	public void backPropagateBounds(double[] score) {
 		for (int i = 0; i < score.length; i++) {
@@ -169,30 +169,36 @@ public class Node {
 
 	/**
 	 * Select a child node at random and return it.
+	 *
 	 * @param board
 	 * @return
 	 */
 	public int randomSelect(Board board) {
-		double []weights = board.getMoveWeights();
-		
+		double[] weights = board.getMoveWeights();
+
 		double totalWeight = 0.0d;
-		for (int i = 0; i < weights.length; i++)
-		{
-		    totalWeight += weights[i];
+		for (int i = 0; i < weights.length; i++) {
+			totalWeight += weights[i];
 		}
-		
+
 		int randomIndex = -1;
 		double random = Math.random() * totalWeight;
-		for (int i = 0; i < weights.length; ++i)
-		{
-		    random -= weights[i];
-		    if (random <= 0.0d)
-		    {
-		        randomIndex = i;
-		        break;
-		    }
+		for (int i = 0; i < weights.length; ++i) {
+			random -= weights[i];
+			if (random <= 0.0d) {
+				randomIndex = i;
+				break;
+			}
 		}
-		
+
 		return randomIndex;
+	}
+
+
+	@Override
+	public String toString() {
+		return "Node{" +
+				"move=" + move +
+				'}';
 	}
 }

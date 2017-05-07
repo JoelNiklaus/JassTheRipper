@@ -43,7 +43,7 @@ public class Move implements Serializable {
 	@Override
 	public String toString() {
 		return "Move{" +
-				"player=" + player +
+				"player=" + player.getName() +
 				", playedCard=" + playedCard +
 				'}';
 	}

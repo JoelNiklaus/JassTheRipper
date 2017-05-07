@@ -18,6 +18,7 @@ public class GameSession implements Serializable {
 
 	public GameSession(List<Team> teams, List<Player> playersInPlayingOrder) {
 		this.teams = teams;
+		assert teams.size() == 2;
 
 		this.playersInPlayingOrder = playersInPlayingOrder;
 		this.gameStartingPlayerOrder = createOrder(playersInPlayingOrder);
@@ -39,6 +40,14 @@ public class GameSession implements Serializable {
 	public Team getTeamOfPlayer(Player player) {
 		for (Team team : teams) {
 			if (team.getPlayers().contains(player))
+				return team;
+		}
+		return null;
+	}
+
+	public Team getOpponentTeamOfPlayer(Player player) {
+		for (Team team : teams) {
+			if (!team.getPlayers().contains(player))
 				return team;
 		}
 		return null;

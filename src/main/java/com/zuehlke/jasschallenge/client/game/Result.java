@@ -15,6 +15,10 @@ public class Result implements Serializable {
 		return getTeamScoreForPlayer(player).getScore();
 	}
 
+	public int getOpponentTeamScore(Player player) {
+		return getOpponentTeamScoreForPlayer(player).getScore();
+	}
+
 	// BUG!!! For match you do not only have to make every point but also every stich!!!
 	public boolean isMatch() {
 
@@ -58,6 +62,12 @@ public class Result implements Serializable {
 
 		if (teamAScore.getTeam().isTeamOfPlayer(player)) return teamAScore;
 		else return teamBScore;
+	}
+
+	private TeamScore getOpponentTeamScoreForPlayer(Player player) {
+
+		if (teamAScore.getTeam().isTeamOfPlayer(player)) return teamBScore;
+		else return teamAScore;
 	}
 
 	private static class TeamScore implements Serializable {

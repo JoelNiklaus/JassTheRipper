@@ -21,56 +21,61 @@ import java.util.stream.Collectors;
  */
 public class Jass implements Board, Serializable {
 
-	private Set<Card> availableCards;
+	private final GameSession session;
 	private final Game game;
 	private final Player player;
-	private int currentPlayer = 0;
 
-	private List<Set<Card>> cardsOfPlayers = new ArrayList<>();
-
-	public Jass(Set<Card> availableCards, Game game) {
-		this.game = game;
+	public Jass(Set<Card> availableCards, GameSession session) {
+		this.session = session;
+		this.game = session.getCurrentGame();
 		this.player = game.getCurrentPlayer();
-		this.availableCards = availableCards;
-		this.currentPlayer = player.getSeatId();
+		distributeCardsForPlayers(availableCards, game);
+	}
 
-		// initialize with available cards
-		for (int i = 0; i < 4; i++) {
-			cardsOfPlayers.add(availableCards);
-		}
+	private void distributeCardsForPlayers(Set<Card> availableCards, Game game) {
+		player.setCards(availableCards);
 		// add randomized available Cards for the other players based on already played cards
 		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards);
-		int numberOfCardsToAdd = remainingCards.size() / 3; // rounds down the number
+		double numberOfCardsToAdd = remainingCards.size() / 3.0; // rounds down the number
 		for (int i = 0; i < 4; i++) {
 			int tempPlayerId = order.getCurrentPlayer().getSeatId();
-			int numberOfCards = numberOfCardsToAdd;
+			double numberOfCards = numberOfCardsToAdd;
 			if (tempPlayerId != player.getSeatId()) { // randomize cards for the other players
 				if (tempPlayerId > player.getSeatId()) // if tempPlayer is seated after player add one card more
-					numberOfCards++;
+					numberOfCards = Math.ceil(numberOfCards);
+				else
+					numberOfCards = Math.floor(numberOfCards);
 
-				Set<Card> cardsToAdd = pickRandomSubSet(remainingCards);
-				cardsOfPlayers.add(tempPlayerId, cardsToAdd);
+				Set<Card> cardsToAdd = pickRandomSubSet(remainingCards, (int) numberOfCards);
+				game.getCurrentPlayer().setCards(cardsToAdd);
 				remainingCards.removeAll(cardsToAdd);
+
+/*
+				System.out.println("available " + availableCards);
+				System.out.println("remaining " + remainingCards);
+				System.out.println("random " + cardsToAdd);
+*/
 			}
 
 			order.moveToNextPlayer();
 		}
 	}
 
-	private Set<Card> pickRandomSubSet(Set<Card> cards) {
+	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		Set<Card> subset = EnumSet.noneOf(Card.class);
-		int size = cards.size();
-		int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
-		int i = 0;
-		for (Card card : cards) {
-			if (i == item)
-				subset.add(card);
-			i++;
+		while (subset.size() < numberOfCards) {
+			int size = cards.size();
+			int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+			int i = 0;
+			for (Card card : cards) {
+				if (i == item)
+					subset.add(card);
+				i++;
+			}
 		}
 		return subset;
 	}
-
 
 	private Set<Card> getRemainingCards(Set<Card> availableCards) {
 		Set<Card> cards = EnumSet.allOf(Card.class);
@@ -94,60 +99,15 @@ public class Jass implements Board, Serializable {
 			e.printStackTrace();
 		}
 		return null;
-		/*
-		String string = null;
-		try {
-			string = toString(this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		System.out.println(" Encoded serialized version ");
-		System.out.println(string);
-		Board board = null;
-		try {
-			board = (Board) fromString(string);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		System.out.println("\n\nReconstituted object");
-		System.out.println(board);
-		// Copy board data
-		return board;
-		*/
-	}
-
-	/**
-	 * Read the object from Base64 string.
-	 */
-	private static Object fromString(String s) throws IOException,
-			ClassNotFoundException {
-		byte[] data = Base64.getDecoder().decode(s);
-		ObjectInputStream ois = new ObjectInputStream(
-				new ByteArrayInputStream(data));
-		Object o = ois.readObject();
-		ois.close();
-		return o;
-	}
-
-	/**
-	 * Write the object to a Base64 string.
-	 */
-	private static String toString(Serializable o) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		oos.writeObject(o);
-		oos.close();
-		return Base64.getEncoder().encodeToString(baos.toByteArray());
 	}
 
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
 		ArrayList<Move> moves = new ArrayList<Move>();
-		// TODO Exclude very bad choices here
-		for (Card card : availableCards) {
-			moves.add(new CardMove(game.getCurrentPlayer(), card));
+		Player player = game.getCurrentPlayer();
+		//System.out.println(player.getSeatId() + player.toString());
+		for (Card card : player.getCards()) {
+			moves.add(new CardMove(player, card));
 		}
 		return moves;
 	}
@@ -162,10 +122,19 @@ public class Jass implements Board, Serializable {
 	public void makeMove(Move move) {
 		if (game.getCurrentRound().roundFinished())
 			game.startNextRound();
+
+
+		// // TODO wrap in try block!
 		// We can do that because we are only creating CardMoves
 		game.makeMove((CardMove) move);
-		// delete Card from available Cards of player making the move
 
+		// delete Card from available Cards of player making the move
+		Player player = game.getCurrentPlayer();
+		player.getCards().remove(((CardMove) move).getPlayedCard());
+
+
+		System.out.println(player.toString());
+		System.out.println(game.getCurrentRound());
 	}
 
 	@Override
@@ -186,9 +155,9 @@ public class Jass implements Board, Serializable {
 	@Override
 	public double[] getScore() {
 		double[] score = new double[2];
-		score[currentPlayer] = game.getResult().getTeamScore(player);
-		// TODO enter score for opponent team
-		//score[(currentPlayer+1) %2] = game.getResult().getTeamScore(player);
+		Player player = game.getCurrentPlayer();
+		score[player.getSeatId() % 2] = game.getResult().getTeamScore(player);
+		score[(player.getSeatId() + 1) % 2] = game.getResult().getOpponentTeamScore(player);
 		return score;
 	}
 
@@ -198,6 +167,7 @@ public class Jass implements Board, Serializable {
 	 * interface contract.
 	 */
 	public double[] getMoveWeights() {
+		// TODO give high weights for good choices and low weights for bad choices. So in random choosing of moves good moves are favoured.
 		return null;
 	}
 

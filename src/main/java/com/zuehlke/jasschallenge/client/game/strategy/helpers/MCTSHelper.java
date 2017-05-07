@@ -13,17 +13,16 @@ import java.util.Set;
  */
 public class MCTSHelper {
 
+	public static Card getCard(Set<Card> availableCards, GameSession session) {
+		MCTS mcts = new MCTS();
+		mcts.setExplorationConstant(1.4);
+		mcts.setOptimisticBias(0);
+		mcts.setPessimisticBias(0);
+		mcts.setTimeDisplay(true);
 
-	public static Card getCard(Set<Card> availableCards, Game game) {
-		MCTS player = new MCTS();
-		player.setExplorationConstant(1.4);
-		player.setOptimisticBias(0);
-		player.setPessimisticBias(0);
-		player.setTimeDisplay(true);
+		Jass jass = new Jass(availableCards, session);
 
-		Jass jass = new Jass(availableCards, game);
-
-		Move move = player.runMCTS(jass, 10, false);
+		Move move = mcts.runMCTS(jass, 10, false);
 		return ((CardMove) move).getPlayedCard();
 	}
 

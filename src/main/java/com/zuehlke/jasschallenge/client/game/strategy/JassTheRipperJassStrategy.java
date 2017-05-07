@@ -152,7 +152,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		}
 		*/
 
-		//return MCTSHelper.getCard(availableCards, currentGame);
+		//return MCTSHelper.getCard(availableCards, session);
 
 
 		return possibleCards.stream()

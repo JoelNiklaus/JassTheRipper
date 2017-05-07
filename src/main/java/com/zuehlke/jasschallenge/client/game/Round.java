@@ -29,9 +29,9 @@ public class Round implements Serializable {
 
 	public void makeMove(Move move) {
 		if (!move.getPlayer().equals(playingOrder.getCurrentPlayer()))
-			throw new RuntimeException("It's not players " + move.getPlayer() + " turn");
+			throw new RuntimeException("It's not players " + move.getPlayer() + " turn. It's " + playingOrder.getCurrentPlayer() + " turn.");
 		if (moves.size() == 4)
-			throw new RuntimeException("Only four card can be played in a round");
+			throw new RuntimeException("Only four cards can be played in a round");
 
 		moves.add(move);
 		playingOrder.moveToNextPlayer();
@@ -91,5 +91,15 @@ public class Round implements Serializable {
 
 	public boolean isLastRound() {
 		return getRoundNumber() == Game.LAST_ROUND_NUMBER;
+	}
+
+	@Override
+	public String toString() {
+		return "Round{" +
+				"mode=" + mode +
+				", roundNumber=" + roundNumber +
+				", playingOrder=" + playingOrder +
+				", moves=" + moves +
+				'}';
 	}
 }

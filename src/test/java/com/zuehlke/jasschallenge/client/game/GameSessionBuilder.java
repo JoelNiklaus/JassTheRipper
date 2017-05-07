@@ -1,5 +1,7 @@
 package com.zuehlke.jasschallenge.client.game;
 
+import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
@@ -9,11 +11,12 @@ import static java.util.Arrays.asList;
 
 public class GameSessionBuilder {
     private Mode startedGameMode = null;
+    private JassStrategy jassStrategy = new JassTheRipperJassStrategy();
     private List<Player> playersInPlayingOrder = asList(
-            new Player("Player 1"),
-            new Player("Player 2"),
-            new Player("Player 3"),
-            new Player("Player 4")
+            new Player("Player 1", jassStrategy),
+            new Player("Player 2", jassStrategy),
+            new Player("Player 3", jassStrategy),
+            new Player("Player 4", jassStrategy)
     );
     private List<Team> teams = asList(
             new Team("Team 1", asList(playersInPlayingOrder.get(0), playersInPlayingOrder.get(2))),
@@ -37,6 +40,12 @@ public class GameSessionBuilder {
 
     public GameSession createGameSession() {
         final GameSession gameSession = new GameSession(teams, playersInPlayingOrder);
+        for(int i = 0; i < 4; i++) {
+        	Player player = playersInPlayingOrder.get(i);
+			playersInPlayingOrder.get(i).setSeatId(i);
+        	player.setSeatId(i);
+        	player.setId(i+"");
+		}
         if(startedGameMode != null) {
             gameSession.startNewGame(startedGameMode, false);
             for(Card card : playedCards) {

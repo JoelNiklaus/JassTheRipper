@@ -36,4 +36,13 @@ public class PlayingOrder implements Serializable {
     private int getBoundIndex(int playerPosition) {
         return (this.startingPlayer + playerPosition) % playersInInitialPlayingOrder.size();
     }
+
+    @Override
+    public String toString() {
+        return "PlayingOrder{" +
+                "playersInInitialPlayingOrder=" + playersInInitialPlayingOrder +
+                ", startingPlayer=" + startingPlayer +
+                ", currentPlayer=" + currentPlayer +
+                '}';
+    }
 }
