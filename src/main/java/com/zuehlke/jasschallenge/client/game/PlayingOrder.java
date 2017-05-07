@@ -1,8 +1,9 @@
 package com.zuehlke.jasschallenge.client.game;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PlayingOrder {
+public class PlayingOrder implements Serializable {
 
     private final List<Player> playersInInitialPlayingOrder;
     private final int startingPlayer;

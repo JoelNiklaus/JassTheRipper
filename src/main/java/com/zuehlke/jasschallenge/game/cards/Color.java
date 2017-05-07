@@ -1,6 +1,8 @@
 package com.zuehlke.jasschallenge.game.cards;
 
-public enum Color {
+import java.io.Serializable;
+
+public enum Color implements Serializable {
     HEARTS("(H)"),
     DIAMONDS("(D)"),
     CLUBS("(C)"),

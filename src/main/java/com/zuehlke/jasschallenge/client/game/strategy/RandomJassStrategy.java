@@ -6,9 +6,10 @@ import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class RandomJassStrategy implements JassStrategy {
+public class RandomJassStrategy implements JassStrategy, Serializable {
     @Override
     public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
         final List<Mode> allPossibleModes = Mode.standardModes();

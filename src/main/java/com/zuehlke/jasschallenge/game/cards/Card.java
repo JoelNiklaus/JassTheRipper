@@ -1,6 +1,8 @@
 package com.zuehlke.jasschallenge.game.cards;
 
-public enum Card {
+import java.io.Serializable;
+
+public enum Card implements Serializable {
     HEART_SIX(Color.HEARTS, CardValue.SIX),
     HEART_SEVEN(Color.HEARTS, CardValue.SEVEN),
     HEART_EIGHT(Color.HEARTS, CardValue.EIGHT),

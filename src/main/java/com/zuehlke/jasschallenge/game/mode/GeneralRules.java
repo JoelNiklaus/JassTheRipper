@@ -3,13 +3,14 @@ package com.zuehlke.jasschallenge.game.mode;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-class GeneralRules {
+class GeneralRules implements Serializable {
 
     private static final int LAST_ROUND_BONUS = 5;
 

@@ -2,70 +2,86 @@ package com.zuehlke.jasschallenge.client.game;
 
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
+import java.io.Serializable;
 import java.util.List;
 
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrder;
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
 
-public class GameSession {
+public class GameSession implements Serializable {
 
-    private final List<Team> teams;
-    private final List<Player> playersInPlayingOrder;
-    private final PlayingOrder gameStartingPlayerOrder;
-    private Game currentGame;
-    private final Result result;
+	private final List<Team> teams;
+	private final List<Player> playersInPlayingOrder;
+	private final PlayingOrder gameStartingPlayerOrder;
+	private Game currentGame;
+	private final Result result;
 
-    public GameSession(List<Team> teams, List<Player> playersInPlayingOrder) {
-        this.teams = teams;
+	public GameSession(List<Team> teams, List<Player> playersInPlayingOrder) {
+		this.teams = teams;
 
-        this.playersInPlayingOrder = playersInPlayingOrder;
-        this.gameStartingPlayerOrder = createOrder(playersInPlayingOrder);
+		this.playersInPlayingOrder = playersInPlayingOrder;
+		this.gameStartingPlayerOrder = createOrder(playersInPlayingOrder);
 
-        result = new Result(teams.get(0), teams.get(0));
-    }
+		result = new Result(teams.get(0), teams.get(0));
+	}
 
-    public Round getCurrentRound() {
+	public Round getCurrentRound() {
 
-        if(currentGame == null) return null;
+		if (currentGame == null) return null;
 
-        return currentGame.getCurrentRound();
-    }
+		return currentGame.getCurrentRound();
+	}
 
-    public List<Team> getTeams() {
-        return teams;
-    }
+	public List<Team> getTeams() {
+		return teams;
+	}
 
-    public void startNewGame(Mode mode, boolean shifted) {
+	public Team getTeamOfPlayer(Player player) {
+		for (Team team : teams) {
+			if (team.getPlayers().contains(player))
+				return team;
+		}
+		return null;
+	}
 
-        updateResult();
+	public Player getPartnerOfPlayer(Player player) {
+		List<Player> players = getTeamOfPlayer(player).getPlayers();
+		if (players.get(0) == player)
+			return players.get(1);
+		return players.get(0);
+	}
 
-        final PlayingOrder initialOrder = createOrderStartingFromPlayer(playersInPlayingOrder, gameStartingPlayerOrder.getCurrentPlayer());
-        gameStartingPlayerOrder.moveToNextPlayer();
+	public void startNewGame(Mode mode, boolean shifted) {
 
-        currentGame = Game.startGame(mode, initialOrder, teams, shifted);
-    }
+		updateResult();
 
-    public Round startNextRound() {
+		final PlayingOrder initialOrder = createOrderStartingFromPlayer(playersInPlayingOrder, gameStartingPlayerOrder.getCurrentPlayer());
+		gameStartingPlayerOrder.moveToNextPlayer();
 
-        return currentGame.startNextRound();
-    }
+		currentGame = Game.startGame(mode, initialOrder, teams, shifted);
+	}
 
-    public void makeMove(Move move) {
+	public Round startNextRound() {
 
-        currentGame.makeMove(move);
-    }
+		return currentGame.startNextRound();
+	}
 
-    public Game getCurrentGame() {
-        return currentGame;
-    }
+	public void makeMove(Move move) {
 
-    public Result getResult() {
-        return result;
-    }
+		currentGame.makeMove(move);
+	}
 
-    private void updateResult() {
-        if(currentGame == null) return;
+	public Game getCurrentGame() {
+		return currentGame;
+	}
 
-        result.add(currentGame.getResult());
-    }
+	public Result getResult() {
+		return result;
+	}
+
+	private void updateResult() {
+		if (currentGame == null) return;
+
+		result.add(currentGame.getResult());
+	}
 }

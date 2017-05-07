@@ -1,72 +1,99 @@
 package com.zuehlke.jasschallenge.client.game;
 
+import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
 
-public class Game {
-    public static final int LAST_ROUND_NUMBER = 8;
-    private final Mode mode;
-    private final PlayingOrder order;
-    private Round currentRound;
-    private final Result result;
-    private final boolean shifted;
+public class Game implements Serializable {
+	public static final int LAST_ROUND_NUMBER = 8;
+	private final Mode mode;
+	private final PlayingOrder order;
+	private Round currentRound;
+	private final Result result;
+	private final boolean shifted;
 
-    private Game(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
-        this.mode = mode;
-        this.order = order;
+	private List<Round> previousRounds = new ArrayList<>();
 
-        this.currentRound = Round.createRound(mode, 0, order);
-        this.result = new Result(teams.get(0), teams.get(1));
-        this.shifted = shifted;
-    }
+	private Game(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
+		this.mode = mode;
+		this.order = order;
 
-    public static Game startGame(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
+		this.currentRound = Round.createRound(mode, 0, order);
+		this.result = new Result(teams.get(0), teams.get(1));
+		this.shifted = shifted;
+	}
 
-        return new Game(mode, order, teams, shifted);
-    }
+	public static Game startGame(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
 
-    public Round getCurrentRound() {
-        return currentRound;
-    }
+		return new Game(mode, order, teams, shifted);
+	}
 
-    public Result getResult() {
-        return result;
-    }
+	public Round getCurrentRound() {
+		return currentRound;
+	}
 
-    public Round startNextRound() {
-        updateRoundResult();
-        if(currentRound.isLastRound() && result.isMatch()) {
-            result.updateWinningTeamScore(calculateMatchBonus());
-        }
-        this.currentRound = createNextRound();
-        return currentRound;
-    }
+	public Result getResult() {
+		return result;
+	}
 
-    public void makeMove(Move move) {
-        getCurrentRound().makeMove(move);
-    }
+	public Round startNextRound() {
+		updateRoundResult();
+		previousRounds.add(getCurrentRound());
+		if (currentRound.isLastRound() && result.isMatch()) {
+			result.updateWinningTeamScore(calculateMatchBonus());
+		}
+		this.currentRound = createNextRound();
+		return currentRound;
+	}
 
-    private int calculateMatchBonus() {
-        return currentRound.getMode().getFactor() * 100;
-    }
+	public List<Round> getPreviousRounds() {
+		return previousRounds;
+	}
 
-    private void updateRoundResult() {
-        final int lastScore = this.currentRound.calculateScore();
-        final Player winner = this.currentRound.getWinner();
+	public Set<Card> getAlreadyPlayedCards() {
+		Set<Card> cards = currentRound.getPlayedCards();
+		for(Round round : previousRounds) {
+			cards.addAll(round.getPlayedCards());
+		}
+		return cards;
+	}
 
-        result.updateTeamScore(winner, lastScore);
-    }
+	public boolean gameFinished() {
+		return currentRound.isLastRound() && currentRound.numberOfPlayedCards() == 4;
+	}
 
-    private Round createNextRound() {
-        final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(order.getPlayerInOrder(), currentRound.getWinner());
-        final int nextRoundNumber = currentRound.getRoundNumber() + 1;
-        return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
-    }
+	public Player getCurrentPlayer() {
+		return currentRound.getCurrentPlayer();
+	}
 
-    public boolean isShifted() {
-        return shifted;
-    }
+	public void makeMove(Move move) {
+		getCurrentRound().makeMove(move);
+	}
+
+	private int calculateMatchBonus() {
+		return currentRound.getMode().getFactor() * 100;
+	}
+
+	private void updateRoundResult() {
+		final int lastScore = this.currentRound.calculateScore();
+		final Player winner = this.currentRound.getWinner();
+
+		result.updateTeamScore(winner, lastScore);
+	}
+
+	private Round createNextRound() {
+		final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(order.getPlayerInOrder(), currentRound.getWinner());
+		final int nextRoundNumber = currentRound.getRoundNumber() + 1;
+		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
+	}
+
+	public boolean isShifted() {
+		return shifted;
+	}
 }

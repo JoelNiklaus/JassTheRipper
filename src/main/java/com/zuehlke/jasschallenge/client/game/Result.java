@@ -1,81 +1,84 @@
 package com.zuehlke.jasschallenge.client.game;
 
-public class Result {
-    private final TeamScore teamAScore;
-    private final TeamScore teamBScore;
+import java.io.Serializable;
 
-    public Result(Team teamA, Team teamB) {
-        this.teamAScore = new TeamScore(teamA);
-        this.teamBScore = new TeamScore(teamB);
-    }
+public class Result implements Serializable {
+	private final TeamScore teamAScore;
+	private final TeamScore teamBScore;
 
-    public int getTeamScore(Player player) {
-        return getTeamScoreForPlayer(player).getScore();
-    }
+	public Result(Team teamA, Team teamB) {
+		this.teamAScore = new TeamScore(teamA);
+		this.teamBScore = new TeamScore(teamB);
+	}
 
-    public boolean isMatch() {
+	public int getTeamScore(Player player) {
+		return getTeamScoreForPlayer(player).getScore();
+	}
 
-        return teamAScore.getScore() == 0 || teamBScore.getScore() == 0;
-    }
+	// BUG!!! For match you do not only have to make every point but also every stich!!!
+	public boolean isMatch() {
 
-    void updateWinningTeamScore(int bonusScore) {
+		return teamAScore.getScore() == 0 || teamBScore.getScore() == 0;
+	}
 
-        final Team winningTeam = getWinningTeam();
-        updateTeamScore(winningTeam.getPlayers().get(0), bonusScore);
-    }
+	void updateWinningTeamScore(int bonusScore) {
 
-    void add(Result result) {
-        
-        getScoreForTeam(result.teamAScore.getTeam()).addScore(result.teamAScore.getScore());
-        getScoreForTeam(result.teamBScore.getTeam()).addScore(result.teamBScore.getScore());
-    }
+		final Team winningTeam = getWinningTeam();
+		updateTeamScore(winningTeam.getPlayers().get(0), bonusScore);
+	}
 
-    void updateTeamScore(Player winningPlayer, int lastScore) {
+	void add(Result result) {
 
-        final TeamScore teamScore = getTeamScoreForPlayer(winningPlayer);
-        teamScore.addScore(lastScore);
-    }
+		getScoreForTeam(result.teamAScore.getTeam()).addScore(result.teamAScore.getScore());
+		getScoreForTeam(result.teamBScore.getTeam()).addScore(result.teamBScore.getScore());
+	}
 
-    private TeamScore getScoreForTeam(Team team) {
+	void updateTeamScore(Player winningPlayer, int lastScore) {
 
-        if(team.equals(teamAScore.getTeam())) return teamAScore;
-        else return teamBScore;
-    }
+		final TeamScore teamScore = getTeamScoreForPlayer(winningPlayer);
+		teamScore.addScore(lastScore);
+	}
 
-    private Team getWinningTeam() {
+	private TeamScore getScoreForTeam(Team team) {
 
-        if(teamAScore.getScore() > teamBScore.getScore()) {
-            return teamAScore.getTeam();
-        } else {
-            return teamBScore.getTeam();
-        }
-    }
+		if (team.equals(teamAScore.getTeam())) return teamAScore;
+		else return teamBScore;
+	}
 
-    private TeamScore getTeamScoreForPlayer(Player player) {
+	private Team getWinningTeam() {
 
-        if(teamAScore.getTeam().isTeamOfPlayer(player)) return teamAScore;
-        else return teamBScore;
-    }
+		if (teamAScore.getScore() > teamBScore.getScore()) {
+			return teamAScore.getTeam();
+		} else {
+			return teamBScore.getTeam();
+		}
+	}
 
-    private static class TeamScore {
-        private final Team team;
-        private int score;
+	private TeamScore getTeamScoreForPlayer(Player player) {
 
-        public TeamScore(Team team) {
-            this.team = team;
-            this.score = 0;
-        }
+		if (teamAScore.getTeam().isTeamOfPlayer(player)) return teamAScore;
+		else return teamBScore;
+	}
 
-        void addScore(int score) {
-            this.score += score;
-        }
+	private static class TeamScore implements Serializable {
+		private final Team team;
+		private int score;
 
-        public int getScore() {
-            return score;
-        }
+		public TeamScore(Team team) {
+			this.team = team;
+			this.score = 0;
+		}
 
-        public Team getTeam() {
-            return team;
-        }
-    }
+		void addScore(int score) {
+			this.score += score;
+		}
+
+		public int getScore() {
+			return score;
+		}
+
+		public Team getTeam() {
+			return team;
+		}
+	}
 }

@@ -1,8 +1,10 @@
 package com.zuehlke.jasschallenge.game;
 
-public enum Trumpf {
-    OBEABE,
-    UNDEUFE,
-    TRUMPF,
-    SCHIEBE
+import java.io.Serializable;
+
+public enum Trumpf implements Serializable {
+	OBEABE,
+	UNDEUFE,
+	TRUMPF,
+	SCHIEBE
 }

@@ -6,13 +6,14 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.valueOf;
 
-class TrumpfColorMode extends Mode {
+class TrumpfColorMode extends Mode implements Serializable {
 
     private final Color trumpfColor;
 

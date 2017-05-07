@@ -1,8 +1,9 @@
 package com.zuehlke.jasschallenge.client.game;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Team {
+public class Team implements Serializable {
     private final String teamName;
     private final List<Player> players;
 
