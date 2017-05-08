@@ -62,14 +62,14 @@ public class Game implements Serializable {
 
 	public Set<Card> getAlreadyPlayedCards() {
 		Set<Card> cards = currentRound.getPlayedCards();
-		for(Round round : previousRounds) {
+		for (Round round : previousRounds) {
 			cards.addAll(round.getPlayedCards());
 		}
 		return cards;
 	}
 
 	public boolean gameFinished() {
-		return currentRound.isLastRound() && currentRound.numberOfPlayedCards() == 4;
+		return currentRound.getRoundNumber() == 9;
 	}
 
 	public Player getCurrentPlayer() {
@@ -96,6 +96,8 @@ public class Game implements Serializable {
 		final int nextRoundNumber = currentRound.getRoundNumber() + 1;
 		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
 	}
+
+
 
 	public boolean isShifted() {
 		return shifted;
