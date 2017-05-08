@@ -167,7 +167,7 @@ public class Jass implements Board, Serializable {
 		ArrayList<Move> moves = new ArrayList<>();
 		Player player = game.getCurrentPlayer();
 		//System.out.println(player.getSeatId() + player.toString());
-		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(),game.getCurrentRound(), game.getCurrentRoundMode());
+		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game.getCurrentRound(), game.getCurrentRoundMode());
 		for (Card card : possibleCards) {
 			moves.add(new CardMove(player, card));
 		}
@@ -182,21 +182,28 @@ public class Jass implements Board, Serializable {
 	 */
 	@Override
 	public void makeMove(Move move) {
-		if (game.getCurrentRound().roundFinished())
-			game.startNextRound();
 
-		System.out.println(game.getCurrentRound());
+		// TODO vielleicht ist nicht der gewinner des stichs als nächster dran...
+
+		System.out.println("Before makeMove: " + game.getCurrentRound());
 
 
 		// // TODO wrap in try block!
 		// We can do that because we are only creating CardMoves
 		game.makeMove((CardMove) move);
 
-		// delete Card from available Cards of player making the move
 		Player player = game.getCurrentPlayer();
 		player.makeMove(session);
 
-		System.out.println(game.getCurrentRound());
+		System.out.println("After makeMove: " + game.getCurrentRound());
+
+		if (game.getCurrentRound().roundFinished()) {
+			System.out.println("currentPlayer: " + game.getCurrentRound().getCurrentPlayer());
+			game.startNextRound();
+			System.out.println("next Round started");
+			System.out.println("currentPlayer: " + game.getCurrentRound().getCurrentPlayer());
+
+		}
 	}
 
 	@Override
@@ -217,8 +224,9 @@ public class Jass implements Board, Serializable {
 	@Override
 	public double[] getScore() {
 		double[] score = new double[getQuantityOfPlayers()];
+		Round round = game.getCurrentRound();
 		for (int i = 0; i < 4; i++)
-			score[i] = game.getResult().getTeamScore(game.getCurrentPlayer());
+			score[round.getWinner().getSeatId()] = round.calculateScore();
 		return score;
 	}
 
