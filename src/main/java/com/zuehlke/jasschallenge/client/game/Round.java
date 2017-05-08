@@ -70,7 +70,7 @@ public class Round implements Serializable {
 	}
 
 	public boolean roundFinished() {
-		return numberOfPlayedCards() == 4;
+		return getMoves().size() == 4;
 	}
 
 	public int numberOfPlayedCards() {
