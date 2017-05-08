@@ -152,8 +152,13 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		}
 		*/
 
-		//return MCTSHelper.getCard(availableCards, session);
-
+		/*
+		try {
+			return MCTSHelper.getCard(availableCards, session);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		*/
 
 		return possibleCards.stream()
 				.findAny()

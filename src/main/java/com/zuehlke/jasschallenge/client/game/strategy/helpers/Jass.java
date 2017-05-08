@@ -30,6 +30,14 @@ public class Jass implements Board, Serializable {
 
 	private List<Set<Card>> cardsOfPlayers = new ArrayList<>();
 
+	/**
+	 * Private (!) Constructor used for duplicate method
+	 *
+	 * @param availableCards
+	 * @param session
+	 * @param cardsOfPlayers
+	 * @throws Exception
+	 */
 	private Jass(Set<Card> availableCards, GameSession session, List<Set<Card>> cardsOfPlayers) throws Exception {
 		this.originalSession = (GameSession) ObjectCloner.deepCopy(session); // Not to be changed ever! Needed for duplicate method
 		this.originalAvailableCards = (Set<Card>) ObjectCloner.deepCopy(availableCards); // Not to be changed ever! Needed for duplicate method
@@ -42,6 +50,7 @@ public class Jass implements Board, Serializable {
 
 	/**
 	 * Public factory method which should be used from the outside to create an instance of Jass
+	 *
 	 * @param availableCards
 	 * @param session
 	 * @return
@@ -53,7 +62,9 @@ public class Jass implements Board, Serializable {
 		return jass;
 	}
 
-	// add randomized available Cards for the other players based on already played cards
+	/**
+	 * add randomized available Cards for the other players based on already played cards
+	 */
 	private void distributeCardsForPlayers() {
 		// init cardsOfPlayers
 		for (int i = 0; i < 4; i++)
@@ -204,10 +215,9 @@ public class Jass implements Board, Serializable {
 
 	@Override
 	public double[] getScore() {
-		double[] score = new double[2];
-		Player player = game.getCurrentPlayer();
-		score[player.getSeatId() % 2] = game.getResult().getTeamScore(player);
-		score[(player.getSeatId() + 1) % 2] = game.getResult().getOpponentTeamScore(player);
+		double[] score = new double[getQuantityOfPlayers()];
+		for (int i = 0; i < 4; i++)
+			score[i] = game.getResult().getTeamScore(game.getCurrentPlayer());
 		return score;
 	}
 
@@ -218,7 +228,7 @@ public class Jass implements Board, Serializable {
 	 */
 	public double[] getMoveWeights() {
 		// TODO give high weights for good choices and low weights for bad choices. So in random choosing of moves good moves are favoured.
-		return null;
+		return new double[game.getCurrentPlayer().getCards().size()];
 	}
 
 	@Override
