@@ -30,6 +30,8 @@ public class MCTSHelper {
 		}
 
 		Move move = mcts.runMCTS(jass, 10, false);
+
+
 		return ((CardMove) move).getPlayedCard();
 	}
 

@@ -1,5 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main;
 
+import weka.core.Debug;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -18,7 +20,10 @@ public class MCTS {
 	private HeuristicFunction heuristic;
 
 	public MCTS() {
-		random = new Random();
+		// TODO change in production mode
+		//random = new Random();
+		random = new Debug.Random();
+		random.setSeed(3);
 	}
 
 	/**
@@ -36,7 +41,8 @@ public class MCTS {
 		long startTime = System.nanoTime();
 
 		for (int i = 0; i < runs; i++) {
-			select(startingBoard.duplicate(), rootNode);
+			// Start new path from root node
+			select(startingBoard, rootNode);
 		}
 
 		long endTime = System.nanoTime();
@@ -79,6 +85,7 @@ public class MCTS {
 	 *
 	 */
 	private BoardNodePair treePolicy(Board b, Node node) {
+		b = b.duplicate();
 		while (!b.gameOver()) {
 			if (node.player >= 0) { // this is a regular node
 				if (node.unvisitedChildren == null) {

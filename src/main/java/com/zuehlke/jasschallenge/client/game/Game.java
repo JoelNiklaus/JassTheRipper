@@ -42,6 +42,10 @@ public class Game implements Serializable {
 		return result;
 	}
 
+	public Mode getCurrentRoundMode() {
+		return getCurrentRound().getMode();
+	}
+
 	public Round startNextRound() {
 		updateRoundResult();
 		previousRounds.add(getCurrentRound());

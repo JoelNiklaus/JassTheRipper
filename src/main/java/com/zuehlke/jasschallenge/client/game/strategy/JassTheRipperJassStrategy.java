@@ -152,6 +152,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		}
 		*/
 
+		// TODO wenn runtime exception gefangen zufällige Karte zurückgeben
 		/*
 		try {
 			return MCTSHelper.getCard(availableCards, session);

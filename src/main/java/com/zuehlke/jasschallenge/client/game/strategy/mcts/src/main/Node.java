@@ -23,7 +23,7 @@ public class Node {
 	 * @param b
 	 */
 	public Node(Board b) {
-		children = new ArrayList<Node>();
+		children = new ArrayList<>();
 		player = b.getCurrentPlayer();
 		score = new double[b.getQuantityOfPlayers()];
 		pess = new double[b.getQuantityOfPlayers()];
@@ -87,7 +87,7 @@ public class Node {
 	 */
 	public void expandNode(Board currentBoard) {
 		ArrayList<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
-		unvisitedChildren = new ArrayList<Node>();
+		unvisitedChildren = new ArrayList<>();
 		for (int i = 0; i < legalMoves.size(); i++) {
 			Node tempState = new Node(currentBoard, legalMoves.get(i), this);
 			unvisitedChildren.add(tempState);
