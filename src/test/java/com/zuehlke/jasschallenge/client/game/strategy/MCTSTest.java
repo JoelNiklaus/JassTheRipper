@@ -1,8 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
-import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.GameSessionBuilder;
+import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -19,10 +17,58 @@ import java.util.Set;
 public class MCTSTest {
 
 	@Test
-	public void testMCTS() throws Exception {
+	public void testMCTSStart() throws Exception {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
+
+		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
+
+		MCTSHelper.getCard(cards, gameSession);
+
+	}
+
+	// TODO spätere runden testen
+	// TODO andere trümpfe testen
+
+	@Test
+	public void testMCTSDuringFirstRound() throws Exception {
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.bottomUp())
+				.createGameSession();
+
+		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
+
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
+
+		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
+
+		MCTSHelper.getCard(cards, gameSession);
+
+	}
+
+	@Test
+	public void testMCTSDuringSecondRound() throws Exception {
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.bottomUp())
+				.createGameSession();
+
+		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
+
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
+		order.moveToNextPlayer();
+		Player player = order.getCurrentPlayer();
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_EIGHT));
+		order.moveToNextPlayer();
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_KING));
+		order.moveToNextPlayer();
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_ACE));
+		order.moveToNextPlayer();
+
+		gameSession.startNextRound();
+
+		gameSession.makeMove(new Move(player, Card.HEART_ACE));
+
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
