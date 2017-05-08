@@ -164,10 +164,11 @@ public class Jass implements Board, Serializable {
 
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
-		ArrayList<Move> moves = new ArrayList<Move>();
+		ArrayList<Move> moves = new ArrayList<>();
 		Player player = game.getCurrentPlayer();
 		//System.out.println(player.getSeatId() + player.toString());
-		for (Card card : player.getCards()) {
+		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(),game.getCurrentRound(), game.getCurrentRoundMode());
+		for (Card card : possibleCards) {
 			moves.add(new CardMove(player, card));
 		}
 		return moves;
