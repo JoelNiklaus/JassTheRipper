@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
  */
 public class Jass implements Board, Serializable {
 
-	private final GameSession originalSession;
-	private final Set<Card> originalAvailableCards;
+	//private final GameSession originalSession;
+	//private final Set<Card> originalAvailableCards;
 
 	private final GameSession session;
 	private final Game game;
@@ -39,13 +39,13 @@ public class Jass implements Board, Serializable {
 	 * @throws Exception
 	 */
 	private Jass(Set<Card> availableCards, GameSession session, List<Set<Card>> cardsOfPlayers) throws Exception {
-		this.originalSession = (GameSession) ObjectCloner.deepCopy(session); // Not to be changed ever! Needed for duplicate method
-		this.originalAvailableCards = (Set<Card>) ObjectCloner.deepCopy(availableCards); // Not to be changed ever! Needed for duplicate method
-		this.session = session;
-		this.game = session.getCurrentGame();
+		//this.originalSession = (GameSession) ObjectCloner.deepCopy(session); // Not to be changed ever! Needed for duplicate method
+		//this.originalAvailableCards = (Set<Card>) ObjectCloner.deepCopy(availableCards); // Not to be changed ever! Needed for duplicate method
+		this.availableCards = (Set<Card>) ObjectCloner.deepCopy(availableCards);
+		this.session = (GameSession) ObjectCloner.deepCopy(session);
+		this.cardsOfPlayers = (List<Set<Card>>) ObjectCloner.deepCopy(cardsOfPlayers);
+		this.game = this.session.getCurrentGame();
 		this.playerId = game.getCurrentPlayer().getSeatId();
-		this.availableCards = availableCards;
-		this.cardsOfPlayers = cardsOfPlayers;
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class Jass implements Board, Serializable {
 	}
 
 	/**
-	 * Reconstruct original Game but add known random cards for players.
+	 * Reconstruct Game but add known random cards for players.
 	 *
 	 * @return
 	 */
@@ -149,12 +149,12 @@ public class Jass implements Board, Serializable {
 	public Board duplicate() {
 		Jass jass = null;
 		try {
-			jass = new Jass(originalAvailableCards, originalSession, cardsOfPlayers);
+			jass = new Jass(availableCards, session, cardsOfPlayers);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		for (int i = 0; i < 4; i++) {
-			System.out.println("cardsOfPlayers" + cardsOfPlayers.get(i));
+			//System.out.println("cardsOfPlayers" + cardsOfPlayers.get(i));
 
 			jass.getGame().getCurrentPlayer().setCards(jass.getCardsOfPlayers().get(i));
 			jass.getGame().getCurrentRound().getPlayingOrder().moveToNextPlayer();
