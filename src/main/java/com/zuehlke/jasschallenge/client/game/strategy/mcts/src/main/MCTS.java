@@ -47,12 +47,14 @@ public class MCTS {
 
 		long endTime = System.nanoTime();
 
+		Move move = finalMoveSelection(rootNode);
+
 		if (this.trackTime) {
-			System.out.println("Making choice for player: " + rootNode.player + " -> " + rootNode);
+			System.out.println("Making choice for player: " + rootNode.player + " -> " + move);
 			System.out.println("Thinking time per move: " + (endTime - startTime) / 1000000 + "ms");
 		}
 
-		return finalMoveSelection(rootNode);
+		return move;
 	}
 
 	/**

@@ -9,12 +9,14 @@ import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import weka.Run;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
 
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		Mode trumpf = predictTrumpf(availableCards);
 
 		// Knowledge Version
+		/*
 		System.out.println("ChooseTrumpf!");
 		System.out.println(availableCards.toArray()[0].toString());
 		int max = 0;
@@ -77,6 +80,16 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		if (max < max_schift_rating_val)
 			return Mode.shift();
 		return prospectiveMode;
+		*/
+		return getRandomTrumpf(isGschobe);
+	}
+
+	private Mode getRandomTrumpf(boolean isGschobe) {
+		final List<Mode> allPossibleModes = Mode.standardModes();
+		if (!isGschobe) {
+			allPossibleModes.add(Mode.shift());
+		}
+		return allPossibleModes.get(new Random().nextInt(allPossibleModes.size()));
 	}
 
 	private Mode predictTrumpf(Set<Card> availableCards) {
@@ -153,18 +166,22 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		*/
 
 		// TODO wenn runtime exception gefangen zufällige Karte zurückgeben
-		/*
+
 		try {
 			return MCTSHelper.getCard(availableCards, session);
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			return getRandomCard(possibleCards);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return getRandomCard(possibleCards);
 		}
-		*/
+	}
 
+	private Card getRandomCard(Set<Card> possibleCards) {
 		return possibleCards.stream()
 				.findAny()
 				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
-
 	}
 
 
