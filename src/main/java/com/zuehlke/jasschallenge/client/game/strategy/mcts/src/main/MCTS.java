@@ -233,7 +233,7 @@ public class MCTS {
 		// Start playing random moves until the game is over
 		while (!brd.gameOver()) {
 			moves = brd.getMoves(CallLocation.treePolicy);
-			if (brd.getCurrentPlayer() >= 0) {
+			if (brd.getCurrentPlayer() >= 0 && moves.size() > 0) {
 				// make random selection normally
 				mv = moves.get(random.nextInt(moves.size()));
 			} else {

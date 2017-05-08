@@ -19,7 +19,7 @@ import java.util.Set;
 public class MCTSTest {
 
 	@Test
-	public void testMCTS() {
+	public void testMCTS() throws Exception {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
