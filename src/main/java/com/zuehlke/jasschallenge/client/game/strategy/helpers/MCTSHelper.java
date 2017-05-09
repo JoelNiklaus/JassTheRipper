@@ -20,16 +20,18 @@ public class MCTSHelper {
 		mcts.setPessimisticBias(0);
 		mcts.setTimeDisplay(true);
 
-		Jass jass = null;
+		JassBoard jass = null;
 		try {
-			jass = Jass.jassFactory(availableCards, session);
+			jass = JassBoard.jassFactory(availableCards, session);
 		} catch (Exception e) {
 			System.err.println("Could not clone session or cards");
 			e.printStackTrace();
 			throw(e);
 		}
 
-		Move move = mcts.runMCTS(jass, 10, false);
+
+		// TODO Nach 490 ms abbrechen
+		Move move = mcts.runMCTS(jass, false, 400);
 
 
 		return ((CardMove) move).getPlayedCard();

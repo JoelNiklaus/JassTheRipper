@@ -30,20 +30,23 @@ public class MCTS {
 	 * Run a UCT-MCTS simulation for a number of iterations.
 	 *
 	 * @param startingBoard starting board
-	 * @param runs          how many iterations to think
+	 * @param maxTime       how much time (in ms) to think
 	 * @param bounds        enable or disable score bounds.
 	 * @return
 	 */
-	public Move runMCTS(Board startingBoard, int runs, boolean bounds) {
+	public Move runMCTS(Board startingBoard, boolean bounds, long maxTime) {
 		scoreBounds = bounds;
 		rootNode = new Node(startingBoard);
+		int runCounter = 0;
 
 		long startTime = System.nanoTime();
 
-		for (int i = 0; i < runs; i++) {
+		while ((System.nanoTime() - startTime) / 1000000 < maxTime) {
 			// Start new path from root node
 			select(startingBoard, rootNode);
+			runCounter++;
 		}
+
 
 		long endTime = System.nanoTime();
 
@@ -51,7 +54,7 @@ public class MCTS {
 
 		if (this.trackTime) {
 			System.out.println("Making choice for player: " + rootNode.player + " -> " + move);
-			System.out.println("Thinking time per move: " + (endTime - startTime) / 1000000 + "ms");
+			System.out.println("Thinking time per move: " + (endTime - startTime) / 1000000 + "ms having run " + runCounter + " times");
 		}
 
 		return move;
@@ -97,7 +100,7 @@ public class MCTS {
 				if (!node.unvisitedChildren.isEmpty()) {
 					Node temp = node.unvisitedChildren.remove(random.nextInt(node.unvisitedChildren.size()));
 					node.children.add(temp);
-					System.out.println("treePolicy"+temp.move);
+					System.out.println("treePolicy" + temp.move);
 					b.makeMove(temp.move);
 					return new BoardNodePair(b, temp);
 				} else {
@@ -114,7 +117,7 @@ public class MCTS {
 
 					Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
 					node = finalNode;
-					System.out.println("treePolicy"+node.move);
+					System.out.println("treePolicy" + node.move);
 					b.makeMove(finalNode.move);
 				}
 			} else { // this is a random node
@@ -141,7 +144,7 @@ public class MCTS {
 
 				Node selectedNode = node.children.get(node.randomSelect(b));
 				node = selectedNode;
-				System.out.println("treePolicy"+node.move);
+				System.out.println("treePolicy" + node.move);
 				b.makeMove(selectedNode.move);
 			}
 		}
@@ -258,7 +261,7 @@ public class MCTS {
 				mv = getRandomMove(brd, moves);
 			}
 
-			System.out.println("playout"+mv);
+			System.out.println("playout" + mv);
 			brd.makeMove(mv);
 		}
 

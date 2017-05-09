@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Created by joelniklaus on 06.05.17.
  */
-public class Jass implements Board, Serializable {
+public class JassBoard implements Board, Serializable {
 
 	//private final GameSession originalSession;
 	//private final Set<Card> originalAvailableCards;
@@ -38,7 +38,7 @@ public class Jass implements Board, Serializable {
 	 * @param session
 	 * @throws Exception
 	 */
-	private Jass(GameSession session, PlayingOrder playingOrder) throws Exception {
+	private JassBoard(GameSession session, PlayingOrder playingOrder) throws Exception {
 		//this.originalSession = (GameSession) ObjectCloner.deepCopy(session); // Not to be changed ever! Needed for duplicate method
 		//this.originalAvailableCards = (Set<Card>) ObjectCloner.deepCopy(availableCards); // Not to be changed ever! Needed for duplicate method
 		//this.availableCards = (Set<Card>) ObjectCloner.deepCopy(availableCards);
@@ -89,8 +89,8 @@ public class Jass implements Board, Serializable {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Jass jassFactory(Set<Card> availableCards, GameSession session) throws Exception {
-		Jass jass = new Jass(session, session.getCurrentRound().getPlayingOrder());
+	public static JassBoard jassFactory(Set<Card> availableCards, GameSession session) throws Exception {
+		JassBoard jass = new JassBoard(session, session.getCurrentRound().getPlayingOrder());
 		jass.distributeCardsForPlayers((Set<Card>) ObjectCloner.deepCopy(availableCards));
 		return jass;
 	}
@@ -110,7 +110,7 @@ public class Jass implements Board, Serializable {
 		double numberOfCardsToAdd = remainingCards.size() / 3.0; // rounds down the number
 
 
-		System.out.println(numberOfCardsToAdd);
+		//System.out.println(numberOfCardsToAdd);
 
 		for (Player player : order.getPlayerInOrder()) {
 			int tempPlayerId = player.getSeatId();
@@ -175,9 +175,9 @@ public class Jass implements Board, Serializable {
 	 */
 	@Override
 	public Board duplicate() {
-		Jass jass = null;
+		JassBoard jass = null;
 		try {
-			jass = new Jass(session, game.getCurrentRound().getPlayingOrder());
+			jass = new JassBoard(session, game.getCurrentRound().getPlayingOrder());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -186,6 +186,7 @@ public class Jass implements Board, Serializable {
 
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
+		// TODO exclude very bad moves
 		ArrayList<Move> moves = new ArrayList<>();
 		Player player = game.getCurrentPlayer();
 		//System.out.println(player.getSeatId() + player.toString());
@@ -229,11 +230,12 @@ public class Jass implements Board, Serializable {
 			Round round = game.getCurrentRound();
 
 
+			/*
 			for (Player current : round.getPlayingOrder().getPlayerInOrder()) {
 				System.out.println("NumberOfCards " + current.getCards().size() + " of current: " +current.getSeatId() + current);
 				//assert current.getCards().size() == 9 - round.getRoundNumber();
 			}
-
+			*/
 
 			game.startNextRound();
 
@@ -241,7 +243,7 @@ public class Jass implements Board, Serializable {
 			//System.out.println("currentPlayer: " + game.getCurrentRound().getCurrentPlayer());
 			round = game.getCurrentRound();
 
-			System.out.println("next Round started: " + round.getRoundNumber());
+			//System.out.println("next Round started: " + round.getRoundNumber());
 
 
 			for (Player current : round.getPlayingOrder().getPlayerInOrder()) {
