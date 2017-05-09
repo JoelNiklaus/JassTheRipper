@@ -13,6 +13,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import weka.Run;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
+import weka.core.SystemInfo;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -151,6 +152,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
+		long startTime = System.nanoTime();
 		final Game currentGame = session.getCurrentGame();
 		final Round round = currentGame.getCurrentRound();
 		final Mode gameMode = round.getMode();
@@ -159,7 +161,6 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		final Player partner = session.getPartnerOfPlayer(player);
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, round, gameMode);
 		final Set<Card> alreadyPlayedCards = currentGame.getAlreadyPlayedCards();
-
 
 
 		/* stechen wenn letzter spieler und stich gehört gegner
@@ -173,15 +174,23 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		Card card;
 		try {
 			card = MCTSHelper.getCard(availableCards, currentGame);
-			if (!possibleCards.contains(card))
+			if (!possibleCards.contains(card)) {
 				card = getRandomCard(possibleCards);
+				System.out.println("Chose random Card, Damn it!");
+			} else
+				System.out.println("Chose Card based on MCTS, Hurra!");
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			card = getRandomCard(possibleCards);
+			System.out.println("Chose random Card, Damn it!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			card = getRandomCard(possibleCards);
+			System.out.println("Chose random Card, Damn it!");
 		}
+		
+		long endTime = (System.nanoTime() - startTime) / 1000000;
+		System.out.println("Total time for move:" + endTime);
 		return card;
 	}
 

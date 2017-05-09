@@ -31,7 +31,9 @@ public class MCTSHelper {
 		}
 
 
-		// TODO Nach 490 ms abbrechen
+		// TODO Nach 480 ms abbrechen
+		int maxComputationTime = 480;
+
 		Move move = mcts.runMCTS(jass, false, 400);
 
 

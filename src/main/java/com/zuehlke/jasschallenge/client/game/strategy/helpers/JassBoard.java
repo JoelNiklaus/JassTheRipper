@@ -143,11 +143,14 @@ public class JassBoard implements Board, Serializable {
 	public void makeMove(Move move) {
 		Player player = game.getCurrentPlayer();
 
+		CardMove cardMove = (CardMove) move;
+		System.out.println(cardMove);
+
 		assert ((CardMove) move).getPlayer().equals(player);
-		player.getCards().remove(((CardMove) move).getPlayedCard());
+		player.getCards().remove((cardMove).getPlayedCard());
 		// // TODO wrap in try block!
 		// We can do that because we are only creating CardMoves
-		game.makeMove((CardMove) move);
+		game.makeMove(cardMove);
 
 
 		if (game.getCurrentRound().roundFinished()) {
