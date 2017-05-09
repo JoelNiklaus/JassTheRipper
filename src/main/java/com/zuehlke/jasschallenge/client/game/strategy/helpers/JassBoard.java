@@ -5,13 +5,11 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import com.zuehlke.jasschallenge.game.mode.Mode;
-import com.zuehlke.jasschallenge.messages.PlayerJoined;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.*;
-import java.lang.management.GarbageCollectorMXBean;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 
 /**
@@ -30,7 +28,8 @@ public class JassBoard implements Board, Serializable {
 	 * @throws Exception
 	 */
 	private JassBoard(GameSession session) throws Exception {
-		this.session = (GameSession) ObjectCloner.deepCopy(session);
+		this.session = SerializationUtils.clone(session);
+		//this.session = (GameSession) ObjectCloner.deepCopy(session);
 		this.game = this.session.getCurrentGame();
 		this.playerId = game.getCurrentPlayer().getSeatId();
 	}
@@ -45,7 +44,8 @@ public class JassBoard implements Board, Serializable {
 	 */
 	public static JassBoard jassFactory(Set<Card> availableCards, GameSession session) throws Exception {
 		JassBoard jassBoard = new JassBoard(session);
-		jassBoard.distributeCardsForPlayers((Set<Card>) ObjectCloner.deepCopy(availableCards));
+		jassBoard.distributeCardsForPlayers(availableCards);
+		//jassBoard.distributeCardsForPlayers((Set<Card>) ObjectCloner.deepCopy(availableCards));
 		return jassBoard;
 	}
 

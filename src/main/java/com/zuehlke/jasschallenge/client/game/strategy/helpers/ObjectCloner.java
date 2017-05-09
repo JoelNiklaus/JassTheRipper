@@ -1,8 +1,8 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
+
 import java.io.*;
-import java.util.*;
-import java.awt.*;
+
 
 /**
  * Created by joelniklaus on 07.05.17.
@@ -13,7 +13,7 @@ public class ObjectCloner {
 	}
 
 	// returns a deep copy of an object
-	static public Object deepCopy(Object oldObj) throws Exception {
+	static public Object deepCopySerialization(Object oldObj) throws Exception {
 		ObjectOutputStream oos = null;
 		ObjectInputStream ois = null;
 		try {
@@ -36,5 +36,4 @@ public class ObjectCloner {
 			ois.close();
 		}
 	}
-
 }

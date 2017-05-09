@@ -23,13 +23,19 @@ dependencies {
     compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.8.0'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
-    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
+    //compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
-    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
+    //compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
+
+    // https://mvnrepository.com/artifact/net.sf.dozer/dozer
+    //compile group: 'net.sf.dozer', name: 'dozer', version: '5.5.1'
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
-    compile group: 'com.google.guava', name: 'guava', version: '21.0'
+    //compile group: 'com.google.guava', name: 'guava', version: '21.0'
 
 
     testCompile 'junit:junit:4.12'
