@@ -11,26 +11,24 @@ import java.io.*;
 import java.util.*;
 
 
-
 /**
  * Created by joelniklaus on 06.05.17.
  */
 public class JassBoard implements Board, Serializable {
 
-	private final GameSession session;
 	private final Game game;
 	private final int playerId;
 
 	/**
 	 * Private (!) Constructor used for duplicate method
 	 *
-	 * @param session
+	 * @param game
 	 * @throws Exception
 	 */
-	private JassBoard(GameSession session) throws Exception {
-		this.session = SerializationUtils.clone(session);
+	private JassBoard(Game game) throws Exception {
+		this.game = SerializationUtils.clone(game);
+		//this.session = (GameSession) DeepCopy.copy(session);
 		//this.session = (GameSession) ObjectCloner.deepCopy(session);
-		this.game = this.session.getCurrentGame();
 		this.playerId = game.getCurrentPlayer().getSeatId();
 	}
 
@@ -38,12 +36,12 @@ public class JassBoard implements Board, Serializable {
 	 * Public factory method which should be used from the outside to create an instance of JassBoard
 	 *
 	 * @param availableCards
-	 * @param session
+	 * @param game
 	 * @return
 	 * @throws Exception
 	 */
-	public static JassBoard jassFactory(Set<Card> availableCards, GameSession session) throws Exception {
-		JassBoard jassBoard = new JassBoard(session);
+	public static JassBoard jassFactory(Set<Card> availableCards, Game game) throws Exception {
+		JassBoard jassBoard = new JassBoard(game);
 		jassBoard.distributeCardsForPlayers(availableCards);
 		//jassBoard.distributeCardsForPlayers((Set<Card>) ObjectCloner.deepCopy(availableCards));
 		return jassBoard;
@@ -116,7 +114,7 @@ public class JassBoard implements Board, Serializable {
 	public Board duplicate() {
 		JassBoard jassBoard = null;
 		try {
-			jassBoard = new JassBoard(session);
+			jassBoard = new JassBoard(game);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

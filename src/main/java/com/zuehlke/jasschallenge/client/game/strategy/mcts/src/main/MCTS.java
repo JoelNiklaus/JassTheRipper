@@ -100,7 +100,7 @@ public class MCTS {
 				if (!node.unvisitedChildren.isEmpty()) {
 					Node temp = node.unvisitedChildren.remove(random.nextInt(node.unvisitedChildren.size()));
 					node.children.add(temp);
-					System.out.println("treePolicy" + temp.move);
+					//System.out.println("treePolicy" + temp.move);
 					b.makeMove(temp.move);
 					return new BoardNodePair(b, temp);
 				} else {
@@ -117,7 +117,7 @@ public class MCTS {
 
 					Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
 					node = finalNode;
-					System.out.println("treePolicy" + node.move);
+					//System.out.println("treePolicy" + node.move);
 					b.makeMove(finalNode.move);
 				}
 			} else { // this is a random node
@@ -144,7 +144,7 @@ public class MCTS {
 
 				Node selectedNode = node.children.get(node.randomSelect(b));
 				node = selectedNode;
-				System.out.println("treePolicy" + node.move);
+				//System.out.println("treePolicy" + node.move);
 				b.makeMove(selectedNode.move);
 			}
 		}
@@ -261,7 +261,7 @@ public class MCTS {
 				mv = getRandomMove(brd, moves);
 			}
 
-			System.out.println("playout" + mv);
+			//System.out.println("playout" + mv);
 			brd.makeMove(mv);
 		}
 

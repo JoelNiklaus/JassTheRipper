@@ -9,6 +9,7 @@ import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.apache.commons.lang3.SerializationUtils;
 import weka.Run;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
@@ -30,6 +31,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 
 
 	public JassTheRipperJassStrategy() {
+		/*
 		mlp = new MultilayerPerceptron();
 		mlp.setLearningRate(0.1);
 		mlp.setMomentum(0.2);
@@ -42,6 +44,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
@@ -57,7 +60,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
 		// Machine Learning Version
-		Mode trumpf = predictTrumpf(availableCards);
+		//Mode trumpf = predictTrumpf(availableCards);
 
 		// Knowledge Version
 		/*
@@ -167,15 +170,19 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 
 		// TODO wenn runtime exception gefangen zufällige Karte zurückgeben
 
+		Card card;
 		try {
-			return MCTSHelper.getCard(availableCards, session);
+			card = MCTSHelper.getCard(availableCards, currentGame);
+			if (!possibleCards.contains(card))
+				card = getRandomCard(possibleCards);
 		} catch (RuntimeException e) {
 			e.printStackTrace();
-			return getRandomCard(possibleCards);
+			card = getRandomCard(possibleCards);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return getRandomCard(possibleCards);
+			card = getRandomCard(possibleCards);
 		}
+		return card;
 	}
 
 	private Card getRandomCard(Set<Card> possibleCards) {
