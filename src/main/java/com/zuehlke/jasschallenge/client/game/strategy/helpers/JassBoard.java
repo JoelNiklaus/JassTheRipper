@@ -144,7 +144,7 @@ public class JassBoard implements Board, Serializable {
 		Player player = game.getCurrentPlayer();
 
 		CardMove cardMove = (CardMove) move;
-		System.out.println(cardMove);
+		System.out.println(game.getCurrentRound());
 
 		assert ((CardMove) move).getPlayer().equals(player);
 		player.getCards().remove((cardMove).getPlayedCard());

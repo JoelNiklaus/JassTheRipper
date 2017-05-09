@@ -169,8 +169,6 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 		}
 		*/
 
-		// TODO wenn runtime exception gefangen zufällige Karte zurückgeben
-
 		Card card;
 		try {
 			card = MCTSHelper.getCard(availableCards, currentGame);
@@ -188,7 +186,7 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 			card = getRandomCard(possibleCards);
 			System.out.println("Chose random Card, Damn it!");
 		}
-		
+
 		long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move:" + endTime);
 		return card;
