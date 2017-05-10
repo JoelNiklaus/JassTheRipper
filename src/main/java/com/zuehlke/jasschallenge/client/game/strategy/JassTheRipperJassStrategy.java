@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 
 // TODO Only ML methods or include Jass Knowledge?
-public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
+public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
 	private final int max_schift_rating_val = 30;
 
 	private Instances train;
@@ -81,16 +81,9 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 			return Mode.shift();
 		return prospectiveMode;
 		*/
-		return getRandomTrumpf(isGschobe);
+		return JassHelper.getRandomMode(isGschobe);
 	}
 
-	private Mode getRandomTrumpf(boolean isGschobe) {
-		final List<Mode> allPossibleModes = Mode.standardModes();
-		if (!isGschobe) {
-			allPossibleModes.add(Mode.shift());
-		}
-		return allPossibleModes.get(new Random().nextInt(allPossibleModes.size()));
-	}
 
 	private Mode predictTrumpf(Set<Card> availableCards) {
 		Instances cards = MLHelper.buildSingleInstanceInstances(train, availableCards);
@@ -149,64 +142,23 @@ public class JassTheRipperJassStrategy implements JassStrategy, Serializable {
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		long startTime = System.nanoTime();
-		final Game currentGame = session.getCurrentGame();
-		final Round round = currentGame.getCurrentRound();
-		final Mode gameMode = round.getMode();
-		final PlayingOrder playingOrder = round.getPlayingOrder();
-		final Player player = playingOrder.getCurrentPlayer();
-		final Player partner = session.getPartnerOfPlayer(player);
-		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, round, gameMode);
-		final Set<Card> alreadyPlayedCards = currentGame.getAlreadyPlayedCards();
+		Game game = session.getCurrentGame();
+		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
-
-		/* stechen wenn letzter spieler und stich gehört gegner
-		if (lastPlayer(round) && round.getWinner()) {
-
-		}
-		*/
-
-		Card card;
+		Card card = JassHelper.getRandomCard(availableCards, game);
 		try {
-			card = MCTSHelper.getCard(availableCards, currentGame);
-			if (!possibleCards.contains(card)) {
-				card = getRandomCard(possibleCards);
-				System.out.println("Chose random Card, Damn it!");
-			} else
+			Card mctsCard = MCTSHelper.getCard(availableCards, game);
+			if (possibleCards.contains(card)) {
 				System.out.println("Chose Card based on MCTS, Hurra!");
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-			card = getRandomCard(possibleCards);
-			System.out.println("Chose random Card, Damn it!");
+				card = mctsCard;
+			} else
+				System.out.println("Chose random Card, Damn it!");
 		} catch (Exception e) {
 			e.printStackTrace();
-			card = getRandomCard(possibleCards);
 			System.out.println("Chose random Card, Damn it!");
 		}
-
 		long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move:" + endTime);
 		return card;
-	}
-
-	private Card getRandomCard(Set<Card> possibleCards) {
-		return possibleCards.stream()
-				.findAny()
-				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
-	}
-
-
-	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen
-	private void mitTrumpfAbstechen() {
-
-	}
-
-	// Wenn letzter Spieler und möglich mit nicht trumpf zu stechen, dann stechen.
-	private void mitNichtTrumpfStechen() {
-
-	}
-
-	// Wenn obeabe oder undeufe: Bei Ausspielen von Partner tiefe Karte (tiefer als 10) von Gegenfarbe verwerfen wenn bei Farbe gut.
-	private void gegenFarbeVerwerfen() {
-
 	}
 }

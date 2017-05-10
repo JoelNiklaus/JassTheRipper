@@ -126,12 +126,34 @@ public class JassBoard implements Board, Serializable {
 	public ArrayList<Move> getMoves(CallLocation location) {
 		ArrayList<Move> moves = new ArrayList<>();
 		Player player = game.getCurrentPlayer();
-		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game.getCurrentRound(), game.getCurrentRoundMode());
+		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game);
 		// TODO exclude very bad moves
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
 
 		return moves;
+	}
+
+
+		/* stechen wenn letzter spieler und stich gehört gegner
+		if (lastPlayer(round) && round.getWinner()) {
+
+		}
+		*/
+
+	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen
+	private void mitTrumpfAbstechen() {
+
+	}
+
+	// Wenn letzter Spieler und möglich mit nicht trumpf zu stechen, dann stechen.
+	private void mitNichtTrumpfStechen() {
+
+	}
+
+	// Wenn obeabe oder undeufe: Bei Ausspielen von Partner tiefe Karte (tiefer als 10) von Gegenfarbe verwerfen wenn bei Farbe gut.
+	private void gegenFarbeVerwerfen() {
+
 	}
 
 
