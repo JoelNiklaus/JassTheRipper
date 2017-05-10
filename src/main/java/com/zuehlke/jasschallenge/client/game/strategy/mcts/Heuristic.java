@@ -1,7 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Board;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.HeuristicFunction;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.Board;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.HeuristicFunction;
 
 /**
  * Created by joelniklaus on 10.05.17.

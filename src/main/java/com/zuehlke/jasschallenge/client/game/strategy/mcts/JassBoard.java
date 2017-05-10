@@ -1,13 +1,13 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Board;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.CallLocation;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.Board;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CallLocation;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.apache.commons.lang3.SerializationUtils;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.*;
 
 

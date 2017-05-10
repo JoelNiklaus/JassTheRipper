@@ -2,7 +2,7 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 
 import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 
 /**

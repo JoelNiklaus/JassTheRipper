@@ -1,7 +1,10 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 
 /**
