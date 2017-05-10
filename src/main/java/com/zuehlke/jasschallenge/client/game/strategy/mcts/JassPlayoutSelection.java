@@ -1,16 +1,14 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.HeuristicFunction;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.PlayoutSelection;
 
 /**
  * Created by joelniklaus on 10.05.17.
  */
-public class Heuristic implements HeuristicFunction {
-
+public class JassPlayoutSelection implements PlayoutSelection {
 	@Override
-	public double h(Board board) {
-		return 0;
-	}
+	public void process(Board board) {
 
+	}
 }
