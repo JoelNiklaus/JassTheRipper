@@ -1,7 +1,5 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main;
 
-import weka.core.Debug;
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -20,10 +18,11 @@ public class MCTS {
 	private HeuristicFunction heuristic;
 
 	public MCTS() {
-		// TODO change in production mode
-		//random = new Random();
-		random = new Debug.Random();
-		random.setSeed(3);
+		// Production Mode
+		random = new Random();
+		// Debug Mode
+		//random = new Debug.Random();
+		//random.setSeed(3);
 	}
 
 	/**
@@ -301,6 +300,7 @@ public class MCTS {
 
 				if (heuristic != null) {
 					tempBest += heuristic.h(b);
+					System.out.println("heuristic function applied: " + heuristic);
 				}
 
 				bestValue = getBestValue(bestValue, bestNodes, s, tempBest);

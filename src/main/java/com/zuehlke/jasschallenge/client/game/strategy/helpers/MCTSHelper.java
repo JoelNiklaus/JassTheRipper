@@ -1,23 +1,33 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.FinalSelectionPolicy;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.MCTS;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.apache.commons.lang3.SerializationUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by joelniklaus on 05.05.17.
  */
 public class MCTSHelper {
 
+	/**
+	 * Runs the MCTS and predicts a Card
+	 *
+	 * @param availableCards
+	 * @param game
+	 * @return
+	 * @throws Exception
+	 */
 	public static Card getCard(Set<Card> availableCards, Game game) throws Exception {
 		MCTS mcts = new MCTS();
 		mcts.setExplorationConstant(1.4);
+		mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
+		mcts.setHeuristicFunction(new Heuristic());
 		mcts.setOptimisticBias(0);
 		mcts.setPessimisticBias(0);
 		mcts.setTimeDisplay(true);
@@ -37,10 +47,19 @@ public class MCTSHelper {
 			}
 			numberOfSelections.put(card, number);
 		}
-		Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.<Card, Integer>comparingByValue()).findFirst().get().getKey();
+		Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
 		return card;
 	}
 
+	/**
+	 *
+	 * @param availableCards
+	 * @param game
+	 * @param mcts
+	 * @param time
+	 * @return
+	 * @throws Exception
+	 */
 	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, int time) throws Exception {
 		long startTime = System.nanoTime();
 		JassBoard jass;

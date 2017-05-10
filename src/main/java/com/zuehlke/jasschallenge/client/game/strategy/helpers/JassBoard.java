@@ -123,10 +123,10 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
-		// TODO exclude very bad moves
 		ArrayList<Move> moves = new ArrayList<>();
 		Player player = game.getCurrentPlayer();
 		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game.getCurrentRound(), game.getCurrentRoundMode());
+		// TODO exclude very bad moves
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
 
@@ -141,15 +141,16 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public void makeMove(Move move) {
-		Player player = game.getCurrentPlayer();
-
+		// We can do that because we are only creating CardMoves
 		CardMove cardMove = (CardMove) move;
+
 		System.out.println(game.getCurrentRound());
 
+		Player player = game.getCurrentPlayer();
 		assert ((CardMove) move).getPlayer().equals(player);
 		player.getCards().remove((cardMove).getPlayedCard());
-		// // TODO wrap in try block!
-		// We can do that because we are only creating CardMoves
+
+		// TODO wrap in try block!
 		game.makeMove(cardMove);
 
 
