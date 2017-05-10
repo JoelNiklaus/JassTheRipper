@@ -6,7 +6,6 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.apache.commons.lang3.SerializationUtils;
-import org.javatuples.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;

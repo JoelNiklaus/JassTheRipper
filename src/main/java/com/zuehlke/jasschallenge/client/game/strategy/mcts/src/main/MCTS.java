@@ -93,6 +93,7 @@ public class MCTS {
 		Board b = brd.duplicate();
 		while (!b.gameOver()) {
 			if (node.player >= 0) { // this is a regular node
+				System.out.println("regular mode");
 				if (node.unvisitedChildren == null) {
 					node.expandNode(b);
 				}
@@ -121,7 +122,7 @@ public class MCTS {
 					b.makeMove(finalNode.move);
 				}
 			} else { // this is a random node
-
+				System.out.println("random mode");
 				// Random nodes are special. We must guarantee that
 				// every random node has a fully populated list of
 				// child nodes and that the list of unvisited children
@@ -192,13 +193,7 @@ public class MCTS {
 			tempBest = s.games;
 			//tempBest += s.opti[n.player] * optimisticBias;
 			//tempBest += s.pess[n.player] * pessimisticBias;
-			if (tempBest > bestValue) {
-				bestNodes.clear();
-				bestNodes.add(s);
-				bestValue = tempBest;
-			} else if (tempBest == bestValue) {
-				bestNodes.add(s);
-			}
+			bestValue = getBestValue(bestValue, bestNodes, s, tempBest);
 		}
 
 		Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
@@ -219,13 +214,7 @@ public class MCTS {
 
 		for (Node s : n.children) {
 			tempBest = s.score[n.player];
-			if (tempBest > bestValue) {
-				bestNodes.clear();
-				bestNodes.add(s);
-				bestValue = tempBest;
-			} else if (tempBest == bestValue) {
-				bestNodes.add(s);
-			}
+			bestValue = getBestValue(bestValue, bestNodes, s, tempBest);
 		}
 
 		Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
@@ -314,19 +303,24 @@ public class MCTS {
 					tempBest += heuristic.h(b);
 				}
 
-				if (tempBest > bestValue) {
-					// If we found a better node
-					bestNodes.clear();
-					bestNodes.add(s);
-					bestValue = tempBest;
-				} else if (tempBest == bestValue) {
-					// If we found an equal node
-					bestNodes.add(s);
-				}
+				bestValue = getBestValue(bestValue, bestNodes, s, tempBest);
 			}
 		}
 
 		return bestNodes;
+	}
+
+	private double getBestValue(double bestValue, ArrayList<Node> bestNodes, Node s, double tempBest) {
+		if (tempBest > bestValue) {
+			// If we found a better node
+			bestNodes.clear();
+			bestNodes.add(s);
+			bestValue = tempBest;
+		} else if (tempBest == bestValue) {
+			// If we found an equal node
+			bestNodes.add(s);
+		}
+		return bestValue;
 	}
 
 	/**
