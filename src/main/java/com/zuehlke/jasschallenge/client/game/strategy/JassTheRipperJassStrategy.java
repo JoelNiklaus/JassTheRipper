@@ -5,15 +5,11 @@ import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfEx
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MLHelper;
-import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
-import org.apache.commons.lang3.SerializationUtils;
-import weka.Run;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
-import weka.core.SystemInfo;
 
 import java.io.Serializable;
 import java.util.Comparator;

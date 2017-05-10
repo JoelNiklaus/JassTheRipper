@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.game.strategy.helpers;
+package com.zuehlke.jasschallenge.client.game.strategy.deepcopy;
 
 
 import java.io.ByteArrayInputStream;

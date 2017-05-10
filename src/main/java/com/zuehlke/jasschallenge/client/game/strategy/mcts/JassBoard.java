@@ -1,9 +1,10 @@
-package com.zuehlke.jasschallenge.client.game.strategy.helpers;
+package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.Board;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.CallLocation;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.apache.commons.lang3.SerializationUtils;
 

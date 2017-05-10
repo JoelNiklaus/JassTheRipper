@@ -1,8 +1,11 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.FinalSelectionPolicy;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.main.MCTS;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.Heuristic;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.FinalSelectionPolicy;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.apache.commons.lang3.SerializationUtils;
 

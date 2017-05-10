@@ -7,7 +7,9 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 public class RandomJassStrategy implements JassStrategy, Serializable {
     @Override

@@ -1,9 +1,9 @@
 package com.zuehlke.jasschallenge.game.mode;
 
 import com.zuehlke.jasschallenge.client.game.Move;
+import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
-import com.zuehlke.jasschallenge.game.Trumpf;
 
 import java.io.Serializable;
 import java.util.Comparator;

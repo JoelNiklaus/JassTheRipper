@@ -1,7 +1,7 @@
 package com.zuehlke.jasschallenge.messages.responses;
 
-import com.zuehlke.jasschallenge.messages.type.RemoteColor;
 import com.zuehlke.jasschallenge.game.Trumpf;
+import com.zuehlke.jasschallenge.messages.type.RemoteColor;
 import com.zuehlke.jasschallenge.messages.type.TrumpfChoice;
 
 public class ChooseTrumpf implements Response {

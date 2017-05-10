@@ -1,17 +1,9 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
-import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
-import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
-import weka.classifiers.Classifier;
-import weka.core.DenseInstance;
-import weka.core.Instances;
-import weka.core.converters.ConverterUtils;
 
 import java.util.Set;
 import java.util.stream.Collectors;
