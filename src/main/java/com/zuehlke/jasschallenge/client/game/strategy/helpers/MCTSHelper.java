@@ -2,8 +2,8 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.Heuristic;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassHeuristic;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.FinalSelectionPolicy;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -23,18 +23,26 @@ public class MCTSHelper {
 	 *
 	 * @param availableCards
 	 * @param game
+	 * @param endingTime
 	 * @return
 	 * @throws Exception
 	 */
-	public static Card getCard(Set<Card> availableCards, Game game) throws Exception {
+	public static Card getCard(Set<Card> availableCards, Game game, long endingTime) throws Exception {
 		MCTS mcts = new MCTS();
 		mcts.setExplorationConstant(1.4);
-		mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
-		mcts.setHeuristicFunction(new Heuristic());
 		mcts.setOptimisticBias(0);
 		mcts.setPessimisticBias(0);
 		mcts.setTimeDisplay(true);
+		//mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
+		mcts.setHeuristicFunction(new JassHeuristic());
+		//mcts.setPlayoutSelection(new JassPlayoutSelection());
+		int threads = Runtime.getRuntime().availableProcessors();
+		System.out.println(threads + " threads");
+		mcts.enableRootParallelisation(threads);
 
+
+		/*
+		Can do multithreading now -> Much faster.
 
 		int maxComputationTime = 440;
 		int numberOfMCTSRuns = 4;
@@ -51,31 +59,20 @@ public class MCTSHelper {
 			numberOfSelections.put(card, number);
 		}
 		Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
-		return card;
+		*/
+
+		return predictCard(availableCards, game, mcts, endingTime);
 	}
 
-	/**
-	 *
-	 * @param availableCards
-	 * @param game
-	 * @param mcts
-	 * @param time
-	 * @return
-	 * @throws Exception
-	 */
-	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, int time) throws Exception {
+
+	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
 		long startTime = System.nanoTime();
-		JassBoard jass;
-		try {
-			jass = JassBoard.jassFactory(availableCards, SerializationUtils.clone(game));
-		} catch (Exception e) {
-			System.err.println("Could not clone session or cards");
-			e.printStackTrace();
-			throw (e);
-		}
+		JassBoard jassBoard = new JassBoard(availableCards, game, true);
 		long cloningTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Cloning time: " + cloningTime + "ms");
-		return ((CardMove) mcts.runMCTS(jass, false, time)).getPlayedCard();
+
+		// old return ((CardMove) mcts.runMCTS(jass, false, time)).getPlayedCard();
+		return ((CardMove) mcts.runMCTS_UCT(jassBoard, endingTime, false)).getPlayedCard();
 	}
 
 }

@@ -13,6 +13,8 @@ public interface Board {
 	 */
 	public Board duplicate();
 
+	Board duplicateWithNewRandomCards();
+
 	/**
 	 * Get a list of all available moves for the current state. MCTS
 	 * calls this to know what actions are possible at that point.

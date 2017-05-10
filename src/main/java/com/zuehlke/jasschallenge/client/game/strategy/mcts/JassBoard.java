@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.DeepCopy;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
@@ -17,35 +18,19 @@ import java.util.*;
  */
 public class JassBoard implements Board, Serializable {
 
+	private final Set<Card> availableCards;
 	private final Game game;
 	private final int playerId;
 
-	/**
-	 * Private (!) Constructor used for duplicate method
-	 *
-	 * @param game
-	 * @throws Exception
-	 */
-	private JassBoard(Game game) throws Exception {
+
+	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) {
+		this.availableCards = (Set<Card>) DeepCopy.copy(availableCards);
 		this.game = SerializationUtils.clone(game);
 		//this.session = (GameSession) DeepCopy.copy(session);
 		//this.session = (GameSession) ObjectCloner.deepCopy(session);
-		this.playerId = game.getCurrentPlayer().getSeatId();
-	}
-
-	/**
-	 * Public factory method which should be used from the outside to create an instance of JassBoard
-	 *
-	 * @param availableCards
-	 * @param game
-	 * @return
-	 * @throws Exception
-	 */
-	public static JassBoard jassFactory(Set<Card> availableCards, Game game) throws Exception {
-		JassBoard jassBoard = new JassBoard(game);
-		jassBoard.distributeCardsForPlayers(availableCards);
-		//jassBoard.distributeCardsForPlayers((Set<Card>) ObjectCloner.deepCopy(availableCards));
-		return jassBoard;
+		this.playerId = this.game.getCurrentPlayer().getSeatId();
+		if (newRandomCards)
+			distributeCardsForPlayers(availableCards);
 	}
 
 	/**
@@ -113,13 +98,12 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public Board duplicate() {
-		JassBoard jassBoard = null;
-		try {
-			jassBoard = new JassBoard(game);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return jassBoard;
+		return new JassBoard(availableCards, game, false);
+	}
+
+	@Override
+	public Board duplicateWithNewRandomCards() {
+		return new JassBoard(availableCards, game, true);
 	}
 
 	@Override
@@ -135,11 +119,11 @@ public class JassBoard implements Board, Serializable {
 	}
 
 
-		/* stechen wenn letzter spieler und stich gehört gegner
-		if (lastPlayer(round) && round.getWinner()) {
+	/* stechen wenn letzter spieler und stich gehört gegner
+	if (lastPlayer(round) && round.getWinner()) {
 
-		}
-		*/
+	}
+	*/
 
 	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen
 	private void mitTrumpfAbstechen() {
@@ -167,10 +151,13 @@ public class JassBoard implements Board, Serializable {
 		// We can do that because we are only creating CardMoves
 		CardMove cardMove = (CardMove) move;
 
-		System.out.println(game.getCurrentRound());
+		//System.out.println(game.getCurrentRound());
 
 		Player player = game.getCurrentPlayer();
-		assert ((CardMove) move).getPlayer().equals(player);
+
+		//System.out.println(player);
+		//System.out.println(cardMove.getPlayer());
+		assert cardMove.getPlayer().equals(player);
 		player.getCards().remove((cardMove).getPlayedCard());
 
 		// TODO wrap in try block!
@@ -211,7 +198,7 @@ public class JassBoard implements Board, Serializable {
 		for (Player player : order.getPlayerInOrder())
 			score[player.getSeatId()] = result.getTeamScore(player);
 
-		System.out.println(Arrays.toString(score));
+		//System.out.println(Arrays.toString(score));
 
 		return score;
 	}

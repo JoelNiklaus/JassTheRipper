@@ -2,9 +2,7 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
-import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Test;
 
@@ -24,7 +22,8 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame());
+		long endingTime = System.nanoTime() + 1000000 * 500;
+		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), endingTime);
 
 	}
 
@@ -43,7 +42,8 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame());
+		long endingTime = System.nanoTime() + 1000000 * 500;
+		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), endingTime);
 
 	}
 
@@ -72,7 +72,8 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame());
+		long endingTime = System.nanoTime() + 1000000 * 500;
+		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), endingTime);
 
 	}
 

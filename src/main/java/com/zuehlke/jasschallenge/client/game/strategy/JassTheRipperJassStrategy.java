@@ -142,23 +142,25 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		long startTime = System.nanoTime();
+		long computationTimeMillis = 450;
+		long endingTime = startTime + 1000000 * computationTimeMillis;
 		Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
 		Card card = JassHelper.getRandomCard(availableCards, game);
 		try {
-			Card mctsCard = MCTSHelper.getCard(availableCards, game);
+			Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime);
 			if (possibleCards.contains(card)) {
 				System.out.println("Chose Card based on MCTS, Hurra!");
 				card = mctsCard;
 			} else
-				System.out.println("Chose random Card, Damn it!");
+				System.out.println("Something went wrong. Had to choose random card, Damn it!");
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("Chose random Card, Damn it!");
+			System.out.println("Something went wrong. Had to choose random card, Damn it!");
 		}
 		long endTime = (System.nanoTime() - startTime) / 1000000;
-		System.out.println("Total time for move:" + endTime);
+		System.out.println("Total time for move: " + endTime + "ms");
 		return card;
 	}
 }
