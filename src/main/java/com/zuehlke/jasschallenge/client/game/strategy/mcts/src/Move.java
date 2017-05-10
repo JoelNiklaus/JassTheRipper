@@ -1,4 +1,4 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
-public interface Move {
+public interface Move extends Comparable<Move> {
 }

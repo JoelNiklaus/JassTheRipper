@@ -13,4 +13,10 @@ public class CardMove extends com.zuehlke.jasschallenge.client.game.Move impleme
 	public CardMove(Player player, Card playedCard) {
 		super(player, playedCard);
 	}
+
+	@Override
+	public int compareTo(Move o) {
+		CardMove other = (CardMove) o;
+		return getPlayedCard().compareTo(other.getPlayedCard());
+	}
 }
