@@ -18,8 +18,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// TODO BAD_MESSAGE überprüfen. Spielt karte statt trump. ???
 
-// TODO Only ML methods or include Jass Knowledge?
+
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
 	private final int max_schift_rating_val = 30;
 
@@ -161,6 +162,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		}
 		long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move: " + endTime + "ms");
+		System.out.println("Played " + card);
 		return card;
 	}
 }

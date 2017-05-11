@@ -36,7 +36,10 @@ public class MCTSHelper {
 		//mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
 		mcts.setHeuristicFunction(new JassHeuristic());
 		//mcts.setPlayoutSelection(new JassPlayoutSelection());
-		int threads = Runtime.getRuntime().availableProcessors();
+
+		// TODO Only for debugging!
+		int threads = 1;
+		//int threads = Runtime.getRuntime().availableProcessors();
 		System.out.println(threads + " threads");
 		mcts.enableRootParallelisation(threads);
 

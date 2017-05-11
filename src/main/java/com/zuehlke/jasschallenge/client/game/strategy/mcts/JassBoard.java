@@ -7,6 +7,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
@@ -109,36 +110,54 @@ public class JassBoard implements Board, Serializable {
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
 		ArrayList<Move> moves = new ArrayList<>();
+		Round round = game.getCurrentRound();
 		Player player = game.getCurrentPlayer();
 		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game);
-		// TODO exclude very bad moves
+
+
+		// stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
+		if (JassHelper.lastPlayer(round)) {
+			Player stichOwner = round.getWinner();
+			if (JassHelper.isOpponent(stichOwner, player)) {
+				System.out.println(possibleCards);
+				Card winningCard = round.getWinningCard();
+				Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
+				for (Card card : possibleCards) {
+					if (game.getCurrentRound().getMode() != Mode.bottomUp()) {
+						if (winningCard.isHigherThan(card))
+							cardsToRemove.add(card);
+					} else {
+						if (!winningCard.isHigherThan(card))
+							cardsToRemove.add(card);
+					}
+				}
+				if (possibleCards.size() > cardsToRemove.size())
+					possibleCards.removeAll(cardsToRemove);
+				System.out.println(possibleCards);
+			}
+		}
+
+
+
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
 
 		return moves;
 	}
 
+	// TODO exclude very bad moves
 
-	/* stechen wenn letzter spieler und stich gehört gegner
-	if (lastPlayer(round) && round.getWinner()) {
+	// Wenn erster spieler am anfang des spiels und mindestens 2 trümpfe -> austrumpfen
 
-	}
-	*/
+
 
 	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen
-	private void mitTrumpfAbstechen() {
 
-	}
 
 	// Wenn letzter Spieler und möglich mit nicht trumpf zu stechen, dann stechen.
-	private void mitNichtTrumpfStechen() {
 
-	}
 
 	// Wenn obeabe oder undeufe: Bei Ausspielen von Partner tiefe Karte (tiefer als 10) von Gegenfarbe verwerfen wenn bei Farbe gut.
-	private void gegenFarbeVerwerfen() {
-
-	}
 
 
 	/**

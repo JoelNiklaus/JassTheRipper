@@ -2,6 +2,7 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
@@ -38,11 +39,10 @@ public class JassHelper {
 	}
 
 
-
 	public static Card getCardOfPartner(Round round) {
-		if(lastPlayer(round))
+		if (lastPlayer(round))
 			return round.getMoves().get(1).getPlayedCard();
-		if(thirdPlayer(round))
+		if (thirdPlayer(round))
 			return round.getMoves().get(0).getPlayedCard();
 		return null;
 	}
@@ -73,5 +73,11 @@ public class JassHelper {
 	}
 
 
+	public static boolean isTeamMember(Player otherPlayer, Player player) {
+		return !isOpponent(otherPlayer, player);
+	}
 
+	public static boolean isOpponent(Player otherPlayer, Player player) {
+		return (otherPlayer.getSeatId() * player.getSeatId()) % 2 != player.getSeatId() % 2;
+	}
 }

@@ -46,6 +46,11 @@ public class Round implements Serializable {
 		return mode.calculateRoundScore(roundNumber, getPlayedCards());
 	}
 
+	public Card getWinningCard() {
+		// TODO maybe not always returns a card ...
+		return moves.stream().filter(move -> move.getPlayer().equals(getWinner())).findFirst().get().getPlayedCard();
+	}
+
 	public Set<Card> getPlayedCards() {
 		return moves.stream()
 				.map(Move::getPlayedCard)
