@@ -119,10 +119,16 @@ public class JassBoard implements Board, Serializable {
 		if (JassHelper.lastPlayer(round)) {
 			Player stichOwner = round.getWinner();
 			if (JassHelper.isOpponent(stichOwner, player)) {
-				System.out.println(possibleCards);
+				//System.out.println(possibleCards);
 				Card winningCard = round.getWinningCard();
 				Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
 				for (Card card : possibleCards) {
+					List<Card> cards = new LinkedList<>();
+					cards.add(card);
+					cards.add(winningCard);
+					if(round.getMode().determineWinningCard(cards).equals(winningCard))
+						cardsToRemove.add(card);
+					/*
 					if (game.getCurrentRound().getMode() != Mode.bottomUp()) {
 						if (winningCard.isHigherThan(card))
 							cardsToRemove.add(card);
@@ -130,10 +136,11 @@ public class JassBoard implements Board, Serializable {
 						if (!winningCard.isHigherThan(card))
 							cardsToRemove.add(card);
 					}
+					*/
 				}
 				if (possibleCards.size() > cardsToRemove.size())
 					possibleCards.removeAll(cardsToRemove);
-				System.out.println(possibleCards);
+				//System.out.println(possibleCards);
 			}
 		}
 

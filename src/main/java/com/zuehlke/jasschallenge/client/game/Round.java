@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -47,8 +48,9 @@ public class Round implements Serializable {
 	}
 
 	public Card getWinningCard() {
+		return mode.determineWinningCard(getPlayedCards().stream().collect(Collectors.toList()));
 		// TODO maybe not always returns a card ...
-		return moves.stream().filter(move -> move.getPlayer().equals(getWinner())).findFirst().get().getPlayedCard();
+		//return moves.stream().filter(move -> move.getPlayer().equals(getWinner())).findFirst().get().getPlayedCard();
 	}
 
 	public Set<Card> getPlayedCards() {
