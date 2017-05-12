@@ -12,6 +12,7 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -66,6 +67,15 @@ public class JassBoard implements Board, Serializable {
 	}
 
 	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
+		System.out.println(cards);
+		// TODO This version causes a bug in makeMove
+		if (numberOfCards <= 0 || numberOfCards > 9)
+			return EnumSet.noneOf(Card.class);
+		List<Card> list = cards.parallelStream().collect(Collectors.toList());
+		Collections.shuffle(list);
+
+
+		// TODO in this version the the for loop is not exited any more
 		Set<Card> subset = EnumSet.noneOf(Card.class);
 		Random random = new Random();
 		int size = cards.size();
@@ -78,7 +88,12 @@ public class JassBoard implements Board, Serializable {
 				i++;
 			}
 		}
-		return subset;
+		System.out.println(cards);
+		System.out.println(subset);
+
+		System.out.println(list.subList(0, numberOfCards).stream().collect(Collectors.toSet()));
+		//return subset;
+		return new LinkedList<>(list.subList(0, numberOfCards - 1)).parallelStream().collect(Collectors.toSet());
 	}
 
 	private Set<Card> getRemainingCards(Set<Card> availableCards) {
@@ -126,7 +141,7 @@ public class JassBoard implements Board, Serializable {
 					List<Card> cards = new LinkedList<>();
 					cards.add(card);
 					cards.add(winningCard);
-					if(round.getMode().determineWinningCard(cards).equals(winningCard))
+					if (round.getMode().determineWinningCard(cards).equals(winningCard))
 						cardsToRemove.add(card);
 					/*
 					if (game.getCurrentRound().getMode() != Mode.bottomUp()) {
@@ -145,7 +160,6 @@ public class JassBoard implements Board, Serializable {
 		}
 
 
-
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
 
@@ -155,7 +169,6 @@ public class JassBoard implements Board, Serializable {
 	// TODO exclude very bad moves
 
 	// Wenn erster spieler am anfang des spiels und mindestens 2 trümpfe -> austrumpfen
-
 
 
 	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen

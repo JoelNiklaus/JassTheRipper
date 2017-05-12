@@ -41,7 +41,7 @@ public class MCTSHelper {
 		int threads = 1;
 		//int threads = Runtime.getRuntime().availableProcessors();
 		System.out.println(threads + " threads");
-		mcts.enableRootParallelisation(threads);
+		//mcts.enableRootParallelisation(threads);
 
 
 		/*

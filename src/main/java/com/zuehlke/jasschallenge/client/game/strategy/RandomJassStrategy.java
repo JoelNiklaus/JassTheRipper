@@ -13,16 +13,14 @@ import java.util.Random;
 import java.util.Set;
 
 public class RandomJassStrategy implements JassStrategy, Serializable {
-    @Override
-    public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-        return JassHelper.getRandomMode(isGschobe);
-    }
 
+	@Override
+	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
+		return JassHelper.getRandomMode(isGschobe);
+	}
 
-
-    @Override
-    public Card chooseCard(Set<Card> availableCards, GameSession session) {
-        return JassHelper.getRandomCard(availableCards, session.getCurrentGame());
-    }
-
+	@Override
+	public Card chooseCard(Set<Card> availableCards, GameSession session) {
+		return JassHelper.getRandomCard(availableCards, session.getCurrentGame());
+	}
 }

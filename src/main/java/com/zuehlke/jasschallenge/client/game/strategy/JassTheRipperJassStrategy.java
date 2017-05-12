@@ -143,7 +143,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		long startTime = System.nanoTime();
-		long computationTimeMillis = 450;
+		long computationTimeMillis = 400;
 		long endingTime = startTime + 1000000 * computationTimeMillis;
 		Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);

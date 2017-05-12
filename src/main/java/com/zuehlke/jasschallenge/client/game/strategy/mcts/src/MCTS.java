@@ -1,5 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
+import weka.core.Debug;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -24,10 +26,10 @@ public class MCTS {
 
 	public MCTS() {
 		// Production Mode
-		random = new Random();
+		//random = new Random();
 		// Debug Mode
-		//random = new Debug.Random();
-		//random.setSeed(3);
+		random = new Debug.Random();
+		random.setSeed(3);
 	}
 
 	/**
@@ -41,12 +43,11 @@ public class MCTS {
 	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) {
 		scoreBounds = bounds;
 		Node rootNode = new Node(startingBoard);
-		boolean pmode = rootParallelisation;
 		Move bestMoveFound = null;
 
 		long startTime = System.nanoTime();
 
-		if (!pmode) {
+		if (!rootParallelisation) {
 			System.out.println("not parallelised :(");
 			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
 			bestMoveFound = finalMoveSelection(rootNode);
