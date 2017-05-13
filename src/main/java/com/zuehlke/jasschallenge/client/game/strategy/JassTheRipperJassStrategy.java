@@ -5,6 +5,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfEx
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MLHelper;
+import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
@@ -57,6 +58,9 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
+		long startTime = System.nanoTime();
+		long computationTimeMillis = 300;
+		long endingTime = startTime + 1000000 * computationTimeMillis;
 		// Machine Learning Version
 		//Mode trumpf = predictTrumpf(availableCards);
 
@@ -82,7 +86,12 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			return Mode.shift();
 		return prospectiveMode;
 		*/
-		return JassHelper.getRandomMode(isGschobe);
+		while(System.nanoTime() < endingTime) {
+			// no_op
+		}
+		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime()-startTime)/1000000) + "ms");
+		return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
+		//return JassHelper.getRandomMode(isGschobe);
 	}
 
 

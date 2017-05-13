@@ -162,6 +162,7 @@ public class JassBoard implements Board, Serializable {
 
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
+		assert(moves.size() > 0);
 
 		return moves;
 	}
