@@ -63,15 +63,27 @@ public class MCTS {
 
 				ArrayList<Node> rootNodes = new ArrayList<Node>();
 
+
+
 				// Collect all computed root nodes
-				for (FutureTask<Node> f : futures)
-					rootNodes.add(f.get());
+				for (FutureTask<Node> future : futures) {
+					// Just abort the computation if time is up
+					try {
+						Node node = future.get(300, TimeUnit.MILLISECONDS);
+						rootNodes.add(node);
+						System.out.println("Result: " + node.getMove());
+					}
+					catch (TimeoutException e) {
+						System.out.println("Timeout");
+						future.cancel(true);
+					}
+				}
 
 				ArrayList<Move> moves = new ArrayList<Move>();
 
 				for (Node n : rootNodes) {
 					Node c = robustChild(n); // Select robust child
-					moves.add(c.move);
+					moves.add(c.getMove());
 				}
 
 				bestMoveFound = vote(moves);
@@ -86,7 +98,7 @@ public class MCTS {
 		long endTime = System.nanoTime();
 
 		if (this.trackTime) {
-			System.out.println("Making choice for player: " + rootNode.player + " -> " + bestMoveFound);
+			System.out.println("Making choice for player: " + rootNode.getPlayer() + " -> " + bestMoveFound);
 			System.out.println("Thinking time for move: " + (endTime - startTime) / 1000000 + "ms");
 		}
 
@@ -188,15 +200,15 @@ public class MCTS {
 		Board b = brd.duplicate();
 
 		while (!b.gameOver()) {
-			if (node.player >= 0) { // this is a regular node
-				if (node.unvisitedChildren == null) {
+			if (node.getPlayer() >= 0) { // this is a regular node
+				if (node.getUnvisitedChildren() == null) {
 					node.expandNode(b);
 				}
 
-				if (!node.unvisitedChildren.isEmpty()) {
-					Node temp = node.unvisitedChildren.remove(random.nextInt(node.unvisitedChildren.size()));
-					node.children.add(temp);
-					b.makeMove(temp.move);
+				if (!node.getUnvisitedChildren().isEmpty()) {
+					Node temp = node.getUnvisitedChildren().remove(random.nextInt(node.getUnvisitedChildren().size()));
+					node.getChildren().add(temp);
+					b.makeMove(temp.getMove());
 					return new BoardNodePair(b, temp);
 				} else {
 					ArrayList<Node> bestNodes = findChildren(node, b, optimisticBias, pessimisticBias,
@@ -212,7 +224,7 @@ public class MCTS {
 
 					Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
 					node = finalNode;
-					b.makeMove(finalNode.move);
+					b.makeMove(finalNode.getMove());
 				}
 			} else { // this is a random node
 
@@ -223,22 +235,22 @@ public class MCTS {
 				// this node before. If we haven't, we must initialise
 				// all of this node's children properly.
 
-				if (node.unvisitedChildren == null) {
+				if (node.getUnvisitedChildren() == null) {
 					node.expandNode(b);
 
-					for (Node n : node.unvisitedChildren) {
-						node.children.add(n);
+					for (Node n : node.getUnvisitedChildren()) {
+						node.getChildren().add(n);
 					}
-					node.unvisitedChildren.clear();
+					node.getUnvisitedChildren().clear();
 				}
 
 				// The tree policy for random nodes is different. We
 				// ignore selection heuristics and pick one node at
 				// random based on the weight vector.
 
-				Node selectedNode = node.children.get(node.randomSelect(b));
+				Node selectedNode = node.getChildren().get(node.randomSelect(b));
 				node = selectedNode;
-				b.makeMove(selectedNode.move);
+				b.makeMove(selectedNode.getMove());
 			}
 		}
 
@@ -267,7 +279,7 @@ public class MCTS {
 				break;
 		}
 
-		return r.move;
+		return r.getMove();
 	}
 
 	/**
@@ -281,8 +293,8 @@ public class MCTS {
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
 
-		for (Node s : n.children) {
-			tempBest = s.games;
+		for (Node s : n.getChildren()) {
+			tempBest = s.getGames();
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
 		}
 
@@ -313,10 +325,10 @@ public class MCTS {
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
 
-		for (Node s : n.children) {
-			tempBest = s.score[n.player];
-			tempBest += s.opti[n.player] * optimisticBias;
-			tempBest += s.pess[n.player] * pessimisticBias;
+		for (Node s : n.getChildren()) {
+			tempBest = s.getScore()[n.getPlayer()];
+			tempBest += s.getOpti()[n.getPlayer()] * optimisticBias;
+			tempBest += s.getPess()[n.getPlayer()] * pessimisticBias;
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
 		}
 
@@ -337,11 +349,13 @@ public class MCTS {
 		Board brd = board.duplicate();
 
 		// Start playing random moves until the game is over
+		// TODO does not work properly
 		while (!brd.gameOver()) {
 			if (playoutpolicy == null) {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
+					System.out.println("MCTS"+moves.size());
 					mv = moves.get(random.nextInt(moves.size()));
 				} else {
 
@@ -396,13 +410,13 @@ public class MCTS {
 										double explorationConstant) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
-		for (Node s : n.children) {
+		for (Node s : n.getChildren()) {
 			// Pruned is only ever true if a branch has been pruned
 			// from the tree and that can only happen if bounds
 			// propagation mode is enabled.
-			if (s.pruned == false) {
-				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.opti[n.player]
-						+ pessimisticBias * s.pess[n.player];
+			if (s.isPruned() == false) {
+				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.getOpti()[n.getPlayer()]
+						+ pessimisticBias * s.getPess()[n.getPlayer()];
 
 				if (heuristic != null) {
 					tempBest += heuristic.h(b);

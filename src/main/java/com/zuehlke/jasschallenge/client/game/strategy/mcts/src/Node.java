@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class Node {
-	public double[] score;
-	public double games;
-	public Move move;
-	public ArrayList<Node> unvisitedChildren;
-	public ArrayList<Node> children;
-	public Set<Integer> rVisited;
-	public Node parent;
-	public int player;
-	public double[] pess;
-	public double[] opti;
-	public boolean pruned;
+	private double[] score;
+	private double games;
+	private Move move;
+	private ArrayList<Node> unvisitedChildren;
+	private ArrayList<Node> children;
+	private Set<Integer> rVisited;
+	private Node parent;
+	private int player;
+	private double[] pess;
+	private double[] opti;
+	private boolean pruned;
 
 	/**
 	 * This creates the root node
@@ -193,6 +193,93 @@ public class Node {
 		return randomIndex;
 	}
 
+	public double[] getScore() {
+		return score;
+	}
+
+	public void setScore(double[] score) {
+		this.score = score;
+	}
+
+	public double getGames() {
+		return games;
+	}
+
+	public void setGames(double games) {
+		this.games = games;
+	}
+
+	public Move getMove() {
+		return move;
+	}
+
+	public void setMove(Move move) {
+		this.move = move;
+	}
+
+	public ArrayList<Node> getUnvisitedChildren() {
+		return unvisitedChildren;
+	}
+
+	public void setUnvisitedChildren(ArrayList<Node> unvisitedChildren) {
+		this.unvisitedChildren = unvisitedChildren;
+	}
+
+	public ArrayList<Node> getChildren() {
+		return children;
+	}
+
+	public void setChildren(ArrayList<Node> children) {
+		this.children = children;
+	}
+
+	public Set<Integer> getrVisited() {
+		return rVisited;
+	}
+
+	public void setrVisited(Set<Integer> rVisited) {
+		this.rVisited = rVisited;
+	}
+
+	public Node getParent() {
+		return parent;
+	}
+
+	public void setParent(Node parent) {
+		this.parent = parent;
+	}
+
+	public int getPlayer() {
+		return player;
+	}
+
+	public void setPlayer(int player) {
+		this.player = player;
+	}
+
+	public double[] getPess() {
+		return pess;
+	}
+
+	public void setPess(double[] pess) {
+		this.pess = pess;
+	}
+
+	public double[] getOpti() {
+		return opti;
+	}
+
+	public void setOpti(double[] opti) {
+		this.opti = opti;
+	}
+
+	public boolean isPruned() {
+		return pruned;
+	}
+
+	public void setPruned(boolean pruned) {
+		this.pruned = pruned;
+	}
 
 	@Override
 	public String toString() {

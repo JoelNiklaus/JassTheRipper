@@ -54,7 +54,7 @@ public class MCTS_old {
 		Move move = finalMoveSelection(rootNode);
 
 		if (this.trackTime) {
-			System.out.println("Making choice for player: " + rootNode.player + " -> " + move);
+			System.out.println("Making choice for player: " + rootNode.getPlayer() + " -> " + move);
 			System.out.println("Thinking time per move: " + (endTime - startTime) / 1000000 + "ms having run " + runCounter + " times");
 		}
 
@@ -93,17 +93,17 @@ public class MCTS_old {
 	private BoardNodePair treePolicy(Board brd, Node node) {
 		Board b = brd.duplicate();
 		while (!b.gameOver()) {
-			if (node.player >= 0) { // this is a regular node
+			if (node.getPlayer() >= 0) { // this is a regular node
 				System.out.println("regular mode");
-				if (node.unvisitedChildren == null) {
+				if (node.getUnvisitedChildren() == null) {
 					node.expandNode(b);
 				}
 
-				if (!node.unvisitedChildren.isEmpty()) {
-					Node temp = node.unvisitedChildren.remove(random.nextInt(node.unvisitedChildren.size()));
-					node.children.add(temp);
+				if (!node.getUnvisitedChildren().isEmpty()) {
+					Node temp = node.getUnvisitedChildren().remove(random.nextInt(node.getUnvisitedChildren().size()));
+					node.getChildren().add(temp);
 					//System.out.println("treePolicy" + temp.move);
-					b.makeMove(temp.move);
+					b.makeMove(temp.getMove());
 					return new BoardNodePair(b, temp);
 				} else {
 					ArrayList<Node> bestNodes = findChildren(node, b, optimisticBias, pessimisticBias,
@@ -120,7 +120,7 @@ public class MCTS_old {
 					Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
 					node = finalNode;
 					//System.out.println("treePolicy" + node.move);
-					b.makeMove(finalNode.move);
+					b.makeMove(finalNode.getMove());
 				}
 			} else { // this is a random node
 				System.out.println("random mode");
@@ -131,23 +131,23 @@ public class MCTS_old {
 				// this node before. If we haven't, we must initialise
 				// all of this node's children properly.
 
-				if (node.unvisitedChildren == null) {
+				if (node.getUnvisitedChildren() == null) {
 					node.expandNode(b);
 
-					for (Node n : node.unvisitedChildren) {
-						node.children.add(n);
+					for (Node n : node.getUnvisitedChildren()) {
+						node.getChildren().add(n);
 					}
-					node.unvisitedChildren.clear();
+					node.getUnvisitedChildren().clear();
 				}
 
 				// The tree policy for random nodes is different. We
 				// ignore selection heuristics and pick one node at
 				// random based on the weight vector.
 
-				Node selectedNode = node.children.get(node.randomSelect(b));
+				Node selectedNode = node.getChildren().get(node.randomSelect(b));
 				node = selectedNode;
 				//System.out.println("treePolicy" + node.move);
-				b.makeMove(selectedNode.move);
+				b.makeMove(selectedNode.getMove());
 			}
 		}
 
@@ -176,7 +176,7 @@ public class MCTS_old {
 				break;
 		}
 
-		return r.move;
+		return r.getMove();
 	}
 
 	/**
@@ -190,8 +190,8 @@ public class MCTS_old {
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
 
-		for (Node s : n.children) {
-			tempBest = s.games;
+		for (Node s : n.getChildren()) {
+			tempBest = s.getGames();
 			//tempBest += s.opti[n.player] * optimisticBias;
 			//tempBest += s.pess[n.player] * pessimisticBias;
 			bestValue = getBestValue(bestValue, bestNodes, s, tempBest);
@@ -213,8 +213,8 @@ public class MCTS_old {
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
 
-		for (Node s : n.children) {
-			tempBest = s.score[n.player];
+		for (Node s : n.getChildren()) {
+			tempBest = s.getScore()[n.getPlayer()];
 			bestValue = getBestValue(bestValue, bestNodes, s, tempBest);
 		}
 
@@ -291,14 +291,14 @@ public class MCTS_old {
 	public ArrayList<Node> findChildren(Node n, Board b, double optimisticBias, double pessimisticBias, double explorationConstant) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
-		for (Node s : n.children) {
+		for (Node s : n.getChildren()) {
 			// Pruned is only ever true if a branch has been pruned 
 			// from the tree and that can only happen if bounds 
 			// propagation mode is enabled.
-			if (!s.pruned) {
+			if (!s.isPruned()) {
 				double tempBest = s.upperConfidenceBound(explorationConstant)
-						+ optimisticBias * s.opti[n.player]
-						+ pessimisticBias * s.pess[n.player];
+						+ optimisticBias * s.getOpti()[n.getPlayer()]
+						+ pessimisticBias * s.getPess()[n.getPlayer()];
 
 				if (heuristic != null) {
 					tempBest += heuristic.h(b);
