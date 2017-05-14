@@ -156,7 +156,7 @@ public class JassBoard implements Board, Serializable {
 		ArrayList<Move> moves = new ArrayList<>();
 		final Round round = game.getCurrentRound();
 		final Player player = game.getCurrentPlayer();
-		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game);
+		Set<Card> possibleCards = JassHelper.getPossibleCards(copy(player.getCards()), game);
 
 		assert(possibleCards.size() > 0);
 
@@ -171,9 +171,7 @@ public class JassBoard implements Board, Serializable {
 		return moves;
 	}
 
-
-	// TODO exclude very bad moves
-    public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
+	public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
         // stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
         if (JassHelper.lastPlayer(round)) {
             Player stichOwner = round.getWinner();
