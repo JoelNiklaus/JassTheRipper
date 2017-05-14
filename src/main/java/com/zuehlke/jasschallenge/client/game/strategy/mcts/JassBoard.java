@@ -152,6 +152,8 @@ public class JassBoard implements Board, Serializable {
 
         possibleCards = refineMovesWithJassKnowledge(possibleCards, round, player);
 
+        assert possibleCards.size() > 0;
+
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
 		assert(moves.size() > 0);
@@ -175,15 +177,6 @@ public class JassBoard implements Board, Serializable {
                     cards.add(winningCard);
                     if (round.getMode().determineWinningCard(cards).equals(winningCard))
                         cardsToRemove.add(card);
-					/*
-					if (game.getCurrentRound().getMode() != Mode.bottomUp()) {
-						if (winningCard.isHigherThan(card))
-							cardsToRemove.add(card);
-					} else {
-						if (!winningCard.isHigherThan(card))
-							cardsToRemove.add(card);
-					}
-					*/
                 }
                 if (possibleCards.size() > cardsToRemove.size())
                     possibleCards.removeAll(cardsToRemove);
@@ -217,12 +210,15 @@ public class JassBoard implements Board, Serializable {
 		// We can do that because we are only creating CardMoves
 		final CardMove cardMove = (CardMove) move;
 
+		assert cardMove != null;
+
 		//System.out.println(game.getCurrentRound());
 
 		Player player = game.getCurrentPlayer();
 
 		//System.out.println(player);
 		//System.out.println(cardMove.getPlayer());
+
 		assert cardMove.getPlayer().equals(player);
 		player.getCards().remove((cardMove).getPlayedCard());
 
@@ -234,6 +230,11 @@ public class JassBoard implements Board, Serializable {
 			game.startNextRound();
 
 			Round round = game.getCurrentRound();
+
+
+			if (round.getRoundNumber() == 9)
+				assert game.gameFinished();
+
 			System.out.println(round);
 			System.out.println(game.gameFinished());
 
