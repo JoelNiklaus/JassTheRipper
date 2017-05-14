@@ -121,8 +121,8 @@ public class JassBoard implements Board, Serializable {
         assert(cards.containsAll(subset));
         Set<Card> subsetV2 = copy(new LinkedList<>(list.subList(0, numberOfCards - 1)).parallelStream().collect(Collectors.toSet()));
         assert(cards.containsAll(subsetV2));
-		return subset;
-		//return copy(new LinkedList<>(list.subList(0, numberOfCards - 1)).parallelStream().collect(Collectors.toSet()));
+		//return subset;
+		return subsetV2;
 	}
 
 	private Set<Card> getRemainingCards(Set<Card> availableCards) {
