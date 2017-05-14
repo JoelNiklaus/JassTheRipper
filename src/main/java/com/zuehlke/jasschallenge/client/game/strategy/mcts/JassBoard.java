@@ -88,29 +88,39 @@ public class JassBoard implements Board, Serializable {
 		//cards = (Set<Card>) DeepCopy.copy(cards);
 		System.out.println("cards before" + cards);
 		// TODO This version causes a bug in makeMove
-		if (numberOfCards <= 0 || numberOfCards > 9)
-			return Collections.synchronizedSet(EnumSet.noneOf(Card.class));
+        assert(numberOfCards > 0 || numberOfCards <= 9);
 		List<Card> list = cards.parallelStream().collect(Collectors.toList());
+		int listLengthBeforeShuffle = list.size();
 		Collections.shuffle(list);
+        int listLengthAfterShuffle = list.size();
+        assert(listLengthBeforeShuffle == listLengthAfterShuffle);
 
 
 		// TODO in this version the the for loop is not exited any more
 		Set<Card> subset = Collections.synchronizedSet(EnumSet.noneOf(Card.class));
+		int subsetSize = subset.size();
+		assert (subsetSize == 0);
 		Random random = new Random();
 		int size = cards.size();
+		assert (size > 0);
 		while (subset.size() < numberOfCards) {
 			int item = random.nextInt(size);
 			int i = 0;
+			assert(cards.size() > item && item >= 0);
 			for (Card card : cards) {
 				if (i == item)
 					subset.add(card);
 				i++;
 			}
 		}
+		assert(cards.containsAll(subset));
 		System.out.println("cards after" + cards);
 		System.out.println("subset old" + subset);
 
 		System.out.println("subset shuffle" + list.subList(0, numberOfCards).stream().collect(Collectors.toSet()));
+        assert(cards.containsAll(subset));
+        Set<Card> subsetV2 = copy(new LinkedList<>(list.subList(0, numberOfCards - 1)).parallelStream().collect(Collectors.toSet()));
+        assert(cards.containsAll(subsetV2));
 		return subset;
 		//return copy(new LinkedList<>(list.subList(0, numberOfCards - 1)).parallelStream().collect(Collectors.toSet()));
 	}

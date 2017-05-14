@@ -33,6 +33,7 @@ public class JassHelper {
 	}
 
 	public static Set<Card> getPossibleCards(Set<Card> availableCards, Game game) {
+		assert(availableCards.size() > 0);
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card
