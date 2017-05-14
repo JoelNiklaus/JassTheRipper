@@ -59,7 +59,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
 		long startTime = System.nanoTime();
-		long computationTimeMillis = 300;
+		long computationTimeMillis = 400;
 		long endingTime = startTime + 1000000 * computationTimeMillis;
 		// Machine Learning Version
 		//Mode trumpf = predictTrumpf(availableCards);
@@ -172,6 +172,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move: " + endTime + "ms");
 		System.out.println("Played " + card);
+		assert card != null;
+		assert possibleCards.contains(card);
 		return card;
 	}
 }
