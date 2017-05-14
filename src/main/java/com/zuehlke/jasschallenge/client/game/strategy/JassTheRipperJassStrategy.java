@@ -90,8 +90,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			// no_op
 		}
 		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime()-startTime)/1000000) + "ms");
-		return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
-		//return JassHelper.getRandomMode(isGschobe);
+		//return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
+		return JassHelper.getRandomMode(isGschobe);
 	}
 
 
@@ -164,7 +164,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 				System.out.println("Chose Card based on MCTS, Hurra!");
 				card = mctsCard;
 			} else
-				System.out.println("Something went wrong. Had to choose random card, Damn it!");
+				System.out.println("Card chosen not in available cards. Had to choose random card, Damn it!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Something went wrong. Had to choose random card, Damn it!");

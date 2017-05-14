@@ -80,6 +80,10 @@ public class JassBoard implements Board, Serializable {
 
 	}
 
+	public Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {
+	    return pickRandomSubSet(cards, numberOfCards);
+    }
+
 	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		//cards = (Set<Card>) DeepCopy.copy(cards);
 		System.out.println("cards before" + cards);
@@ -143,41 +147,53 @@ public class JassBoard implements Board, Serializable {
 		final Round round = game.getCurrentRound();
 		final Player player = game.getCurrentPlayer();
 		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game);
-		if (possibleCards.size() > 0)
-			possibleCards = copy(possibleCards);
 
+		assert(possibleCards.size() > 0);
 
-		/*
-		// stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
-		if (JassHelper.lastPlayer(round)) {
-			Player stichOwner = round.getWinner();
-			if (JassHelper.isOpponent(stichOwner, player)) {
-				//System.out.println(possibleCards);
-				Card winningCard = round.getWinningCard();
-				Set<Card> cardsToRemove = Collections.synchronizedSet(EnumSet.noneOf(Card.class));
-				for (Card card : possibleCards) {
-					List<Card> cards = new LinkedList<>();
-					cards.add(card);
-					cards.add(winningCard);
-					if (round.getMode().determineWinningCard(cards).equals(winningCard))
-						cardsToRemove.add(card);
-				}
-				if (possibleCards.size() > cardsToRemove.size())
-					possibleCards.removeAll(cardsToRemove);
-				//System.out.println(possibleCards);
-			}
-		}
-		*/
+        possibleCards = refineMovesWithJassKnowledge(possibleCards, round, player);
 
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
-		assert (moves.size() > 0);
-		System.out.println("JassBoard" + moves.size());
+		assert(moves.size() > 0);
 
 		return moves;
 	}
 
+
 	// TODO exclude very bad moves
+    public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
+        // stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
+        if (JassHelper.lastPlayer(round)) {
+            Player stichOwner = round.getWinner();
+            if (JassHelper.isOpponent(stichOwner, player)) {
+                //System.out.println(possibleCards);
+                Card winningCard = round.getWinningCard();
+                Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
+                for (Card card : possibleCards) {
+                    List<Card> cards = new LinkedList<>();
+                    cards.add(card);
+                    cards.add(winningCard);
+                    if (round.getMode().determineWinningCard(cards).equals(winningCard))
+                        cardsToRemove.add(card);
+					/*
+					if (game.getCurrentRound().getMode() != Mode.bottomUp()) {
+						if (winningCard.isHigherThan(card))
+							cardsToRemove.add(card);
+					} else {
+						if (!winningCard.isHigherThan(card))
+							cardsToRemove.add(card);
+					}
+					*/
+                }
+                if (possibleCards.size() > cardsToRemove.size())
+                    possibleCards.removeAll(cardsToRemove);
+                //System.out.println(possibleCards);
+            }
+        }
+        return possibleCards;
+    }
+
+    // TODO exclude very bad moves
 
 	// Wenn erster spieler am anfang des spiels und mindestens 2 trümpfe -> austrumpfen
 
