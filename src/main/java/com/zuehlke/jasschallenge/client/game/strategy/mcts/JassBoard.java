@@ -66,6 +66,10 @@ public class JassBoard implements Board, Serializable {
 
 	}
 
+	public Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {
+	    return pickRandomSubSet(cards, numberOfCards);
+    }
+
 	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		System.out.println(cards);
 		// TODO This version causes a bug in makeMove
@@ -128,21 +132,31 @@ public class JassBoard implements Board, Serializable {
 		Round round = game.getCurrentRound();
 		Player player = game.getCurrentPlayer();
 		Set<Card> possibleCards = JassHelper.getPossibleCards(player.getCards(), game);
+		assert(possibleCards.size() > 0);
 
+        possibleCards = refineMovesWithJassKnowledge(possibleCards, round, player);
 
-		// stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
-		if (JassHelper.lastPlayer(round)) {
-			Player stichOwner = round.getWinner();
-			if (JassHelper.isOpponent(stichOwner, player)) {
-				//System.out.println(possibleCards);
-				Card winningCard = round.getWinningCard();
-				Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
-				for (Card card : possibleCards) {
-					List<Card> cards = new LinkedList<>();
-					cards.add(card);
-					cards.add(winningCard);
-					if (round.getMode().determineWinningCard(cards).equals(winningCard))
-						cardsToRemove.add(card);
+		for (Card card : possibleCards)
+			moves.add(new CardMove(player, card));
+		assert(moves.size() > 0);
+
+		return moves;
+	}
+
+    public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
+        // stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
+        if (JassHelper.lastPlayer(round)) {
+            Player stichOwner = round.getWinner();
+            if (JassHelper.isOpponent(stichOwner, player)) {
+                //System.out.println(possibleCards);
+                Card winningCard = round.getWinningCard();
+                Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
+                for (Card card : possibleCards) {
+                    List<Card> cards = new LinkedList<>();
+                    cards.add(card);
+                    cards.add(winningCard);
+                    if (round.getMode().determineWinningCard(cards).equals(winningCard))
+                        cardsToRemove.add(card);
 					/*
 					if (game.getCurrentRound().getMode() != Mode.bottomUp()) {
 						if (winningCard.isHigherThan(card))
@@ -152,22 +166,16 @@ public class JassBoard implements Board, Serializable {
 							cardsToRemove.add(card);
 					}
 					*/
-				}
-				if (possibleCards.size() > cardsToRemove.size())
-					possibleCards.removeAll(cardsToRemove);
-				//System.out.println(possibleCards);
-			}
-		}
+                }
+                if (possibleCards.size() > cardsToRemove.size())
+                    possibleCards.removeAll(cardsToRemove);
+                //System.out.println(possibleCards);
+            }
+        }
+        return possibleCards;
+    }
 
-
-		for (Card card : possibleCards)
-			moves.add(new CardMove(player, card));
-		assert(moves.size() > 0);
-
-		return moves;
-	}
-
-	// TODO exclude very bad moves
+    // TODO exclude very bad moves
 
 	// Wenn erster spieler am anfang des spiels und mindestens 2 trümpfe -> austrumpfen
 
