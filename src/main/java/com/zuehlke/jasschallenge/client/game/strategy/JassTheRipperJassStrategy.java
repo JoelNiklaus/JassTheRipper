@@ -90,8 +90,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			// no_op
 		}
 		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime()-startTime)/1000000) + "ms");
-		return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
-		//return JassHelper.getRandomMode(isGschobe);
+		//return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
+		return JassHelper.getRandomMode(isGschobe);
 	}
 
 
