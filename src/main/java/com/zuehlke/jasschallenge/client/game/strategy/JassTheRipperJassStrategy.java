@@ -90,6 +90,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		System.out.println("ChooseTrumpf succeeded!");
 		if (max < max_schift_rating_val)
 			return Mode.shift();
+		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime() - startTime) / 1000000) + "ms");
 		return prospectiveMode;
 		*/
 		/*
@@ -135,9 +136,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		return sum;
 	}
 
-	/* Ass = 20, König = 12, Königin = 6, Bube = 3, Zehn = 1
-	 */
-	private int rateObeabeColor(Set<Card> cards, Color color) {
+	public int rateObeabeColor(Set<Card> cards, Color color) {
 		Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
 		List<Card> sortedCards = cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
 		if (sortedCards.stream().findFirst().isPresent())
