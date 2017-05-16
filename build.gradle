@@ -22,7 +22,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
 
     // https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable
-    compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.8.0'
+    //compile group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.8.0'
 
     // https://mvnrepository.com/artifact/org.javatuples/javatuples
     //compile group: 'org.javatuples', name: 'javatuples', version: '1.2'

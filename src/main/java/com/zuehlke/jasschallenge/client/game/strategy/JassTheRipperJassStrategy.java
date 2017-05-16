@@ -157,7 +157,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
-		Card card = JassHelper.getRandomCard(availableCards, game);
+		Card card = JassHelper.getRandomCard(possibleCards, game);
+
 		try {
 			Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime);
 			if (possibleCards.contains(card)) {
