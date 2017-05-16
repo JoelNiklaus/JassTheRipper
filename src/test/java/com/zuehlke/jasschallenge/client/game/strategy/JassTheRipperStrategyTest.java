@@ -2,18 +2,17 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Move;
-import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.PlayingOrder;
-import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Test;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by joelniklaus on 06.05.17.
@@ -47,10 +46,27 @@ public class JassTheRipperStrategyTest {
 	public void testRateObeAbeWithAllClubs() {
 		JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
 		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.CLUBS) > 0);
+		// 90 is maximum amount of points
+		assertEquals(90, jassStrategy.rateObeabeColor(clubs,Color.CLUBS));
 		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.DIAMONDS) == 0);
 		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.HEARTS) == 0);
 		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.SPADES) == 0);
 	}
+	@Test
+	public void testCalculateInitialSafety() {
+		JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
+		List<Card> sortedClubs = jassStrategy.sortCardsDescending(cards1, Color.CLUBS);
+		List<Card> sortedSpades = jassStrategy.sortCardsDescending(cards1, Color.SPADES);
+		assertEquals(jassStrategy.calculateInitialSafetyObeabe(sortedClubs), 1.0, 0.05);
+		assertTrue(jassStrategy.calculateInitialSafetyObeabe(sortedSpades) > 0.33);
+		assertTrue(jassStrategy.calculateInitialSafetyObeabe(sortedSpades) < 0.34);
+
+	}
+
+	@Test
+    public void getCardRank() {
+	    assertEquals(9, Card.CLUB_ACE.getRank());
+    }
 
 	@Test
 	public void testMCTSDuringFirstRound() throws Exception {

@@ -81,13 +81,93 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	}
 
 	public int rateObeabeColor(Set<Card> cards, Color color) {
-		Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
-		List<Card> sortedCards = cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
-		if (sortedCards.stream().findFirst().isPresent())
-			if (sortedCards.stream().findFirst().get().getValue().getRank() >= 8)
-				return 3000;
-		return 5;
+	    // Get the cards in descending order
+	    List<Card> sortedCards = sortCardsDescending(cards, color);
+	    if (sortedCards.size() == 0)
+	        return 0;
+	    // Number of cards I have that are higher than the nextCard
+		int higherCards = 0;
+		// Number of the cards I have of this color
+		int numberOfMyCards = sortedCards.size();
+		// Estimate how safe you make a Stich with your highest card
+        float safety = calculateInitialSafetyObeabe(sortedCards);
+        // The last card rated
+        Card lastCard = sortedCards.get(0);
+        // 1 Stich entspricht 10 ratingPoints
+        float rating = safety * 10;
+        // remove the last card tested
+        sortedCards.remove(lastCard);
+		while(sortedCards.size() > 0) {
+		    // The next card to be tested
+		    Card nextCard = sortedCards.get(0);
+		    // Estimate how safe you Stich with that card
+            safety *= safetyOfStich(numberOfMyCards, higherCards, nextCard, lastCard);
+            // How safe is the Stich? * Stichvalue
+            rating += safety * 10;
+            sortedCards.remove(0);
+            // One card is higher than the last
+            higherCards++;
+            lastCard = nextCard;
+        }
+		return (int) Math.ceil(rating);
 	}
+
+    public List<Card> sortCardsDescending(Set<Card> cards, Color color) {
+        Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
+        return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank).reversed()).collect(Collectors.toList());
+    }
+
+    public float calculateInitialSafetyObeabe(List<Card> sortedCards) {
+        Card nextCard = sortedCards.get(0);
+        int rank = nextCard.getRank();
+        float safety = 1;
+        // Probability that my partner has all the higher cards
+        for (int i = 0; i < 9-rank; i++)
+            safety /= 3;
+        return safety;
+    }
+
+    private float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard) {
+	    int numberOfCardsBetween = lastCard.getRank() - nextCard.getRank();
+	    // Have the next-higher card => probability to stich is the same as with the next higher card
+	    if (numberOfCardsBetween == 0)
+	        return 1;
+	    // Probability to stich is 1 - the probability, that enemy has a higher card + enough cards to discard
+	    else
+	        return 1 - ((float)2/3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsBetween));
+    }
+
+    private float enemenyHasNoMoreCards(int numberOfMyCards, int higherCards, int numberOfCardsBetween) {
+	    float estimate = 1;
+	    int otherColorCards = 9-numberOfMyCards-1;
+	    int otherCards = 27-1;
+	    // Only rough estimate of the probability, that a player of the other team has enough cards to discard (i.e. I
+        // have an Ace and King, but he has 6 and 7 so can discard those invaluable cards
+        estimate *= (otherColorCards)/otherCards;
+	    for (int i = 0; i < higherCards; i++) {
+	        otherColorCards--;
+            estimate *= (otherColorCards)/otherCards;
+        }
+        // Estimate of a mathematician; if the number of ranks between the last one and this one is increased by one,
+        // the probability of me making the Stich is roughly halved.
+        for (int i = 0; i < numberOfCardsBetween; i++)
+            estimate *= 0.45;
+	    if (estimate > 0)
+	        return estimate;
+	    else
+	        return 0;
+    }
+
+    public int safetyRatingOf(List<Card> sortedCards, float safety, int higherCards, Card lastCard) {
+	    Card nextCard = sortedCards.get(0);
+	    int rank = nextCard.getRank();
+        if (lastCard == null) {
+
+        }
+
+
+	    return (int) Math.ceil(safety * 10);
+    }
 
 	// Sorts the wrong way round
 	private int rateUndeufeColor(Set<Card> cards, Color color) {
