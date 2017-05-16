@@ -1,7 +1,5 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
-import weka.core.Debug;
-
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -262,7 +260,7 @@ public class MCTS {
 	 * @return the best Move the algorithm can find
 	 */
 	private Move finalMoveSelection(Node node) {
-		Node r = null;
+		Node r;
 
 		switch (finalSelectionPolicy) {
 			case maxChild:
@@ -288,7 +286,7 @@ public class MCTS {
 	private Node robustChild(Node node) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		double tempBest;
-		ArrayList<Node> bestNodes = new ArrayList<Node>();
+		ArrayList<Node> bestNodes = new ArrayList<>();
 
 		for (Node s : node.getChildren()) {
 			tempBest = s.getGames();
@@ -320,7 +318,7 @@ public class MCTS {
 	private Node maxChild(Node node) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		double tempBest;
-		ArrayList<Node> bestNodes = new ArrayList<Node>();
+		ArrayList<Node> bestNodes = new ArrayList<>();
 
 		for (Node s : node.getChildren()) {
 			tempBest = s.getScore()[node.getPlayer()];
@@ -375,8 +373,8 @@ public class MCTS {
 		double[] weights = board.getMoveWeights();
 
 		double totalWeight = 0.0d;
-		for (int i = 0; i < weights.length; i++) {
-			totalWeight += weights[i];
+		for (double weight : weights) {
+			totalWeight += weight;
 		}
 
 		int randomIndex = -1;
@@ -404,12 +402,12 @@ public class MCTS {
 	public ArrayList<Node> findChildren(Node node, Board board, double optimisticBias, double pessimisticBias,
 										double explorationConstant) {
 		double bestValue = Double.NEGATIVE_INFINITY;
-		ArrayList<Node> bestNodes = new ArrayList<Node>();
+		ArrayList<Node> bestNodes = new ArrayList<>();
 		for (Node s : node.getChildren()) {
 			// Pruned is only ever true if a branch has been pruned
 			// from the tree and that can only happen if bounds
 			// propagation mode is enabled.
-			if (s.isPruned() == false) {
+			if (!s.isPruned()) {
 				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.getOpti()[node.getPlayer()]
 						+ pessimisticBias * s.getPess()[node.getPlayer()];
 

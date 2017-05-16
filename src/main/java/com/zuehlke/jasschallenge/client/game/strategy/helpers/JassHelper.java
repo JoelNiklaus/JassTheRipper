@@ -1,7 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -56,7 +55,7 @@ public class JassHelper {
 	}
 
 	public static int countNumberOfCardsOfColor(Set<Card> cards, Color color) {
-		return (int) getSortedCardsOfColor(cards, color).size();
+		return getSortedCardsOfColor(cards, color).size();
 	}
 
 	public static Set<Card> getSortedCardsOfColor(Set<Card> cards, Color color) {

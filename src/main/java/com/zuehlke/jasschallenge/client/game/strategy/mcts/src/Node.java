@@ -39,7 +39,7 @@ public class Node {
 	 * @param prnt
 	 */
 	public Node(Board b, Move m, Node prnt) {
-		children = new ArrayList<Node>();
+		children = new ArrayList<>();
 		parent = prnt;
 		move = m;
 		Board tempBoard = b.duplicate();
@@ -87,8 +87,8 @@ public class Node {
 	public void expandNode(Board currentBoard) {
 		ArrayList<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
 		unvisitedChildren = new ArrayList<>();
-		for (int i = 0; i < legalMoves.size(); i++) {
-			Node tempState = new Node(currentBoard, legalMoves.get(i), this);
+		for (Move legalMove : legalMoves) {
+			Node tempState = new Node(currentBoard, legalMove, this);
 			unvisitedChildren.add(tempState);
 		}
 	}
@@ -176,8 +176,8 @@ public class Node {
 		double[] weights = board.getMoveWeights();
 
 		double totalWeight = 0.0d;
-		for (int i = 0; i < weights.length; i++) {
-			totalWeight += weights[i];
+		for (double weight : weights) {
+			totalWeight += weight;
 		}
 
 		int randomIndex = -1;

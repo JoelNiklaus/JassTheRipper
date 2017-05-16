@@ -1,13 +1,11 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.DeepCopy;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
@@ -74,8 +72,6 @@ public class JassBoard implements Board, Serializable {
 			player.setCards(cards);
 		}
 		assert remainingCards.isEmpty();
-		order.getPlayerInOrder();
-
 	}
 
 	public Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {

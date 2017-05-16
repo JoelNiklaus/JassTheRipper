@@ -38,6 +38,7 @@ public class MCTSHelper {
 		//mcts.enableRootParallelisation(threads);
 
 
+		// TODO add this when multithreading disabled
 		/*
 		Can do multithreading now -> Much faster
 		Only do this when multithreading disabled
