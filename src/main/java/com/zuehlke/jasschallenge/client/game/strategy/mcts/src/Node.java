@@ -15,6 +15,7 @@ public class Node {
 	private double[] pess;
 	private double[] opti;
 	private boolean pruned;
+	private boolean valid = true;
 
 	/**
 	 * This creates the root node
@@ -279,6 +280,18 @@ public class Node {
 
 	public void setPruned(boolean pruned) {
 		this.pruned = pruned;
+	}
+
+	public boolean isValid() {
+		return valid;
+	}
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	}
+
+	public void invalidate() {
+		this.valid = false;
 	}
 
 	@Override

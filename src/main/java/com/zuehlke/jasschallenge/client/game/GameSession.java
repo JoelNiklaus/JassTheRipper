@@ -15,6 +15,7 @@ public class GameSession {
 	private final PlayingOrder gameStartingPlayerOrder;
 	private Game currentGame;
 	private final Result result;
+	private boolean isFirstMove = true;
 
 	public GameSession(List<Team> teams, List<Player> playersInPlayingOrder) {
 		this.teams = teams;
@@ -24,6 +25,10 @@ public class GameSession {
 		this.gameStartingPlayerOrder = createOrder(playersInPlayingOrder);
 
 		result = new Result(teams.get(0), teams.get(0));
+	}
+
+	public boolean isFirstMove() {
+		return isFirstMove;
 	}
 
 	public Round getCurrentRound() {
@@ -71,7 +76,7 @@ public class GameSession {
 	}
 
 	public Round startNextRound() {
-
+		isFirstMove = false;
 		return currentGame.startNextRound();
 	}
 

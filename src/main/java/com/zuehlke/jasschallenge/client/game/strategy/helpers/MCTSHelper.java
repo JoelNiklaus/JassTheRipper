@@ -32,10 +32,10 @@ public class MCTSHelper {
 		//mcts.setHeuristicFunction(new JassHeuristic());
 		//mcts.setPlayoutSelection(new JassPlayoutSelection());
 
-		// TODO Only for debugging!
-		//int threads = 1;
-		final int threads = Runtime.getRuntime().availableProcessors();
-		//mcts.enableRootParallelisation(threads);
+
+		final int threads = 10; // The more the merrier ;)
+		//final int threads = Runtime.getRuntime().availableProcessors();
+		mcts.enableRootParallelisation(threads);
 
 
 		// TODO add this when multithreading disabled

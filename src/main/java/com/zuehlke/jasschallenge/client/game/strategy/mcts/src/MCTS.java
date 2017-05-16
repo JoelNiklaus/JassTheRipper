@@ -57,7 +57,7 @@ public class MCTS {
 
 				// Collect all computed root nodes
 				for (FutureTask<Node> future : futures) {
-					// Just abort the computation if time is up
+					// Just abort the computation if time is up TODO does this really abort it??????
 					try {
 						Node node = future.get(400, TimeUnit.MILLISECONDS);
 						rootNodes.add(node);
@@ -70,9 +70,11 @@ public class MCTS {
 				ArrayList<Move> moves = new ArrayList<>();
 
 				for (Node node : rootNodes) {
-					Move move = robustChild(node).getMove(); // Select robust child
-					System.out.println(move);
-					moves.add(move);
+					if (node.isValid()) { // so, if there was at least one run
+						Move move = robustChild(node).getMove(); // Select robust child
+						System.out.println(move);
+						moves.add(move);
+					}
 				}
 
 				bestMoveFound = vote(moves);
@@ -90,7 +92,9 @@ public class MCTS {
 
 		long endTime = System.nanoTime();
 
-		if (this.trackTime) {
+		if (this.trackTime)
+
+		{
 			System.out.println("Making choice for player: " + bestMoveFound);
 			System.out.println("Thinking time for move: " + (endTime - startTime) / 1000000 + "ms");
 		}
@@ -110,6 +114,9 @@ public class MCTS {
 			select(startingBoard, rootNode);
 			runCounter++;
 		}
+		if (runCounter == 0) {
+			rootNode.invalidate();
+		}
 		System.out.println("Run " + runCounter + " times for same random cards");
 	}
 
@@ -124,7 +131,7 @@ public class MCTS {
 			}
 			numberOfSelections.put(move, number);
 		}
-		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
+		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().parallelStream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
 		if (entryOptional.isPresent())
 			votedMove = entryOptional.get().getKey();
 

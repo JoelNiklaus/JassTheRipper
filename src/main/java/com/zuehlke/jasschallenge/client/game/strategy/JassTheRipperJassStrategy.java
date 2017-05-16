@@ -15,13 +15,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// TODO BAD_MESSAGE überprüfen. Spielt karte statt trump. ???
-
-
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
 
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 400;
+	private static final int MAX_THINKING_TIME = 350;
 
 
 	private final int max_schift_rating_val = 45;
@@ -29,7 +26,6 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
-	// TODO alle gespielten Karten merken
 
 	// wähle trumpf mit besten voraussetzungen -> ranking
 	// bei drei sicheren stichen -> obeabe oder undeufe
@@ -37,14 +33,19 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-		System.out.println("ChooseTrumpf!");
 		printCards(availableCards);
 
-		//Mode mode = JassHelper.getRandomMode(isGschobe);
+		Mode mode = JassHelper.getRandomMode(isGschobe);
 
-		//mode = predictTrumpf(availableCards, mode);
+		mode = predictTrumpf(availableCards, mode);
+
+		System.out.println("Chose Trumpf " + mode);
+
+		return mode;
+	}
+
+	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode) {
 		int max = 0;
-		Mode prospectiveMode = Mode.from(Trumpf.TRUMPF, Color.CLUBS);
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
 			if (colorTrumpRating > max) {
@@ -60,28 +61,6 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		System.out.println("ChooseTrumpf succeeded!");
 		if (max < max_schift_rating_val)
 			return Mode.shift();
-
-		System.out.println("Chose Trumpf " + prospectiveMode);
-
-		return prospectiveMode;
-	}
-
-	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode) {
-		int max = 0;
-		for (Color color : Color.values()) {
-			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
-			if (colorTrumpRating > max) {
-				max = colorTrumpRating;
-				prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
-			}
-		}
-		if (rateObeabe(availableCards) > max)
-			prospectiveMode = Mode.topDown();
-		if (rateUndeufe(availableCards) > max)
-			prospectiveMode = Mode.bottomUp();
-		System.out.println("ChooseTrumpf succeeded!");
-		if (max < max_schift_rating_val)
-			prospectiveMode = Mode.shift();
 		return prospectiveMode;
 	}
 
@@ -302,7 +281,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		final long startTime = System.nanoTime();
-		final long endingTime = startTime + 1000000 * MAX_THINKING_TIME;
+		long time = MAX_THINKING_TIME;
+		if (session.isFirstMove())
+			time -= 50;
+		final long endingTime = startTime + 1000000 * time;
 		printCards(availableCards);
 		final Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
@@ -311,11 +293,14 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			System.err.println("We have a serious problem! No possible card to play!");
 
 		if (possibleCards.size() == 1)
-			for (Card card : possibleCards)
+			for (Card card : possibleCards) {
+				System.out.println("Only one possible card to play: " + card + "\n\n");
 				return card;
+			}
 
 		Card card = JassHelper.getRandomCard(possibleCards, game);
 
+		System.out.println("Thinking now...");
 		try {
 			final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime);
 			if (possibleCards.contains(card)) {

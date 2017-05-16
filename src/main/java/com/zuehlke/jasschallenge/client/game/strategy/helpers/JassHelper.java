@@ -26,7 +26,7 @@ public class JassHelper {
 	}
 
 	public static Card getRandomCard(Set<Card> availableCards, Game game) {
-		return getPossibleCards(availableCards, game).stream()
+		return getPossibleCards(availableCards, game).parallelStream()
 				.findAny()
 				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
 	}
@@ -36,7 +36,7 @@ public class JassHelper {
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card
-		Set<Card> validCards = availableCards.stream().
+		Set<Card> validCards = availableCards.parallelStream().
 				filter(card -> mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).
 				collect(Collectors.toSet());
 		if (validCards.size() > 0)
@@ -59,7 +59,7 @@ public class JassHelper {
 	}
 
 	public static Set<Card> getSortedCardsOfColor(Set<Card> cards, Color color) {
-		return cards.stream().filter(card -> card.getColor().equals(color)).sorted().collect(Collectors.toSet());
+		return cards.parallelStream().filter(card -> card.getColor().equals(color)).sorted().collect(Collectors.toSet());
 	}
 
 	public static boolean startingPlayer(Round round) {
