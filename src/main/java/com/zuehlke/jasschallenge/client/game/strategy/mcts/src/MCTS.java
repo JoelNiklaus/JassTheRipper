@@ -62,7 +62,7 @@ public class MCTS {
 				while (!checkDone(futures))
 					Thread.sleep(10);
 
-				ArrayList<Node> rootNodes = new ArrayList<Node>();
+				ArrayList<Node> rootNodes = new ArrayList<>();
 
 
 				// Collect all computed root nodes
@@ -77,11 +77,12 @@ public class MCTS {
 					}
 				}
 
-				ArrayList<Move> moves = new ArrayList<Move>();
+				ArrayList<Move> moves = new ArrayList<>();
 
 				for (Node n : rootNodes) {
-					Node c = robustChild(n); // Select robust child
-					moves.add(c.getMove());
+					Move move = robustChild(n).getMove(); // Select robust child
+					System.out.println(move);
+					moves.add(move);
 				}
 
 				bestMoveFound = vote(moves);
@@ -115,7 +116,7 @@ public class MCTS {
 			select(startingBoard, rootNode);
 			runCounter++;
 		}
-		System.out.println("Run " + runCounter + " times for same random cards.");
+		System.out.println("Run " + runCounter + " times for same random cards");
 	}
 
 	private Move vote(ArrayList<Move> moves) {
@@ -127,8 +128,7 @@ public class MCTS {
 			}
 			numberOfSelections.put(move, number);
 		}
-		Move move = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
-		return move;
+		return numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
 
 		/*
 		Collections.sort(moves);
@@ -258,21 +258,21 @@ public class MCTS {
 	 * This is the final step of the algorithm, to pick the best move to
 	 * actually make.
 	 *
-	 * @param n this is the node whose children are considered
+	 * @param node this is the node whose children are considered
 	 * @return the best Move the algorithm can find
 	 */
-	private Move finalMoveSelection(Node n) {
+	private Move finalMoveSelection(Node node) {
 		Node r = null;
 
 		switch (finalSelectionPolicy) {
 			case maxChild:
-				r = maxChild(n);
+				r = maxChild(node);
 				break;
 			case robustChild:
-				r = robustChild(n);
+				r = robustChild(node);
 				break;
 			default:
-				r = robustChild(n);
+				r = robustChild(node);
 				break;
 		}
 
@@ -282,15 +282,15 @@ public class MCTS {
 	/**
 	 * Select the most visited child node
 	 *
-	 * @param n
+	 * @param node
 	 * @return
 	 */
-	private Node robustChild(Node n) {
+	private Node robustChild(Node node) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
 
-		for (Node s : n.getChildren()) {
+		for (Node s : node.getChildren()) {
 			tempBest = s.getGames();
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
 		}
@@ -300,13 +300,13 @@ public class MCTS {
 		return finalNode;
 	}
 
-	private double getBestValue(double bestValue, double tempBest, ArrayList<Node> bestNodes, Node s) {
+	private double getBestValue(double bestValue, double tempBest, ArrayList<Node> bestNodes, Node node) {
 		if (tempBest > bestValue) {
 			bestNodes.clear();
-			bestNodes.add(s);
+			bestNodes.add(node);
 			bestValue = tempBest;
 		} else if (tempBest == bestValue) {
-			bestNodes.add(s);
+			bestNodes.add(node);
 		}
 		return bestValue;
 	}
@@ -314,18 +314,18 @@ public class MCTS {
 	/**
 	 * Select the child node with the highest score
 	 *
-	 * @param n
+	 * @param node
 	 * @return
 	 */
-	private Node maxChild(Node n) {
+	private Node maxChild(Node node) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
 
-		for (Node s : n.getChildren()) {
-			tempBest = s.getScore()[n.getPlayer()];
-			tempBest += s.getOpti()[n.getPlayer()] * optimisticBias;
-			tempBest += s.getPess()[n.getPlayer()] * pessimisticBias;
+		for (Node s : node.getChildren()) {
+			tempBest = s.getScore()[node.getPlayer()];
+			tempBest += s.getOpti()[node.getPlayer()] * optimisticBias;
+			tempBest += s.getPess()[node.getPlayer()] * pessimisticBias;
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
 		}
 
@@ -342,17 +342,16 @@ public class MCTS {
 	 */
 	private double[] playout(Node state, Board board) {
 		ArrayList<Move> moves;
-		Move mv;
+		Move move;
 		Board brd = board.duplicate();
 
 		// Start playing random moves until the game is over
-		// TODO does not work properly
 		while (!brd.gameOver()) {
 			if (playoutpolicy == null) {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
-					mv = moves.get(random.nextInt(moves.size()));
+					move = moves.get(random.nextInt(moves.size()));
 				} else {
 
 					// This situation only occurs when a move
@@ -360,10 +359,10 @@ public class MCTS {
 					// roll. We must consider the random weights
 					// of the moves.
 
-					mv = getRandomMove(brd, moves);
+					move = getRandomMove(brd, moves);
 				}
 
-				brd.makeMove(mv);
+				brd.makeMove(move);
 			} else {
 				playoutpolicy.process(board);
 			}
@@ -402,20 +401,20 @@ public class MCTS {
 	 * @param explorationConstant
 	 * @return
 	 */
-	public ArrayList<Node> findChildren(Node n, Board b, double optimisticBias, double pessimisticBias,
+	public ArrayList<Node> findChildren(Node node, Board board, double optimisticBias, double pessimisticBias,
 										double explorationConstant) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		ArrayList<Node> bestNodes = new ArrayList<Node>();
-		for (Node s : n.getChildren()) {
+		for (Node s : node.getChildren()) {
 			// Pruned is only ever true if a branch has been pruned
 			// from the tree and that can only happen if bounds
 			// propagation mode is enabled.
 			if (s.isPruned() == false) {
-				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.getOpti()[n.getPlayer()]
-						+ pessimisticBias * s.getPess()[n.getPlayer()];
+				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.getOpti()[node.getPlayer()]
+						+ pessimisticBias * s.getPess()[node.getPlayer()];
 
 				if (heuristic != null) {
-					tempBest += heuristic.h(b);
+					tempBest += heuristic.h(board);
 				}
 
 				bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
@@ -483,7 +482,7 @@ public class MCTS {
 		this.threads = threads;
 
 		threadpool = Executors.newFixedThreadPool(threads);
-		futures = new ArrayList<FutureTask<Node>>();
+		futures = new ArrayList<>();
 	}
 
 	// Check if all threads are done
@@ -504,7 +503,7 @@ public class MCTS {
 		private Board board;
 		private long endingTime;
 
-		public MCTSTask(Board board, long endingTime) {
+		private MCTSTask(Board board, long endingTime) {
 			this.endingTime = endingTime;
 			this.board = board.duplicateWithNewRandomCards();
 		}
@@ -513,7 +512,7 @@ public class MCTS {
 		public Node call() throws Exception {
 			Node root = new Node(board);
 
-			System.out.println("New random cards dealt.");
+			//System.out.println("New random cards dealt");
 			runUntilTimeRunsOut(board, root, endingTime);
 
 			return root;

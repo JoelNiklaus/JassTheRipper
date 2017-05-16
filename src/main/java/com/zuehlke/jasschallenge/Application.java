@@ -33,11 +33,15 @@ public class Application {
         Player jassTheRipperRandomTrumpf = new Player("JassTheRipperRandomTrumpf", new JassTheRipperRandomTrumpfJassStrategy());
 
         System.out.println("Connecting... Server socket URL: " + websocketUrl);
+
         // Change here to run different bot
-        startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
-        //startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
-		//startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
+        //startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
+
+
 		//startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
+		startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
+		//startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
+
     }
 
 

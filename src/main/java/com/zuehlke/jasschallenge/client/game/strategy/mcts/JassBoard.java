@@ -51,8 +51,6 @@ public class JassBoard implements Board, Serializable {
 		Set<Card> remainingCards = getRemainingCards(availableCards);
 		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
 
-		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
-
 		for (Player player : order.getPlayerInOrder()) {
 			double numberOfCardsToAdd;
 			final int tempPlayerId = player.getSeatId();
