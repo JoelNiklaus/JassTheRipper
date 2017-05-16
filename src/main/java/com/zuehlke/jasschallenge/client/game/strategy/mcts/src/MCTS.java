@@ -42,17 +42,18 @@ public class MCTS {
 	 */
 	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) {
 		scoreBounds = bounds;
-		Node rootNode = new Node(startingBoard);
+
 		Move bestMoveFound = null;
 
 		long startTime = System.nanoTime();
 
 		if (!rootParallelisation) {
 			System.out.println("not parallelised :(");
+			Node rootNode = new Node(startingBoard);
 			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
 			bestMoveFound = finalMoveSelection(rootNode);
 		} else {
-			System.out.println("parallelised :)");
+			System.out.println("parallelised with " + threads + " threads :)");
 			for (int i = 0; i < threads; i++)
 				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, endingTime)));
 
@@ -68,11 +69,10 @@ public class MCTS {
 				for (FutureTask<Node> future : futures) {
 					// Just abort the computation if time is up
 					try {
-						Node node = future.get(300, TimeUnit.MILLISECONDS);
+						Node node = future.get(400, TimeUnit.MILLISECONDS);
 						rootNodes.add(node);
-						System.out.println("Result: " + node.getMove());
 					} catch (TimeoutException e) {
-						System.out.println("Timeout");
+						System.out.println("Timeout! Had to abort computation of thread!");
 						future.cancel(true);
 					}
 				}
@@ -96,7 +96,7 @@ public class MCTS {
 		long endTime = System.nanoTime();
 
 		if (this.trackTime) {
-			System.out.println("Making choice for player: " + rootNode.getPlayer() + " -> " + bestMoveFound);
+			System.out.println("Making choice for player: " + bestMoveFound);
 			System.out.println("Thinking time for move: " + (endTime - startTime) / 1000000 + "ms");
 		}
 

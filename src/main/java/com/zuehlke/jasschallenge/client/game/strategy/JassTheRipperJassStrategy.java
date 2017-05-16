@@ -59,6 +59,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
 		long startTime = System.nanoTime();
+		printCards(availableCards);
 		long computationTimeMillis = 400;
 		long endingTime = startTime + 1000000 * computationTimeMillis;
 		// Machine Learning Version
@@ -92,8 +93,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		}
 		*/
 		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime() - startTime) / 1000000) + "ms");
-		return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
-		//return JassHelper.getRandomMode(isGschobe);
+		//return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
+		return JassHelper.getRandomMode(isGschobe);
 	}
 
 
@@ -154,6 +155,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		long startTime = System.nanoTime();
+		printCards(availableCards);
 		long computationTimeMillis = 350;
 		long endingTime = startTime + 1000000 * computationTimeMillis;
 		Game game = session.getCurrentGame();
@@ -186,5 +188,9 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		assert card != null;
 		assert possibleCards.contains(card);
 		return card;
+	}
+
+	private void printCards(Set<Card> availableCards) {
+		System.out.println("Hi there! I am JassTheRipper and these are my cards: " + availableCards);
 	}
 }

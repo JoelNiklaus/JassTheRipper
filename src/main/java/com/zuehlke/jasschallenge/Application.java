@@ -3,6 +3,7 @@ package com.zuehlke.jasschallenge;
 import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperRandomTrumpfJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 
@@ -29,12 +30,14 @@ public class Application {
 
         Player jassTheRipper = new Player(BOT_NAME, STRATEGY);
         Player randomJasser = new Player("RandomJasser", new RandomJassStrategy());
+        Player jassTheRipperRandomTrumpf = new Player("JassTheRipperRandomTrumpf", new JassTheRipperRandomTrumpfJassStrategy());
 
         System.out.println("Connecting... Server socket URL: " + websocketUrl);
         // Change here to run different bot
-        //startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
+        startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
         //startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
-		startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
+		//startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
+		//startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
     }
 
 

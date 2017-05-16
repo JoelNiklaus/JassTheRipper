@@ -94,7 +94,7 @@ public class JassBoard implements Board, Serializable {
 
 	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		//cards = (Set<Card>) DeepCopy.copy(cards);
-		System.out.println("cards before" + cards);
+		//System.out.println("cards before" + cards);
 		// TODO This version causes a bug in makeMove
 		assert (numberOfCards > 0 || numberOfCards <= 9);
 		List<Card> list = cards.parallelStream().collect(Collectors.toList());
@@ -131,9 +131,9 @@ public class JassBoard implements Board, Serializable {
 		//assert (cards.containsAll(subset));
 		assert numberOfCards <= list.size();
 		List<Card> sublist = list.subList(0, numberOfCards);
-		System.out.println(sublist.size() + "  " + numberOfCards);
+		//System.out.println(sublist.size() + "  " + numberOfCards);
 		Set<Card> subsetV2 = new HashSet<>(sublist);
-		System.out.println("subset shuffle" + subsetV2);
+		//System.out.println("subset shuffle" + subsetV2);
 		assert (cards.containsAll(subsetV2));
 		//return subset;
 		return subsetV2;
