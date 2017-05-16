@@ -71,7 +71,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		return 30;
 	}
 
-	private int rateObeabe(Set<Card> cards) {
+	public int rateObeabe(Set<Card> cards) {
 		int sum = 0;
 		for (Color color : Color.values()) {
 			sum += rateObeabeColor(cards, color);

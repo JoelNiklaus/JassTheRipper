@@ -48,10 +48,25 @@ public class JassTheRipperStrategyTest {
 		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.CLUBS) > 0);
 		// 90 is maximum amount of points
 		assertEquals(90, jassStrategy.rateObeabeColor(clubs,Color.CLUBS));
-		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.DIAMONDS) == 0);
-		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.HEARTS) == 0);
-		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.SPADES) == 0);
+		assertEquals(0, jassStrategy.rateObeabeColor(clubs, Color.DIAMONDS));
+		assertEquals(0, jassStrategy.rateObeabeColor(clubs, Color.HEARTS));
+		assertEquals(0, jassStrategy.rateObeabeColor(clubs, Color.SPADES));
+		assertEquals(90, jassStrategy.rateObeabe(clubs));
 	}
+
+    @Test
+    public void testRateObeAbeWithIsBetween0And90() {
+        JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
+        assertTrue(jassStrategy.rateObeabe(cards1) >= 0);
+        assertTrue(jassStrategy.rateObeabe(cards2) >= 0);
+        assertTrue(jassStrategy.rateObeabe(cards3) >= 0);
+        assertTrue(jassStrategy.rateObeabe(cards4) >= 0);
+        assertTrue(jassStrategy.rateObeabe(cards1) <= 90);
+        assertTrue(jassStrategy.rateObeabe(cards2) <= 90);
+        assertTrue(jassStrategy.rateObeabe(cards3) <= 90);
+        assertTrue(jassStrategy.rateObeabe(cards4) <= 90);
+    }
+
 	@Test
 	public void testCalculateInitialSafety() {
 		JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
@@ -65,6 +80,7 @@ public class JassTheRipperStrategyTest {
 
 	@Test
     public void getCardRank() {
+	    // Test that the Ace has Rank 9
 	    assertEquals(9, Card.CLUB_ACE.getRank());
     }
 
