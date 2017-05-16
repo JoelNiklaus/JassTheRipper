@@ -48,21 +48,22 @@ public class JassBoard implements Board, Serializable {
 	private void distributeCardsForPlayers(Set<Card> availableCards) {
 		final PlayingOrder order = game.getCurrentRound().getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards);
-		double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
+		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
 
 		for (Player player : order.getPlayerInOrder()) {
+			double numberOfCardsToAdd;
 			final int tempPlayerId = player.getSeatId();
 			Set<Card> cards;
 			if (tempPlayerId != playerId) { // randomize cards for the other players
 				if (tempPlayerId > playerId) // if tempPlayer is seated after player add one card more
-					numberOfCards = Math.ceil(numberOfCards);
+					numberOfCardsToAdd = Math.ceil(numberOfCards);
 				else
-					numberOfCards = Math.floor(numberOfCards);
+					numberOfCardsToAdd = Math.floor(numberOfCards);
 
-				cards = pickRandomSubSet(remainingCards, (int) numberOfCards);
+				cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
 				System.out.println("remainingCards before" + remainingCards);
 
-				for(Card card: cards){
+				for (Card card : cards) {
 					if (remainingCards.contains(card))
 						System.out.println(card);
 				}
