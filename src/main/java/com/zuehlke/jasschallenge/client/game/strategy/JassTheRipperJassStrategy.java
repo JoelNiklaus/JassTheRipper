@@ -1,21 +1,16 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.exceptions.InvalidTrumpfException;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
-import com.zuehlke.jasschallenge.client.game.strategy.helpers.MLHelper;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
-import weka.classifiers.functions.MultilayerPerceptron;
-import weka.core.Instances;
 
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,26 +25,6 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	private final int max_schift_rating_val = 30;
 
-	private Instances train;
-	private MultilayerPerceptron mlp;
-
-
-	public JassTheRipperJassStrategy() {
-		/*
-		mlp = new MultilayerPerceptron();
-		mlp.setLearningRate(0.1);
-		mlp.setMomentum(0.2);
-		mlp.setTrainingTime(50);
-		mlp.setHiddenLayers("3");
-
-		train = MLHelper.loadArff("ml/trumpTrain.arff");
-		try {
-			mlp.buildClassifier(train);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		*/
-	}
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
 
@@ -63,19 +38,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-		long startTime = System.nanoTime();
 		printCards(availableCards);
-		long computationTimeMillis = 400;
-		long endingTime = startTime + 1000000 * computationTimeMillis;
-		// Machine Learning Version
-		//Mode trumpf = predictTrumpf(availableCards);
 
-		// Knowledge Version
-		/*
-		System.out.println("ChooseTrumpf!");
-		System.out.println(availableCards.toArray()[0].toString());
 		int max = 0;
-		Mode prospectiveMode = Mode.from(Trumpf.TRUMPF, Color.CLUBS);
+		Mode prospectiveMode = JassHelper.getRandomMode(isGschobe);
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rate(availableCards, color);
 			if (colorTrumpRating > max) {
@@ -90,31 +56,9 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		System.out.println("ChooseTrumpf succeeded!");
 		if (max < max_schift_rating_val)
 			return Mode.shift();
-		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime() - startTime) / 1000000) + "ms");
 		return prospectiveMode;
-		*/
-		/*
-		while(System.nanoTime() < endingTime) {
-			// no_op
-		}
-		*/
-		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime() - startTime) / 1000000) + "ms");
-		//return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
-		return JassHelper.getRandomMode(isGschobe);
 	}
 
-
-	private Mode predictTrumpf(Set<Card> availableCards) {
-		Instances cards = MLHelper.buildSingleInstanceInstances(train, availableCards);
-
-		Mode trumpf = null;
-		try {
-			trumpf = MLHelper.predictTrumpf(mlp, cards);
-		} catch (InvalidTrumpfException e) {
-			e.printStackTrace();
-		}
-		return trumpf;
-	}
 
 	private int rate(Set<Card> cardStream, Color color) {
 		return 30;

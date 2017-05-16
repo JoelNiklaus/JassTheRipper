@@ -128,7 +128,6 @@ public class MCTS {
 			numberOfSelections.put(move, number);
 		}
 		Move move = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
-		System.out.println(numberOfSelections.toString());
 		return move;
 
 		/*
@@ -353,7 +352,6 @@ public class MCTS {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
-					//System.out.println("MCTS " + moves.size());
 					mv = moves.get(random.nextInt(moves.size()));
 				} else {
 
