@@ -24,6 +24,7 @@ public class JassTheRipperStrategyTest {
 	private Set<Card> cards3 = EnumSet.of(Card.SPADE_ACE, Card.SPADE_EIGHT, Card.SPADE_JACK, Card.HEART_SIX, Card.HEART_SEVEN, Card.CLUB_QUEEN, Card.DIAMOND_TEN, Card.CLUB_NINE, Card.CLUB_JACK);
 	private Set<Card> cards4 = EnumSet.of(Card.DIAMOND_ACE, Card.DIAMOND_EIGHT, Card.DIAMOND_JACK, Card.SPADE_SIX, Card.SPADE_SEVEN, Card.HEART_QUEEN, Card.CLUB_TEN, Card.HEART_NINE, Card.HEART_JACK);
 	private Set<Card> clubs = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
+	private Set<Card> veryGoodUndeUfe = EnumSet.of(Card.CLUB_SIX, Card.CLUB_EIGHT, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.DIAMOND_NINE, Card.SPADE_SIX, Card.SPADE_SEVEN, Card.HEART_TEN, Card.CLUB_NINE);
 
 
 	@Test
@@ -43,9 +44,17 @@ public class JassTheRipperStrategyTest {
 	// TODO andere trümpfe testen
 
 	@Test
+    public void testRateUndeUfeBestWithGreatUndeUfeCards() {
+        JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
+        int ratingObeAbe =jassStrategy.rateObeabe(veryGoodUndeUfe);
+        int ratingUndeUfe =jassStrategy.rateUndeufe(veryGoodUndeUfe);
+        assertTrue(ratingUndeUfe > ratingObeAbe);
+        System.out.println("Undeufe: " + ratingUndeUfe + ", Obeabe: " + ratingObeAbe);
+    }
+
+    @Test
 	public void testRateObeAbeWithAllClubs() {
 		JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
-		assertTrue(jassStrategy.rateObeabeColor(clubs, Color.CLUBS) > 0);
 		// 90 is maximum amount of points
 		assertEquals(90, jassStrategy.rateObeabeColor(clubs,Color.CLUBS));
 		assertEquals(0, jassStrategy.rateObeabeColor(clubs, Color.DIAMONDS));
@@ -53,6 +62,17 @@ public class JassTheRipperStrategyTest {
 		assertEquals(0, jassStrategy.rateObeabeColor(clubs, Color.SPADES));
 		assertEquals(90, jassStrategy.rateObeabe(clubs));
 	}
+
+    @Test
+    public void testRateUndeUfeWithAllClubs() {
+        JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
+        // 90 is maximum amount of points
+        assertEquals(90, jassStrategy.rateUndeufeColor(clubs,Color.CLUBS));
+        assertEquals(0, jassStrategy.rateUndeufeColor(clubs, Color.DIAMONDS));
+        assertEquals(0, jassStrategy.rateUndeufeColor(clubs, Color.HEARTS));
+        assertEquals(0, jassStrategy.rateUndeufeColor(clubs, Color.SPADES));
+        assertEquals(90, jassStrategy.rateUndeufe(clubs));
+    }
 
     @Test
     public void testRateObeAbeWithIsBetween0And90() {
@@ -65,6 +85,19 @@ public class JassTheRipperStrategyTest {
         assertTrue(jassStrategy.rateObeabe(cards2) <= 90);
         assertTrue(jassStrategy.rateObeabe(cards3) <= 90);
         assertTrue(jassStrategy.rateObeabe(cards4) <= 90);
+    }
+
+    @Test
+    public void testRateUndeUfeWithIsBetween0And90() {
+        JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
+        assertTrue(jassStrategy.rateUndeufe(cards1) >= 0);
+        assertTrue(jassStrategy.rateUndeufe(cards2) >= 0);
+        assertTrue(jassStrategy.rateUndeufe(cards3) >= 0);
+        assertTrue(jassStrategy.rateUndeufe(cards4) >= 0);
+        assertTrue(jassStrategy.rateUndeufe(cards1) <= 90);
+        assertTrue(jassStrategy.rateUndeufe(cards2) <= 90);
+        assertTrue(jassStrategy.rateUndeufe(cards3) <= 90);
+        assertTrue(jassStrategy.rateUndeufe(cards4) <= 90);
     }
 
 	@Test

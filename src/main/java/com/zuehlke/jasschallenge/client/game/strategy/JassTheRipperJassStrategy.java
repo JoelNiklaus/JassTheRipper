@@ -79,7 +79,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		return sum;
 	}
 
-	private int rateUndeufe(Set<Card> cards) {
+	public int rateUndeufe(Set<Card> cards) {
 		int sum = 0;
 		for (Color color : Color.values()) {
 			sum += rateUndeufeColor(cards, color);
@@ -124,12 +124,27 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
         return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank).reversed()).collect(Collectors.toList());
     }
 
+    public List<Card> sortCardsAscending(Set<Card> cards, Color color) {
+        Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
+        return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
+    }
+
     public float calculateInitialSafetyObeabe(List<Card> sortedCards) {
         Card nextCard = sortedCards.get(0);
         int rank = nextCard.getRank();
         float safety = 1;
         // Probability that my partner has all the higher cards
         for (int i = 0; i < 9-rank; i++)
+            safety /= 3;
+        return safety;
+    }
+
+    public float calculateInitialSafetyUndeUfe(List<Card> sortedCards) {
+        Card nextCard = sortedCards.get(0);
+        int rank = nextCard.getRank();
+        float safety = 1;
+        // Probability that my partner has all the lower cards
+        for (int i = 0; i < rank-1; i++)
             safety /= 3;
         return safety;
     }
@@ -165,27 +180,37 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	        return 0;
     }
 
-    public int safetyRatingOf(List<Card> sortedCards, float safety, int higherCards, Card lastCard) {
-	    Card nextCard = sortedCards.get(0);
-	    int rank = nextCard.getRank();
-        if (lastCard == null) {
-
+	public int rateUndeufeColor(Set<Card> cards, Color color) {
+        // Get the cards in ascending order
+        List<Card> sortedCards = sortCardsAscending(cards, color);
+        if (sortedCards.size() == 0)
+            return 0;
+        // Number of cards I have that are lower than the nextCard
+        int lowerCards = 0;
+        // Number of the cards I have of this color
+        int numberOfMyCards = sortedCards.size();
+        // Estimate how safe you make a Stich with your highest card
+        float safety = calculateInitialSafetyUndeUfe(sortedCards);
+        // The last card rated
+        Card lastCard = sortedCards.get(0);
+        // 1 Stich entspricht 10 ratingPoints
+        float rating = safety * 10;
+        // remove the last card tested
+        sortedCards.remove(lastCard);
+        while(sortedCards.size() > 0) {
+            // The next card to be tested
+            Card nextCard = sortedCards.get(0);
+            // Estimate how safe you Stich with that card
+            safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard);
+            // How safe is the Stich? * Stichvalue
+            rating += safety * 10;
+            sortedCards.remove(0);
+            // One card is higher than the last
+            lowerCards++;
+            lastCard = nextCard;
         }
-
-
-	    return (int) Math.ceil(safety * 10);
-    }
-
-	// Sorts the wrong way round
-	private int rateUndeufeColor(Set<Card> cards, Color color) {
-		Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
-		List<Card> sortedCards = cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
-		if (sortedCards.stream().findFirst().isPresent())
-			if (sortedCards.stream().findFirst().get().getValue().getRank() <= 2)
-				return 300;
-		return 5;
+        return (int) Math.ceil(rating);
 	}
-
 
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
