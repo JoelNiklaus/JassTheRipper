@@ -40,29 +40,7 @@ public class MCTSHelper {
 		// TODO Only for debugging!
 		//int threads = 1;
 		int threads = Runtime.getRuntime().availableProcessors();
-		System.out.println(threads + " threads");
 		mcts.enableRootParallelisation(threads);
-
-
-		/*
-		Can do multithreading now -> Much faster.
-
-		int maxComputationTime = 440;
-		int numberOfMCTSRuns = 4;
-
-		int timePerRun = maxComputationTime / numberOfMCTSRuns;
-
-		HashMap<Card, Integer> numberOfSelections = new HashMap<>();
-		for (int i = 0; i < numberOfMCTSRuns; i++) {
-			Card card = predictCard(availableCards, game, mcts, timePerRun);
-			int number = 1;
-			if (numberOfSelections.containsKey(card)) {
-				number += numberOfSelections.get(card);
-			}
-			numberOfSelections.put(card, number);
-		}
-		Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
-		*/
 
 		return predictCard(availableCards, game, mcts, endingTime);
 	}
@@ -74,7 +52,6 @@ public class MCTSHelper {
 		long cloningTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Cloning time: " + cloningTime + "ms");
 
-		// old return ((CardMove) mcts.runMCTS(jass, false, time)).getPlayedCard();
 		return ((CardMove) mcts.runMCTS_UCT(jassBoard, endingTime, false)).getPlayedCard();
 	}
 

@@ -40,8 +40,15 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
 		printCards(availableCards);
 
-		int max = 0;
 		Mode prospectiveMode = JassHelper.getRandomMode(isGschobe);
+
+		prospectiveMode = predictTrumpf(availableCards, prospectiveMode);
+
+		return prospectiveMode;
+	}
+
+	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode) {
+		int max = 0;
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rate(availableCards, color);
 			if (colorTrumpRating > max) {
@@ -55,7 +62,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			prospectiveMode = Mode.bottomUp();
 		System.out.println("ChooseTrumpf succeeded!");
 		if (max < max_schift_rating_val)
-			return Mode.shift();
+			prospectiveMode = Mode.shift();
 		return prospectiveMode;
 	}
 
