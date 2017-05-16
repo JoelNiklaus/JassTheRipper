@@ -72,6 +72,14 @@ public class Round implements Serializable {
 		return winningMove.getPlayer();
 	}
 
+	public boolean hasPlayerAlreadyPlayed(Player player) {
+		for (Move move : moves) {
+			if (move.getPlayer().equals(player))
+				return true;
+		}
+		return false;
+	}
+
 	public Player getCurrentPlayer() {
 		return getPlayingOrder().getCurrentPlayer();
 	}

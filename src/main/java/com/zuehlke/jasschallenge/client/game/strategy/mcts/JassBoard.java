@@ -33,7 +33,7 @@ public class JassBoard implements Board, Serializable {
 		//this.session = (GameSession) ObjectCloner.deepCopy(session);
 		this.playerId = this.game.getCurrentPlayer().getSeatId();
 		if (newRandomCards)
-			distributeCardsForPlayers(copy(this.availableCards));
+			distributeCardsForPlayers(this.availableCards);
 	}
 
 	private Set<Card> copy(Set<Card> cards) {
@@ -46,57 +46,64 @@ public class JassBoard implements Board, Serializable {
 	 * @param availableCards
 	 */
 	private void distributeCardsForPlayers(Set<Card> availableCards) {
-		final PlayingOrder order = game.getCurrentRound().getPlayingOrder();
+		final Round round = game.getCurrentRound();
+		final PlayingOrder order = round.getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards);
 		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
+
+		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
 
 		for (Player player : order.getPlayerInOrder()) {
 			double numberOfCardsToAdd;
 			final int tempPlayerId = player.getSeatId();
 			Set<Card> cards;
 			if (tempPlayerId != playerId) { // randomize cards for the other players
-				if (tempPlayerId > playerId) // if tempPlayer is seated after player add one card more
-					numberOfCardsToAdd = Math.ceil(numberOfCards);
-				else
+				//if (tempPlayerId > playerId) // if tempPlayer is seated after player add one card more
+				if(round.hasPlayerAlreadyPlayed(player))
 					numberOfCardsToAdd = Math.floor(numberOfCards);
+				else
+					numberOfCardsToAdd = Math.ceil(numberOfCards);
 
 				cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
-				System.out.println("remainingCards before" + remainingCards);
+				//System.out.println("remainingCards before" + remainingCards);
 
+				/*
 				for (Card card : cards) {
 					if (remainingCards.contains(card))
 						System.out.println(card);
 				}
-
+				*/
 
 				if (!remainingCards.removeAll(cards))
 					System.err.println("Could not remove picked cards from remaining cards");
-				System.out.println("remainingCards after" + remainingCards);
+				//System.out.println("remainingCards after" + remainingCards);
 				assert !remainingCards.containsAll(cards);
 			} else
 				cards = copy(availableCards);
 
 			player.setCards(cards);
 		}
+		assert remainingCards.isEmpty();
+		order.getPlayerInOrder();
 
 	}
 
 	public Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {
-	    return pickRandomSubSet(cards, numberOfCards);
-    }
+		return pickRandomSubSet(cards, numberOfCards);
+	}
 
 	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		//cards = (Set<Card>) DeepCopy.copy(cards);
 		System.out.println("cards before" + cards);
 		// TODO This version causes a bug in makeMove
-        assert(numberOfCards > 0 || numberOfCards <= 9);
+		assert (numberOfCards > 0 || numberOfCards <= 9);
 		List<Card> list = cards.parallelStream().collect(Collectors.toList());
-		int listLengthBeforeShuffle = list.size();
+		//int listLengthBeforeShuffle = list.size();
 		Collections.shuffle(list);
-        int listLengthAfterShuffle = list.size();
-        assert(listLengthBeforeShuffle == listLengthAfterShuffle);
+		//int listLengthAfterShuffle = list.size();
+		//assert (listLengthBeforeShuffle == listLengthAfterShuffle);
 
-
+/*
 		// TODO in this version the the for loop is not exited any more
 		Set<Card> subset = Collections.synchronizedSet(EnumSet.noneOf(Card.class));
 		int subsetSize = subset.size();
@@ -107,30 +114,40 @@ public class JassBoard implements Board, Serializable {
 		while (subset.size() < numberOfCards) {
 			int item = random.nextInt(size);
 			int i = 0;
-			assert(cards.size() > item && item >= 0);
+			assert (cards.size() > item && item >= 0);
 			for (Card card : cards) {
 				if (i == item)
 					subset.add(card);
 				i++;
+				System.out.println("in for loop: " + card);
 			}
 		}
-		assert(cards.containsAll(subset));
-		System.out.println("cards after" + cards);
-		System.out.println("subset old" + subset);
+		assert (cards.containsAll(subset));
+		//System.out.println("cards after" + cards);
+		//System.out.println("subset old" + subset);
+		*/
 
-		System.out.println("subset shuffle" + list.subList(0, numberOfCards).stream().collect(Collectors.toSet()));
-        assert(cards.containsAll(subset));
-        Set<Card> subsetV2 = copy(new LinkedList<>(list.subList(0, numberOfCards - 1)).parallelStream().collect(Collectors.toSet()));
-        assert(cards.containsAll(subsetV2));
+		//System.out.println("subset shuffle" + list.subList(0, numberOfCards).stream().collect(Collectors.toSet()));
+		//assert (cards.containsAll(subset));
+		assert numberOfCards <= list.size();
+		List<Card> sublist = list.subList(0, numberOfCards);
+		System.out.println(sublist.size() + "  " + numberOfCards);
+		Set<Card> subsetV2 = new HashSet<>(sublist);
+		System.out.println("subset shuffle" + subsetV2);
+		assert (cards.containsAll(subsetV2));
 		//return subset;
 		return subsetV2;
 	}
 
 	private Set<Card> getRemainingCards(Set<Card> availableCards) {
 		Set<Card> cards = Collections.synchronizedSet(EnumSet.allOf(Card.class));
+		assert cards.size() == 36;
 		cards.removeAll(availableCards);
-		cards.removeAll(game.getAlreadyPlayedCards());
-		return copy(cards);
+		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
+		Round round = game.getCurrentRound();
+		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
+		cards.removeAll(alreadyPlayedCards);
+		return cards;
 	}
 
 	public Game getGame() {
@@ -159,43 +176,43 @@ public class JassBoard implements Board, Serializable {
 		final Player player = game.getCurrentPlayer();
 		Set<Card> possibleCards = JassHelper.getPossibleCards(copy(player.getCards()), game);
 
-		assert(possibleCards.size() > 0);
+		assert (possibleCards.size() > 0);
 
-        possibleCards = refineMovesWithJassKnowledge(possibleCards, round, player);
+		possibleCards = refineMovesWithJassKnowledge(possibleCards, round, player);
 
-        assert possibleCards.size() > 0;
+		assert possibleCards.size() > 0;
 
 		for (Card card : possibleCards)
 			moves.add(new CardMove(player, card));
-		assert(moves.size() > 0);
+		assert (moves.size() > 0);
 
 		return moves;
 	}
 
 	public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
-        // stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
-        if (JassHelper.lastPlayer(round)) {
-            Player stichOwner = round.getWinner();
-            if (JassHelper.isOpponent(stichOwner, player)) {
-                //System.out.println(possibleCards);
-                Card winningCard = round.getWinningCard();
-                Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
-                for (Card card : possibleCards) {
-                    List<Card> cards = new LinkedList<>();
-                    cards.add(card);
-                    cards.add(winningCard);
-                    if (round.getMode().determineWinningCard(cards).equals(winningCard))
-                        cardsToRemove.add(card);
-                }
-                if (possibleCards.size() > cardsToRemove.size())
-                    possibleCards.removeAll(cardsToRemove);
-                //System.out.println(possibleCards);
-            }
-        }
-        return possibleCards;
-    }
+		// stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
+		if (JassHelper.lastPlayer(round)) {
+			Player stichOwner = round.getWinner();
+			if (JassHelper.isOpponent(stichOwner, player)) {
+				//System.out.println(possibleCards);
+				Card winningCard = round.getWinningCard();
+				Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
+				for (Card card : possibleCards) {
+					List<Card> cards = new LinkedList<>();
+					cards.add(card);
+					cards.add(winningCard);
+					if (round.getMode().determineWinningCard(cards).equals(winningCard))
+						cardsToRemove.add(card);
+				}
+				if (possibleCards.size() > cardsToRemove.size())
+					possibleCards.removeAll(cardsToRemove);
+				//System.out.println(possibleCards);
+			}
+		}
+		return possibleCards;
+	}
 
-    // TODO exclude very bad moves
+	// TODO exclude very bad moves
 
 	// Wenn erster spieler am anfang des spiels und mindestens 2 trümpfe -> austrumpfen
 
@@ -221,12 +238,9 @@ public class JassBoard implements Board, Serializable {
 
 		assert cardMove != null;
 
-		//System.out.println(game.getCurrentRound());
 
 		Player player = game.getCurrentPlayer();
 
-		//System.out.println(player);
-		//System.out.println(cardMove.getPlayer());
 
 		assert cardMove.getPlayer().equals(player);
 		player.getCards().remove((cardMove).getPlayedCard());
@@ -240,15 +254,10 @@ public class JassBoard implements Board, Serializable {
 
 			Round round = game.getCurrentRound();
 
-
 			if (round.getRoundNumber() == 9)
 				assert game.gameFinished();
 
-			System.out.println(round);
-			System.out.println(game.gameFinished());
-
 			for (Player current : round.getPlayingOrder().getPlayerInOrder()) {
-				//System.out.println(round);
 				assert current.getCards().size() == 9 - round.getRoundNumber();
 			}
 		}
