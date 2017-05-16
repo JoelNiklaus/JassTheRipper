@@ -32,8 +32,9 @@ public class Application {
 
         System.out.println("Connecting... Server socket URL: " + websocketUrl);
         // Change here to run different bot
-        startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
-		//startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
+        //startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
+        //startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
+		startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
     }
 
 

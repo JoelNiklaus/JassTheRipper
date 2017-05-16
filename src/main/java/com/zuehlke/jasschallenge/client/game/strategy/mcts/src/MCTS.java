@@ -26,10 +26,10 @@ public class MCTS {
 
 	public MCTS() {
 		// Production Mode
-		//random = new Random();
+		random = new Random();
 		// Debug Mode
-		random = new Debug.Random();
-		random.setSeed(3);
+		//random = new Debug.Random();
+		//random.setSeed(3);
 	}
 
 	/**
@@ -64,7 +64,6 @@ public class MCTS {
 				ArrayList<Node> rootNodes = new ArrayList<Node>();
 
 
-
 				// Collect all computed root nodes
 				for (FutureTask<Node> future : futures) {
 					// Just abort the computation if time is up
@@ -72,8 +71,7 @@ public class MCTS {
 						Node node = future.get(300, TimeUnit.MILLISECONDS);
 						rootNodes.add(node);
 						System.out.println("Result: " + node.getMove());
-					}
-					catch (TimeoutException e) {
+					} catch (TimeoutException e) {
 						System.out.println("Timeout");
 						future.cancel(true);
 					}
@@ -355,7 +353,7 @@ public class MCTS {
 				moves = brd.getMoves(CallLocation.treePolicy);
 				if (brd.getCurrentPlayer() >= 0) {
 					// make random selection normally
-					System.out.println("MCTS"+moves.size());
+					//System.out.println("MCTS " + moves.size());
 					mv = moves.get(random.nextInt(moves.size()));
 				} else {
 

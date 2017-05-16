@@ -37,7 +37,9 @@ public class JassHelper {
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card
-		Set<Card> validCards = availableCards.stream().filter(card -> mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).collect(Collectors.toSet());
+		Set<Card> validCards = availableCards.stream().
+				filter(card -> mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).
+				collect(Collectors.toSet());
 		if (validCards.size() > 0)
 			return validCards;
 		else

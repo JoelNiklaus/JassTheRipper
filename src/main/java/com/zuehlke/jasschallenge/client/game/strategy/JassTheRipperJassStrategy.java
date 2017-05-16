@@ -86,12 +86,14 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			return Mode.shift();
 		return prospectiveMode;
 		*/
+		/*
 		while(System.nanoTime() < endingTime) {
 			// no_op
 		}
-		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime()-startTime)/1000000) + "ms");
-		//return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
-		return JassHelper.getRandomMode(isGschobe);
+		*/
+		System.out.println("Choosing trumpf for minimum of " + ((System.nanoTime() - startTime) / 1000000) + "ms");
+		return Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
+		//return JassHelper.getRandomMode(isGschobe);
 	}
 
 
@@ -152,10 +154,17 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		long startTime = System.nanoTime();
-		long computationTimeMillis = 400;
+		long computationTimeMillis = 350;
 		long endingTime = startTime + 1000000 * computationTimeMillis;
 		Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
+
+		if (possibleCards.isEmpty())
+			System.err.println("We have a serious problem! No possible card to play!");
+
+		if (possibleCards.size() == 1)
+			for (Card card : possibleCards)
+				return card;
 
 		Card card = JassHelper.getRandomCard(possibleCards, game);
 
@@ -170,9 +179,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			e.printStackTrace();
 			System.out.println("Something went wrong. Had to choose random card, Damn it!");
 		}
+
 		long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move: " + endTime + "ms");
-		System.out.println("Played " + card);
+		System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards);
 		assert card != null;
 		assert possibleCards.contains(card);
 		return card;
