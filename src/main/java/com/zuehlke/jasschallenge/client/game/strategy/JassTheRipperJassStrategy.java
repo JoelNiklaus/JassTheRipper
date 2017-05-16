@@ -27,8 +27,6 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
-
-
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
 	// TODO alle gespielten Karten merken
 
@@ -40,11 +38,13 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
 		printCards(availableCards);
 
-		Mode prospectiveMode = JassHelper.getRandomMode(isGschobe);
+		Mode mode = JassHelper.getRandomMode(isGschobe);
 
-		prospectiveMode = predictTrumpf(availableCards, prospectiveMode);
+		//mode = predictTrumpf(availableCards, mode);
 
-		return prospectiveMode;
+		System.out.println("Chose Trumpf " + mode);
+
+		return mode;
 	}
 
 	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode) {
@@ -138,7 +138,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 		final long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move: " + endTime + "ms");
-		System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards);
+		System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards+ "\n\n");
 		assert card != null;
 		assert possibleCards.contains(card);
 		return card;

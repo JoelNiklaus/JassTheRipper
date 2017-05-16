@@ -8,7 +8,7 @@ import java.util.List;
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrder;
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
 
-public class GameSession implements Serializable {
+public class GameSession {
 
 	private final List<Team> teams;
 	private final List<Player> playersInPlayingOrder;
