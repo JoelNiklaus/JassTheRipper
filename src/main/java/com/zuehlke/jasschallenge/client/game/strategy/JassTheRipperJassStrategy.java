@@ -23,6 +23,11 @@ import java.util.stream.Collectors;
 
 
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
+
+	// the maximal number of milliseconds per choose card move
+	private static final int MAX_THINKING_TIME = 400;
+
+
 	private final int max_schift_rating_val = 30;
 
 	private Instances train;
@@ -154,11 +159,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
-		long startTime = System.nanoTime();
+		final long startTime = System.nanoTime();
+		final long endingTime = startTime + 1000000 * MAX_THINKING_TIME;
 		printCards(availableCards);
-		long computationTimeMillis = 350;
-		long endingTime = startTime + 1000000 * computationTimeMillis;
-		Game game = session.getCurrentGame();
+		final Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
 		if (possibleCards.isEmpty())
@@ -171,7 +175,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		Card card = JassHelper.getRandomCard(possibleCards, game);
 
 		try {
-			Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime);
+			final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime);
 			if (possibleCards.contains(card)) {
 				System.out.println("Chose Card based on MCTS, Hurra!");
 				card = mctsCard;
@@ -182,7 +186,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			System.out.println("Something went wrong. Had to choose random card, Damn it!");
 		}
 
-		long endTime = (System.nanoTime() - startTime) / 1000000;
+		final long endTime = (System.nanoTime() - startTime) / 1000000;
 		System.out.println("Total time for move: " + endTime + "ms");
 		System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards);
 		assert card != null;
