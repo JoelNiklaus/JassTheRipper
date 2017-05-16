@@ -1,34 +1,27 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class MCTS {
-	private Random random;
-	private boolean rootParallelisation;
+	private final Random random = new Random();
 
+	private boolean scoreBounds;
 	private double explorationConstant = Math.sqrt(2.0);
 	private double pessimisticBias = 0.0;
 	private double optimisticBias = 0.0;
-
-	private boolean scoreBounds;
+	private boolean rootParallelisation;
 	private boolean trackTime; // display thinking time used
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.robustChild;
-
 	private HeuristicFunction heuristic;
 	private PlayoutSelection playoutpolicy;
 
 	private int threads;
 	private ExecutorService threadpool;
 	private ArrayList<FutureTask<Node>> futures;
-
-	public MCTS() {
-		// Production Mode
-		random = new Random();
-		// Debug Mode
-		//random = new Debug.Random();
-		//random.setSeed(3);
-	}
 
 	/**
 	 * Run a UCT-MCTS simulation for a a certain amount of time.
@@ -40,7 +33,6 @@ public class MCTS {
 	 */
 	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) {
 		scoreBounds = bounds;
-
 		Move bestMoveFound = null;
 
 		long startTime = System.nanoTime();
@@ -50,6 +42,7 @@ public class MCTS {
 			Node rootNode = new Node(startingBoard);
 			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
 			bestMoveFound = finalMoveSelection(rootNode);
+
 		} else {
 			System.out.println("parallelised with " + threads + " threads :)");
 			for (int i = 0; i < threads; i++)
@@ -61,7 +54,6 @@ public class MCTS {
 					Thread.sleep(10);
 
 				ArrayList<Node> rootNodes = new ArrayList<>();
-
 
 				// Collect all computed root nodes
 				for (FutureTask<Node> future : futures) {
@@ -77,8 +69,8 @@ public class MCTS {
 
 				ArrayList<Move> moves = new ArrayList<>();
 
-				for (Node n : rootNodes) {
-					Move move = robustChild(n).getMove(); // Select robust child
+				for (Node node : rootNodes) {
+					Move move = robustChild(node).getMove(); // Select robust child
 					System.out.println(move);
 					moves.add(move);
 				}
@@ -89,7 +81,11 @@ public class MCTS {
 				e.printStackTrace();
 			}
 
+			threadpool.shutdownNow();
 			futures.clear();
+
+			assert threadpool.isShutdown();
+			assert futures.isEmpty();
 		}
 
 		long endTime = System.nanoTime();
@@ -119,6 +115,8 @@ public class MCTS {
 
 	private Move vote(ArrayList<Move> moves) {
 		HashMap<Move, Integer> numberOfSelections = new HashMap<>();
+		assert !moves.isEmpty();
+		Move votedMove = moves.get(0);
 		for (Move move : moves) {
 			int number = 1;
 			if (numberOfSelections.containsKey(move)) {
@@ -126,7 +124,11 @@ public class MCTS {
 			}
 			numberOfSelections.put(move, number);
 		}
-		return numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
+		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
+		if (entryOptional.isPresent())
+			votedMove = entryOptional.get().getKey();
+
+		return votedMove;
 
 		/*
 		Collections.sort(moves);
