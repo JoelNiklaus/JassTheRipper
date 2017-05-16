@@ -65,6 +65,10 @@ public enum Card implements Serializable {
         return this.getValue().getRank();
     }
 
+    public int getTrumpfRank() {
+        return this.getValue().getTrumpfRank();
+    }
+
     public boolean isHigherTrumpfThan(Card other) {
         return value.getTrumpfRank() > other.getValue().getTrumpfRank();
     }

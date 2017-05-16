@@ -9,6 +9,7 @@ import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -23,7 +24,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	private static final int MAX_THINKING_TIME = 400;
 
 
-	private final int max_schift_rating_val = 30;
+	private final int max_schift_rating_val = 45;
 
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
@@ -36,21 +37,39 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-		printCards(availableCards);
+        System.out.println("ChooseTrumpf!");
+	    printCards(availableCards);
 
-		Mode mode = JassHelper.getRandomMode(isGschobe);
+		//Mode mode = JassHelper.getRandomMode(isGschobe);
 
 		//mode = predictTrumpf(availableCards, mode);
+        int max = 0;
+        Mode prospectiveMode = Mode.from(Trumpf.TRUMPF, Color.CLUBS);
+        for (Color color : Color.values()) {
+            int colorTrumpRating = rateColorForTrumpf(availableCards, color);
+            if (colorTrumpRating > max) {
+                max = colorTrumpRating;
+                prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
+            }
+        }
+        // rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
+        if (rateObeabe(availableCards) > max)
+            prospectiveMode = Mode.topDown();
+        if (rateUndeufe(availableCards) > max)
+            prospectiveMode = Mode.bottomUp();
+        System.out.println("ChooseTrumpf succeeded!");
+        if (max < max_schift_rating_val)
+            return Mode.shift();
 
-		System.out.println("Chose Trumpf " + mode);
+        System.out.println("Chose Trumpf " + prospectiveMode);
 
-		return mode;
+        return prospectiveMode;
 	}
 
 	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode) {
 		int max = 0;
 		for (Color color : Color.values()) {
-			int colorTrumpRating = rate(availableCards, color);
+			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
 			if (colorTrumpRating > max) {
 				max = colorTrumpRating;
 				prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
@@ -67,11 +86,77 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	}
 
 
-	private int rate(Set<Card> cardStream, Color color) {
-		return 30;
+	public int rateColorForTrumpf(Set<Card> cardStream, Color color) {
+	    Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cardStream, color);
+	    if (cardsOfColor.size() <= 1)
+	        return 0;
+	    List<Card> cardsOfColorL = new ArrayList<>(cardsOfColor);
+	    boolean[] prospectiveTrumpfCards = new boolean[9];
+	    for (int i = 0; i < 9; i++) {
+	        if (cardsOfColorL.size() == 0)
+	            return 0;
+	        if (cardsOfColorL.get(0).getRank() == i+1) {
+                prospectiveTrumpfCards[i] = true;
+                cardsOfColorL.remove(0);
+            }
+        }
+        int rating = 0;
+	    float qualityOfTrumpfCards = 0;
+	    // rate plus 2.5 * Trumpfrank (9 for Jack, 8 for Nell, 7 for Ace, …)
+        // Maximum is 90 this way
+        for (Card card:cardsOfColor) {
+            qualityOfTrumpfCards += 2.25 * card.getTrumpfRank();
+        }
+        rating += (int) qualityOfTrumpfCards;
+        // If a lot of a color, it is rather good Trumpf (small weight)
+        for (Card card:cardsOfColor) {
+            rating += 3;
+        }
+        // If Jack and Nell and another Trumpf and 2 Aces: good Trumpf
+        if ((prospectiveTrumpfCards[5] && prospectiveTrumpfCards[3]) && cardsOfColor.size() > 2 && containsTwoOrMoreAces(cardStream))
+            if (cardsOfColor.size() > 3)
+                rating += 40;
+            else
+                rating += 30;
+        // From some website: If you have Jack + 3 cards, one of which is good => would be good Trumpf!
+        if (prospectiveTrumpfCards[5] && cardsOfColor.size() > 3 && qualityOfTrumpfCards-9 > 12)
+            if (cardsOfColor.size() > 4)
+                rating += 40;
+            else
+                rating += 30;
+        // If Nell + 4 --> is good Trumpf; + 3 solid Trumpf
+        if ((prospectiveTrumpfCards[3] && cardsOfColor.size() > 3))
+            if (cardsOfColor.size() > 4)
+                rating += 40;
+            else
+                rating += 30;
+        // If Nell, Ass + 3 --> is good Trumpf
+        if ((prospectiveTrumpfCards[5] && prospectiveTrumpfCards[8] && cardsOfColor.size() > 4))
+            if (cardsOfColor.size() > 5)
+                rating += 40;
+            else
+                rating += 30;
+
+        // Try to consider the value of the other cards; is kind of similar to ObeAbe, but a lot less valuable…
+        for (Color c :Color.values()) {
+            // Does it make sense to exclude the own color?
+            //if (c != color)
+                rating += (rateObeabeColor(cardStream, c)/4);
+        }
+		return rating;
 	}
 
-	public int rateObeabe(Set<Card> cards) {
+    private boolean containsTwoOrMoreAces(Set<Card> cardStream) {
+	    List<Card> cardsSorted = cardStream.stream().sorted(Comparator.comparing(Card::getRank).reversed()).collect(Collectors.toList());
+	    int countAces = 0;
+	    while(cardsSorted.get(0).getRank() == 9) {
+	        countAces++;
+	        cardsSorted.remove(0);
+        }
+        return countAces >= 2;
+    }
+
+    public int rateObeabe(Set<Card> cards) {
 		int sum = 0;
 		for (Color color : Color.values()) {
 			sum += rateObeabeColor(cards, color);
@@ -89,7 +174,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	public int rateObeabeColor(Set<Card> cards, Color color) {
 	    // Get the cards in descending order
-	    List<Card> sortedCards = sortCardsDescending(cards, color);
+	    List<Card> sortedCards = sortCardsOfColorDescending(cards, color);
 	    if (sortedCards.size() == 0)
 	        return 0;
 	    // Number of cards I have that are higher than the nextCard
@@ -100,17 +185,19 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
         float safety = calculateInitialSafetyObeabe(sortedCards);
         // The last card rated
         Card lastCard = sortedCards.get(0);
-        // 1 Stich entspricht 10 ratingPoints
-        float rating = safety * 10;
+        // 1 Stich entspricht 20 ratingPoints
+        float rating = safety * 20;
         // remove the last card tested
         sortedCards.remove(lastCard);
 		while(sortedCards.size() > 0) {
 		    // The next card to be tested
 		    Card nextCard = sortedCards.get(0);
 		    // Estimate how safe you Stich with that card
+            int numberOfCardsInbetween = lastCard.getRank() - nextCard.getRank() - 1;
+            higherCards += numberOfCardsInbetween;
             safety *= safetyOfStich(numberOfMyCards, higherCards, nextCard, lastCard);
             // How safe is the Stich? * Stichvalue
-            rating += safety * 10;
+            rating += safety * 20;
             sortedCards.remove(0);
             // One card is higher than the last
             higherCards++;
@@ -119,12 +206,12 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		return (int) Math.ceil(rating);
 	}
 
-    public List<Card> sortCardsDescending(Set<Card> cards, Color color) {
+    public List<Card> sortCardsOfColorDescending(Set<Card> cards, Color color) {
         Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
         return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank).reversed()).collect(Collectors.toList());
     }
 
-    public List<Card> sortCardsAscending(Set<Card> cards, Color color) {
+    public List<Card> sortCardsOfColorAscending(Set<Card> cards, Color color) {
         Set<Card> cardsOfColor = JassHelper.getSortedCardsOfColor(cards, color);
         return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
     }
@@ -150,7 +237,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
     }
 
     private float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard) {
-	    int numberOfCardsBetween = lastCard.getRank() - nextCard.getRank();
+	    int numberOfCardsBetween = lastCard.getRank() - nextCard.getRank() - 1;
 	    // Have the next-higher card => probability to stich is the same as with the next higher card
 	    if (numberOfCardsBetween == 0)
 	        return 1;
@@ -165,10 +252,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	    int otherCards = 27-1;
 	    // Only rough estimate of the probability, that a player of the other team has enough cards to discard (i.e. I
         // have an Ace and King, but he has 6 and 7 so can discard those invaluable cards
-        estimate *= (otherColorCards)/otherCards;
+        estimate *= (float)(otherColorCards)/otherCards;
 	    for (int i = 0; i < higherCards; i++) {
 	        otherColorCards--;
-            estimate *= (otherColorCards)/otherCards;
+            estimate *= (float)(otherColorCards)/otherCards;
         }
         // Estimate of a mathematician; if the number of ranks between the last one and this one is increased by one,
         // the probability of me making the Stich is roughly halved.
@@ -182,7 +269,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	public int rateUndeufeColor(Set<Card> cards, Color color) {
         // Get the cards in ascending order
-        List<Card> sortedCards = sortCardsAscending(cards, color);
+        List<Card> sortedCards = sortCardsOfColorAscending(cards, color);
         if (sortedCards.size() == 0)
             return 0;
         // Number of cards I have that are lower than the nextCard
@@ -193,8 +280,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
         float safety = calculateInitialSafetyUndeUfe(sortedCards);
         // The last card rated
         Card lastCard = sortedCards.get(0);
-        // 1 Stich entspricht 10 ratingPoints
-        float rating = safety * 10;
+        // 1 Stich entspricht 20 ratingPoints
+        float rating = safety * 20;
         // remove the last card tested
         sortedCards.remove(lastCard);
         while(sortedCards.size() > 0) {
@@ -203,7 +290,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
             // Estimate how safe you Stich with that card
             safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard);
             // How safe is the Stich? * Stichvalue
-            rating += safety * 10;
+            rating += safety * 20;
             sortedCards.remove(0);
             // One card is higher than the last
             lowerCards++;
