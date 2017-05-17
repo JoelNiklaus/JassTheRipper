@@ -55,11 +55,11 @@ public class JassHelper {
 	}
 
 	public static int countNumberOfCardsOfColor(Set<Card> cards, Color color) {
-		return getSortedCardsOfColor(cards, color).size();
+		return getCardsOfColor(cards, color).size();
 	}
 
-	public static Set<Card> getSortedCardsOfColor(Set<Card> cards, Color color) {
-		return cards.parallelStream().filter(card -> card.getColor().equals(color)).sorted().collect(Collectors.toSet());
+	public static Set<Card> getCardsOfColor(Set<Card> cards, Color color) {
+		return cards.parallelStream().filter(card -> card.getColor().equals(color)).collect(Collectors.toSet());
 	}
 
 	public static boolean startingPlayer(Round round) {
