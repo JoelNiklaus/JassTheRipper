@@ -99,10 +99,14 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		rating += (int) qualityOfTrumpfCards;
 		// If you have Jack, rate higher
 		if (prospectiveTrumpfCards[5])
-			rating += 6;
+			rating += 10;
 		// If you have Nell, rate higher
 		if (prospectiveTrumpfCards[3])
-			rating += 4;
+			rating += 7;
+		// If you have Ace, rate slightly higher
+		if (prospectiveTrumpfCards[8])
+			rating += 3;
+
 		// If a lot of a color, it is rather good Trumpf (small weight)
 		for (Card card : cardsOfColor) {
 			// TODO: maybe do something with * instead of + here?
@@ -250,15 +254,17 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		// Only rough estimate of the probability, that a player of the other team has enough cards to discard (i.e. I
 		// have an Ace and King, but he has 6 and 7 so can discard those invaluable cards
 		estimate *= (float) (otherColorCards) / otherCards;
-		estimate *= factorial(otherColorCards);
+		estimate *= factorial(otherColorCards-1);
 		for (int i = 0; i < higherCards; i++) {
 			otherColorCards--;
 			estimate *= (float) (otherColorCards) / otherCards;
 		}
-		// Estimate of a mathematician; if the number of ranks between the last one and this one is increased by one,
+		// Estimate of a mathematician: if the number of ranks between the last one and this one is increased by one,
 		// the probability of me making the Stich is roughly halved.
 		for (int i = 0; i < numberOfCardsBetween; i++)
 			estimate *= 0.45;
+		if (estimate > 1)
+		    estimate = 0.8f;
 		if (estimate > 0)
 			return estimate;
 		else
@@ -266,7 +272,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	}
 
 	private float factorial(int n) {
-		if (n == 1 && n == 0)
+		if (n == 1 || n == 0)
 			return 1;
 		else if (n < 0)
 			return 0;
