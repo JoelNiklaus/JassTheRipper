@@ -33,19 +33,22 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
+		final long startTime = System.nanoTime();
 		printCards(availableCards);
 
 		Mode mode = JassHelper.getRandomMode(isGschobe);
 
 		mode = predictTrumpf(availableCards, mode, isGschobe);
 
+		final long endTime = (System.nanoTime() - startTime) / 1000000;
+		System.out.println("Total time for move: " + endTime + "ms");
 		System.out.println("Chose Trumpf " + mode);
 
 		return mode;
 	}
 
 	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode, boolean isGschobe) {
-        // TODO: Rate Trumpf very high if you have 6+ cards of a color
+		// TODO: Rate Trumpf very high if you have 6+ cards of a color
 		int max = 0;
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
@@ -58,12 +61,12 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
 		if (rateObeabe(availableCards) > max) {
 			prospectiveMode = Mode.topDown();
-		    max = rateObeabe(availableCards);
-        }
-		if (rateUndeufe(availableCards) > max){
-            prospectiveMode = Mode.bottomUp();
-            max = rateUndeufe(availableCards);
-        }
+			max = rateObeabe(availableCards);
+		}
+		if (rateUndeufe(availableCards) > max) {
+			prospectiveMode = Mode.bottomUp();
+			max = rateUndeufe(availableCards);
+		}
 		System.out.println("ChooseTrumpf succeeded!");
 		if (max < max_schift_rating_val && !isGschobe)
 			return Mode.shift();
@@ -89,16 +92,16 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		for (Card card : cardsOfColor) {
 			qualityOfTrumpfCards += 2.25 * card.getTrumpfRank();
 		}
-        rating += (int) qualityOfTrumpfCards;
+		rating += (int) qualityOfTrumpfCards;
 		// If you have Jack, rate higher
 		if (prospectiveTrumpfCards[5])
-		    rating += 6;
+			rating += 6;
 		// If you have Nell, rate higher
-        if (prospectiveTrumpfCards[3])
-            rating += 4;
+		if (prospectiveTrumpfCards[3])
+			rating += 4;
 		// If a lot of a color, it is rather good Trumpf (small weight)
 		for (Card card : cardsOfColor) {
-		    // TODO: maybe do something with * instead of + here?
+			// TODO: maybe do something with * instead of + here?
 			rating += 3;
 		}
 		// If Jack and Nell and another Trumpf and 2 Aces: good Trumpf
@@ -165,7 +168,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		// Get the cards in descending order
 		List<Card> sortedCardOfColor = sortCardsOfColorDescending(cards, color);
 		if (sortedCardOfColor.isEmpty())
-		    return 0;
+			return 0;
 		// Number of cards I have that are higher than the nextCard
 		int higherCards = 0;
 		// Number of the cards I have of this color
@@ -258,16 +261,16 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			return 0;
 	}
 
-    private float factorial(int n) {
-	    if (n == 1 && n == 0)
-	        return 1;
-	    else if (n < 0)
-	        return 0;
-	    else
-	        return n*factorial(n-1);
-    }
+	private float factorial(int n) {
+		if (n == 1 && n == 0)
+			return 1;
+		else if (n < 0)
+			return 0;
+		else
+			return n * factorial(n - 1);
+	}
 
-    public int rateUndeufeColor(Set<Card> cards, Color color) {
+	public int rateUndeufeColor(Set<Card> cards, Color color) {
 		// Get the cards in ascending order
 		List<Card> sortedCards = sortCardsOfColorAscending(cards, color);
 		if (sortedCards.size() == 0)
