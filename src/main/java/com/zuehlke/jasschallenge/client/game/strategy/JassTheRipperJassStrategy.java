@@ -323,6 +323,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		if (session.isFirstMove())
 			time -= 50;
 		final long endingTime = startTime + 1000000 * time;
+		// TODO: Somewhere before here, sometimes an error is thrown and the bot leaves the game. Why?
 		printCards(availableCards);
 		final Game game = session.getCurrentGame();
 		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
