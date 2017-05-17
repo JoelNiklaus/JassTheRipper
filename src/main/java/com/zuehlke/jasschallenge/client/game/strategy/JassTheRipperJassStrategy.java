@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
 
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 350;
+	private static final int MAX_THINKING_TIME = 250;
 
 
 	private final int max_schift_rating_val = 60;
