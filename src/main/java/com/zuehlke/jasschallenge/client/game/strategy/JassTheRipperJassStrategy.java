@@ -57,13 +57,17 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 				prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
 			}
 		}
-		// TODO: Rate ObeAbe and UndeUfe much much lower when it is gschobe
 		// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
-		if (rateObeabe(availableCards) > max) {
+		// Rate ObeAbe and UndeUfe much much lower (with 1/3) when it is gschobe
+		// TODO: This is an ugly hotfix, make it nicer ;)
+		float gschobeFactor = 1;
+		if (isGschobe)
+			gschobeFactor = 1/3;
+		if (gschobeFactor * rateObeabe(availableCards) > max) {
 			prospectiveMode = Mode.topDown();
 			max = rateObeabe(availableCards);
 		}
-		if (rateUndeufe(availableCards) > max) {
+		if (gschobeFactor * rateUndeufe(availableCards) > max) {
 			prospectiveMode = Mode.bottomUp();
 			max = rateUndeufe(availableCards);
 		}
