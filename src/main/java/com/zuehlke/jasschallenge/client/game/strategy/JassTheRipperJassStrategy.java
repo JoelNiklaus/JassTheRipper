@@ -48,7 +48,6 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	}
 
 	private Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode, boolean isGschobe) {
-		// TODO: Rate Trumpf very high if you have 6+ cards of a color
 		int max = 0;
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
@@ -92,6 +91,9 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			}
 		}
 		int rating = 0;
+		// If you have 6 or more Cards of this color, rate it insanely high!
+        if (cardsOfColor.size() >= 6)
+            rating += 120;
 		float qualityOfTrumpfCards = 0;
 		// rate plus 2.25 * Trumpfrank (9 for Jack, 8 for Nell, 7 for Ace, …)
 		// Maximum is 90 this way
