@@ -84,6 +84,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		List<Card> cardsOfColorL = new ArrayList<>(cardsOfColor);
 		boolean[] prospectiveTrumpfCards = new boolean[9];
 		for (int i = 0; i < 9; i++) {
+		    if (cardsOfColorL.isEmpty())
+		        break;
 			if (cardsOfColorL.get(0).getRank() == i + 1) {
 				prospectiveTrumpfCards[i] = true;
 				cardsOfColorL.remove(0);
