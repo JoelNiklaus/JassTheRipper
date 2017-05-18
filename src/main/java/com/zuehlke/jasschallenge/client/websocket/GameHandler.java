@@ -152,7 +152,7 @@ public class GameHandler {
     }
 
     public void onRejectCard(RemoteCard rejectCard) {
-        //throw new RuntimeException("Card was rejected");
+        throw new RuntimeException("Card was rejected");
     }
 
     private List<Team> mapTeams(List<RemoteTeam> remoteTeams) {

@@ -321,46 +321,52 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
-		final long startTime = System.currentTimeMillis();
-		long time = MAX_THINKING_TIME;
-		if (session.isFirstMove())
-			time -= 50;
-		final long endingTime = startTime + time;
-		// TODO: Somewhere before here, sometimes an error is thrown and the bot leaves the game. Why?
-		printCards(availableCards);
-		final Game game = session.getCurrentGame();
-		final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
+		try {
+			final long startTime = System.currentTimeMillis();
+			long time = MAX_THINKING_TIME;
+			if (session.isFirstMove())
+				time -= 50;
+			final long endingTime = startTime + time;
+			// TODO: Somewhere before here, sometimes an error is thrown and the bot leaves the game. Why?
+			printCards(availableCards);
+			final Game game = session.getCurrentGame();
+			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
-		if (possibleCards.isEmpty())
-			System.err.println("We have a serious problem! No possible card to play!");
+			if (possibleCards.isEmpty())
+				System.err.println("We have a serious problem! No possible card to play!");
 
-		if (possibleCards.size() == 1)
-			for (Card card : possibleCards) {
-				System.out.println("Only one possible card to play: " + card + "\n\n");
-				return card;
+			if (possibleCards.size() == 1)
+				for (Card card : possibleCards) {
+					System.out.println("Only one possible card to play: " + card + "\n\n");
+					return card;
+				}
+
+			Card card = JassHelper.getRandomCard(possibleCards, game);
+
+			System.out.println("Thinking now...");
+			try {
+				final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime, PARALLELISATION_ENABLED);
+				if (possibleCards.contains(card)) {
+					System.out.println("Chose Card based on MCTS, Hurra!");
+					card = mctsCard;
+				} else
+					System.out.println("Card chosen not in available cards. Had to choose random card, Damn it!");
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Something went wrong. Had to choose random card, Damn it!");
 			}
 
-		Card card = JassHelper.getRandomCard(possibleCards, game);
-
-		System.out.println("Thinking now...");
-		try {
-			final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime, PARALLELISATION_ENABLED);
-			if (possibleCards.contains(card)) {
-				System.out.println("Chose Card based on MCTS, Hurra!");
-				card = mctsCard;
-			} else
-				System.out.println("Card chosen not in available cards. Had to choose random card, Damn it!");
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Something went wrong. Had to choose random card, Damn it!");
+			final long endTime = (System.currentTimeMillis() - startTime);
+			System.out.println("Total time for move: " + endTime + "ms");
+			System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards + "\n\n");
+			assert card != null;
+			assert possibleCards.contains(card);
+			return card;
 		}
-
-		final long endTime = (System.currentTimeMillis() - startTime);
-		System.out.println("Total time for move: " + endTime + "ms");
-		System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards + "\n\n");
-		assert card != null;
-		assert possibleCards.contains(card);
-		return card;
+		catch (Exception e) {
+			e.printStackTrace();
+			return new RandomJassStrategy().chooseCard(availableCards, session);
+		}
 	}
 
 	private void printCards(Set<Card> availableCards) {

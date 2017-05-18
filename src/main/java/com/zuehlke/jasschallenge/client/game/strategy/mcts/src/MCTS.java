@@ -74,7 +74,7 @@ public class MCTS {
 					}
 				}
 
-				assert !moves.isEmpty();
+				assert (!moves.isEmpty());
 
 				bestMoveFound = vote(moves);
 
