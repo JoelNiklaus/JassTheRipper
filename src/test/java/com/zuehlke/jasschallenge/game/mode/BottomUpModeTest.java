@@ -36,7 +36,7 @@ public class BottomUpModeTest {
 
         final int score = Mode.bottomUp().calculateScore(playedCards);
 
-        assertThat(score, equalTo(42));
+        assertThat(score, equalTo(14));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class BottomUpModeTest {
 
         final int score = Mode.bottomUp().calculateScore(playedCards);
 
-        assertThat(score, equalTo(33));
+        assertThat(score, equalTo(11));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class BottomUpModeTest {
 
         final int score = Mode.bottomUp().calculateScore(playedCards);
 
-        assertThat(score, equalTo(24));
+        assertThat(score, equalTo(8));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class BottomUpModeTest {
 
         final int score = Mode.bottomUp().calculateRoundScore(Game.LAST_ROUND_NUMBER, cards);
 
-        assertThat(score, equalTo(63 + 15));
+        assertThat(score, equalTo(26));
     }
 
 
@@ -87,7 +87,7 @@ public class BottomUpModeTest {
 
         final int score = Mode.bottomUp().calculateRoundScore(5, cards);
 
-        assertThat(score, equalTo((2+3+4)*3));
+        assertThat(score, equalTo((2+3+4)));
     }
 
     @Theory

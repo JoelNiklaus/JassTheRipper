@@ -13,7 +13,7 @@ import static com.zuehlke.jasschallenge.game.mode.GeneralRules.calculateLastRoun
 import static java.lang.String.valueOf;
 
 class BottomUpMode extends Mode implements Serializable {
-    private static final int FACTOR = 3;
+    private static final int FACTOR = 1;
 
     @Override
     public Trumpf getTrumpfName() {

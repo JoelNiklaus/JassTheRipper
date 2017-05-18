@@ -63,7 +63,7 @@ public class TrumpfColorModeTest {
 
         final int score = Mode.trump(SPADES).calculateScore(playedCards);
 
-        assertThat(score, equalTo(11 * 2));
+        assertThat(score, equalTo(11));
     }
 
     @Test
@@ -73,7 +73,7 @@ public class TrumpfColorModeTest {
 
         final int score = Mode.trump(SPADES).calculateRoundScore(Game.LAST_ROUND_NUMBER, cards);
 
-        assertThat(score, equalTo((11+10)*2 + 10));
+        assertThat(score, equalTo(26));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class TrumpfColorModeTest {
 
         final int score = Mode.trump(SPADES).calculateRoundScore(2, playedCards);
 
-        assertThat(score, equalTo((3+10)*2));
+        assertThat(score, equalTo((3+10)));
     }
 
     @Test

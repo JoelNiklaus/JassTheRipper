@@ -39,7 +39,7 @@ public class GameSessionTest {
         gameSession.startNextRound();
         gameSession.startNewGame(Mode.topDown(), false);
 
-        assertThat(gameSession.getResult().getTeamScore(new Player("Player 1")), equalTo(30));
+        assertThat(gameSession.getResult().getTeamScore(new Player("Player 1")), equalTo(10));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class GameSessionTest {
         gameSession.startNextRound();
 
         assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerA), equalTo(0));
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerB), equalTo(63));
+        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerB), equalTo(21));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class GameSessionTest {
 
         gameSession.startNextRound();
 
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(63));
+        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(21));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class GameSessionTest {
         }
         gameSession.startNextRound();
 
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10 * 3) * 9 + 5 * 3 + 100 * 3 ));
+        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10) * 9 + 5+ 100 ));
     }
 
     @Test

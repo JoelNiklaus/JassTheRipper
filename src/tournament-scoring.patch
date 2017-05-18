@@ -1,0 +1,244 @@
+Index: src/main/java/com/zuehlke/jasschallenge/game/mode/BottomUpMode.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/zuehlke/jasschallenge/game/mode/BottomUpMode.java	(revision 98e15240429bde56c88eca7205f8b01042e298b9)
++++ src/main/java/com/zuehlke/jasschallenge/game/mode/BottomUpMode.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
+@@ -12,7 +12,7 @@
+ import static java.lang.String.valueOf;
+ 
+ class BottomUpMode extends Mode{
+-    private static final int FACTOR = 3;
++    private static final int FACTOR = 1;
+ 
+     @Override
+     public Trumpf getTrumpfName() {
+Index: src/main/java/com/zuehlke/jasschallenge/game/mode/TopDownMode.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/zuehlke/jasschallenge/game/mode/TopDownMode.java	(revision 98e15240429bde56c88eca7205f8b01042e298b9)
++++ src/main/java/com/zuehlke/jasschallenge/game/mode/TopDownMode.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
+@@ -11,7 +11,7 @@
+ import static java.lang.String.valueOf;
+ 
+ class TopDownMode extends Mode {
+-    private static final int FACTOR = 3;
++    private static final int FACTOR = 1;
+ 
+     @Override
+     public Trumpf getTrumpfName() {
+Index: src/main/java/com/zuehlke/jasschallenge/game/mode/TrumpfColorMode.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/zuehlke/jasschallenge/game/mode/TrumpfColorMode.java	(revision 98e15240429bde56c88eca7205f8b01042e298b9)
++++ src/main/java/com/zuehlke/jasschallenge/game/mode/TrumpfColorMode.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
+@@ -68,7 +68,6 @@
+ 
+     @Override
+     public int getFactor() {
+-        if(trumpfColor == Color.SPADES || trumpfColor == Color.CLUBS) return 2;
+         return 1;
+     }
+ 
+Index: src/test/java/com/zuehlke/jasschallenge/client/game/GameSessionTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/com/zuehlke/jasschallenge/client/game/GameSessionTest.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
++++ src/test/java/com/zuehlke/jasschallenge/client/game/GameSessionTest.java	(revision 4ec8a43250ecb420d09b8bfe61232bc415e8081c)
+@@ -39,7 +39,7 @@
+         gameSession.startNextRound();
+         gameSession.startNewGame(Mode.topDown(), false);
+ 
+-        assertThat(gameSession.getResult().getTeamScore(new Player("Player 1")), equalTo(30));
++        assertThat(gameSession.getResult().getTeamScore(new Player("Player 1")), equalTo(10));
+     }
+ 
+     @Test
+@@ -55,7 +55,7 @@
+         gameSession.startNextRound();
+ 
+         assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerA), equalTo(0));
+-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerB), equalTo(63));
++        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerB), equalTo(21));
+     }
+ 
+     @Test
+@@ -70,7 +70,7 @@
+ 
+         gameSession.startNextRound();
+ 
+-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(63));
++        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(21));
+     }
+ 
+     @Test
+@@ -85,7 +85,7 @@
+         }
+         gameSession.startNextRound();
+ 
+-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10 * 3) * 9 + 5 * 3 + 100 * 3 ));
++        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10) * 9 + 5+ 100 ));
+     }
+ 
+     @Test
+Index: src/test/java/com/zuehlke/jasschallenge/client/websocket/GameHandlerTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/com/zuehlke/jasschallenge/client/websocket/GameHandlerTest.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
++++ src/test/java/com/zuehlke/jasschallenge/client/websocket/GameHandlerTest.java	(revision 4ec8a43250ecb420d09b8bfe61232bc415e8081c)
+@@ -140,7 +140,7 @@
+         final RemotePlayer remoteTwo = new RemotePlayer("uid-1", "remote 2", 1);
+         final RemotePlayer remoteThree = new RemotePlayer("uid-3", "remote 3", 3);
+         final RemoteTeam remoteTeam1 = new RemoteTeam("team a", asList(remoteOne, remoteThree));
+-        remoteTeam1.setCurrentRoundPoints(45);
++        remoteTeam1.setCurrentRoundPoints(15);
+         final RemoteTeam remoteTeam2 = new RemoteTeam("team b", asList(remoteLocalPlayer, remoteTwo));
+         final List<RemoteTeam> remoteTeams = asList(
+                 remoteTeam1,
+@@ -234,7 +234,7 @@
+         final RemotePlayer remoteTwo = new RemotePlayer("uid-1", "remote 2", 1);
+         final RemotePlayer remoteThree = new RemotePlayer("uid-3", "remote 3", 3);
+         final RemoteTeam remoteTeamA = new RemoteTeam("team a", asList(remoteOne, remoteThree));
+-        remoteTeamA.setCurrentRoundPoints(51);
++        remoteTeamA.setCurrentRoundPoints(17);
+         final RemoteTeam remoteTeamB = new RemoteTeam("team b", asList(remoteLocalPlayer, remoteTwo));
+         final List<RemoteTeam> remoteTeams = asList(
+                 remoteTeamA,
+Index: src/test/java/com/zuehlke/jasschallenge/game/mode/BottomUpModeTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/com/zuehlke/jasschallenge/game/mode/BottomUpModeTest.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
++++ src/test/java/com/zuehlke/jasschallenge/game/mode/BottomUpModeTest.java	(revision 4ec8a43250ecb420d09b8bfe61232bc415e8081c)
+@@ -36,7 +36,7 @@
+ 
+         final int score = Mode.bottomUp().calculateScore(playedCards);
+ 
+-        assertThat(score, equalTo(42));
++        assertThat(score, equalTo(14));
+     }
+ 
+     @Test
+@@ -46,7 +46,7 @@
+ 
+         final int score = Mode.bottomUp().calculateScore(playedCards);
+ 
+-        assertThat(score, equalTo(33));
++        assertThat(score, equalTo(11));
+     }
+ 
+     @Test
+@@ -66,7 +66,7 @@
+ 
+         final int score = Mode.bottomUp().calculateScore(playedCards);
+ 
+-        assertThat(score, equalTo(24));
++        assertThat(score, equalTo(8));
+     }
+ 
+     @Test
+@@ -76,7 +76,7 @@
+ 
+         final int score = Mode.bottomUp().calculateRoundScore(Game.LAST_ROUND_NUMBER, cards);
+ 
+-        assertThat(score, equalTo(63 + 15));
++        assertThat(score, equalTo(26));
+     }
+ 
+ 
+@@ -87,7 +87,7 @@
+ 
+         final int score = Mode.bottomUp().calculateRoundScore(5, cards);
+ 
+-        assertThat(score, equalTo((2+3+4)*3));
++        assertThat(score, equalTo((2+3+4)));
+     }
+ 
+     @Theory
+Index: src/test/java/com/zuehlke/jasschallenge/game/mode/TopDownModeTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/com/zuehlke/jasschallenge/game/mode/TopDownModeTest.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
++++ src/test/java/com/zuehlke/jasschallenge/game/mode/TopDownModeTest.java	(revision 4ec8a43250ecb420d09b8bfe61232bc415e8081c)
+@@ -35,7 +35,7 @@
+ 
+         final int score = Mode.topDown().calculateScore(playedCards);
+ 
+-        assertThat(score, equalTo(24));
++        assertThat(score, equalTo(8));
+     }
+ 
+     @Test
+@@ -55,7 +55,7 @@
+ 
+         final int score = Mode.topDown().calculateScore(playedCards);
+ 
+-        assertThat(score, equalTo(33));
++        assertThat(score, equalTo(11));
+     }
+ 
+     @Test
+@@ -73,7 +73,7 @@
+ 
+         final int score = Mode.topDown().calculateScore(cards);
+ 
+-        assertThat(score, equalTo((11+10)*3));
++        assertThat(score, equalTo(11+10));
+     }
+ 
+     @Test
+@@ -83,7 +83,7 @@
+ 
+         final int score = Mode.topDown().calculateRoundScore(Game.LAST_ROUND_NUMBER, cards);
+ 
+-        assertThat(score, equalTo((11+10)*3 + 15));
++        assertThat(score, equalTo(26));
+     }
+ 
+     @Theory
+Index: src/test/java/com/zuehlke/jasschallenge/game/mode/TrumpfColorModeTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/com/zuehlke/jasschallenge/game/mode/TrumpfColorModeTest.java	(revision 40fc85f7bf7c3e220d887c308f4864df6dab6246)
++++ src/test/java/com/zuehlke/jasschallenge/game/mode/TrumpfColorModeTest.java	(revision 4ec8a43250ecb420d09b8bfe61232bc415e8081c)
+@@ -63,7 +63,7 @@
+ 
+         final int score = Mode.trump(SPADES).calculateScore(playedCards);
+ 
+-        assertThat(score, equalTo(11 * 2));
++        assertThat(score, equalTo(11));
+     }
+ 
+     @Test
+@@ -73,7 +73,7 @@
+ 
+         final int score = Mode.trump(SPADES).calculateRoundScore(Game.LAST_ROUND_NUMBER, cards);
+ 
+-        assertThat(score, equalTo((11+10)*2 + 10));
++        assertThat(score, equalTo(26));
+     }
+ 
+     @Test
+@@ -82,7 +82,7 @@
+ 
+         final int score = Mode.trump(SPADES).calculateRoundScore(2, playedCards);
+ 
+-        assertThat(score, equalTo((3+10)*2));
++        assertThat(score, equalTo(3+10));
+     }
+ 
+     @Test

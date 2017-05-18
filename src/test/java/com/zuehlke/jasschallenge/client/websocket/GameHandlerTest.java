@@ -140,7 +140,7 @@ public class GameHandlerTest {
         final RemotePlayer remoteTwo = new RemotePlayer("uid-1", "remote 2", 1);
         final RemotePlayer remoteThree = new RemotePlayer("uid-3", "remote 3", 3);
         final RemoteTeam remoteTeam1 = new RemoteTeam("team a", asList(remoteOne, remoteThree));
-        remoteTeam1.setCurrentRoundPoints(45);
+        remoteTeam1.setCurrentRoundPoints(15);
         final RemoteTeam remoteTeam2 = new RemoteTeam("team b", asList(remoteLocalPlayer, remoteTwo));
         final List<RemoteTeam> remoteTeams = asList(
                 remoteTeam1,
@@ -234,7 +234,7 @@ public class GameHandlerTest {
         final RemotePlayer remoteTwo = new RemotePlayer("uid-1", "remote 2", 1);
         final RemotePlayer remoteThree = new RemotePlayer("uid-3", "remote 3", 3);
         final RemoteTeam remoteTeamA = new RemoteTeam("team a", asList(remoteOne, remoteThree));
-        remoteTeamA.setCurrentRoundPoints(51);
+        remoteTeamA.setCurrentRoundPoints(17);
         final RemoteTeam remoteTeamB = new RemoteTeam("team b", asList(remoteLocalPlayer, remoteTwo));
         final List<RemoteTeam> remoteTeams = asList(
                 remoteTeamA,
