@@ -53,19 +53,16 @@ public class MCTS {
 				while (!checkDone(futures))
 					Thread.sleep(10);
 
+				for (FutureTask<Node> future : futures)
+					assert future.isDone();
+
 				ArrayList<Node> rootNodes = new ArrayList<>();
 
 				// Collect all computed root nodes
-				for (FutureTask<Node> future : futures) {
-					// Just abort the computation if time is up TODO does this really abort it??????
-					try {
-						Node node = future.get(400, TimeUnit.MILLISECONDS);
-						rootNodes.add(node);
-					} catch (TimeoutException e) {
-						System.out.println("Timeout! Had to abort computation of thread!");
-						future.cancel(true);
-					}
-				}
+				for (FutureTask<Node> future : futures)
+					rootNodes.add(future.get());
+
+				assert !rootNodes.isEmpty();
 
 				ArrayList<Move> moves = new ArrayList<>();
 
@@ -77,13 +74,15 @@ public class MCTS {
 					}
 				}
 
+				assert !moves.isEmpty();
+
 				bestMoveFound = vote(moves);
 
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 
-			threadpool.shutdownNow();
+			threadpool.shutdown();
 			futures.clear();
 
 			assert threadpool.isShutdown();
@@ -92,9 +91,7 @@ public class MCTS {
 
 		long endTime = System.nanoTime();
 
-		if (this.trackTime)
-
-		{
+		if (this.trackTime) {
 			System.out.println("Making choice for player: " + bestMoveFound);
 			System.out.println("Thinking time for move: " + (endTime - startTime) / 1000000 + "ms");
 		}
