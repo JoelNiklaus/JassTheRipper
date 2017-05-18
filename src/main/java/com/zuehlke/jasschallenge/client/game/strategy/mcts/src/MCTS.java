@@ -27,7 +27,7 @@ public class MCTS {
 	 * Run a UCT-MCTS simulation for a a certain amount of time.
 	 *
 	 * @param startingBoard starting board
-	 * @param endingTime    time when to stop running (in nanoseconds)
+	 * @param endingTime    time when to stop running (in milliseconds)
 	 * @param bounds        enable or disable score bounds.
 	 * @return
 	 */
@@ -35,7 +35,7 @@ public class MCTS {
 		scoreBounds = bounds;
 		Move bestMoveFound = null;
 
-		long startTime = System.nanoTime();
+		long startTime = System.currentTimeMillis();
 
 		if (!rootParallelisation) {
 			System.out.println("not parallelised :(");
@@ -89,7 +89,7 @@ public class MCTS {
 			assert futures.isEmpty();
 		}
 
-		long endTime = System.nanoTime();
+		long endTime = System.currentTimeMillis();
 
 		if (this.trackTime) {
 			System.out.println("Making choice for player: " + bestMoveFound);
@@ -106,7 +106,7 @@ public class MCTS {
 
 	private void runUntilTimeRunsOut(Board startingBoard, Node rootNode, long endingTime) {
 		int runCounter = 0;
-		while ((System.nanoTime() < endingTime)) {
+		while ((System.currentTimeMillis() < endingTime)) {
 			// Start new path from root node
 			select(startingBoard, rootNode);
 			runCounter++;
@@ -487,6 +487,10 @@ public class MCTS {
 
 		threadpool = Executors.newFixedThreadPool(threads);
 		futures = new ArrayList<>();
+	}
+
+	public boolean isParallelisationEnabled() {
+		return rootParallelisation;
 	}
 
 	// Check if all threads are done

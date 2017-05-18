@@ -20,6 +20,9 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// the maximal number of milliseconds per choose card move
 	private static final int MAX_THINKING_TIME = 250;
 
+	// IMPORTANT: If but does not work properly, try setting this to false
+	private static final boolean PARALLELISATION_ENABLED = true;
+
 
 	private final int max_schift_rating_val = 60;
 
@@ -33,14 +36,14 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-		final long startTime = System.nanoTime();
+		final long startTime = System.currentTimeMillis();
 		printCards(availableCards);
 
 		Mode mode = JassHelper.getRandomMode(isGschobe);
 
 		mode = predictTrumpf(availableCards, mode, isGschobe);
 
-		final long endTime = (System.nanoTime() - startTime) / 1000000;
+		final long endTime = (System.currentTimeMillis() - startTime);
 		System.out.println("Total time for move: " + endTime + "ms");
 		System.out.println("Chose Trumpf " + mode);
 
@@ -318,11 +321,11 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
-		final long startTime = System.nanoTime();
+		final long startTime = System.currentTimeMillis();
 		long time = MAX_THINKING_TIME;
 		if (session.isFirstMove())
 			time -= 50;
-		final long endingTime = startTime + 1000000 * time;
+		final long endingTime = startTime + time;
 		// TODO: Somewhere before here, sometimes an error is thrown and the bot leaves the game. Why?
 		printCards(availableCards);
 		final Game game = session.getCurrentGame();
@@ -341,7 +344,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 		System.out.println("Thinking now...");
 		try {
-			final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime);
+			final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime, PARALLELISATION_ENABLED);
 			if (possibleCards.contains(card)) {
 				System.out.println("Chose Card based on MCTS, Hurra!");
 				card = mctsCard;
@@ -352,7 +355,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			System.out.println("Something went wrong. Had to choose random card, Damn it!");
 		}
 
-		final long endTime = (System.nanoTime() - startTime) / 1000000;
+		final long endTime = (System.currentTimeMillis() - startTime);
 		System.out.println("Total time for move: " + endTime + "ms");
 		System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards + "\n\n");
 		assert card != null;

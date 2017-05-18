@@ -6,6 +6,9 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.game.cards.Card;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -22,7 +25,7 @@ public class MCTSHelper {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Card getCard(Set<Card> availableCards, Game game, long endingTime) throws Exception {
+	public static Card getCard(Set<Card> availableCards, Game game, long endingTime, boolean parallelisation) throws Exception {
 		MCTS mcts = new MCTS();
 		mcts.setExplorationConstant(1.4);
 		mcts.setOptimisticBias(0);
@@ -33,32 +36,35 @@ public class MCTSHelper {
 		//mcts.setPlayoutSelection(new JassPlayoutSelection());
 
 
-		final int threads = 10; // The more the merrier ;)
-		//final int threads = Runtime.getRuntime().availableProcessors();
-		mcts.enableRootParallelisation(threads);
+		//final int threads = 10; // The more the merrier ;)
+		final int threads = Runtime.getRuntime().availableProcessors() * 5;
+		if (parallelisation)
+			mcts.enableRootParallelisation(threads);
 
+		return runPrediction(availableCards, game, mcts, endingTime);
+	}
 
-		// TODO add this when multithreading disabled
-		/*
-		Can do multithreading now -> Much faster
-		Only do this when multithreading disabled
+	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
+		// Can do multithreading now -> Much faster
+		// Only do this when multithreading disabled
+		if (mcts.isParallelisationEnabled()) {
+			long maxComputationTime = endingTime - System.currentTimeMillis();
+			int numberOfMCTSRuns = 4;
 
-		int maxComputationTime = 440;
-		int numberOfMCTSRuns = 4;
+			long timePerRun = maxComputationTime / numberOfMCTSRuns;
 
-		int timePerRun = maxComputationTime / numberOfMCTSRuns;
-
-		HashMap<Card, Integer> numberOfSelections = new HashMap<>();
-		for (int i = 0; i < numberOfMCTSRuns; i++) {
-			Card card = predictCard(availableCards, game, mcts, timePerRun);
-			int number = 1;
-			if (numberOfSelections.containsKey(card)) {
-				number += numberOfSelections.get(card);
+			HashMap<Card, Integer> numberOfSelections = new HashMap<>();
+			for (int i = 0; i < numberOfMCTSRuns; i++) {
+				Card card = predictCard(availableCards, game, mcts, timePerRun);
+				int number = 1;
+				if (numberOfSelections.containsKey(card)) {
+					number += numberOfSelections.get(card);
+				}
+				numberOfSelections.put(card, number);
 			}
-			numberOfSelections.put(card, number);
+			Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst().get().getKey();
+			return card;
 		}
-		Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue()).findFirst().get().getKey();
-		*/
 
 
 		return predictCard(availableCards, game, mcts, endingTime);
@@ -66,9 +72,9 @@ public class MCTSHelper {
 
 
 	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
-		final long startTime = System.nanoTime();
+		final long startTime = System.currentTimeMillis();
 		JassBoard jassBoard = new JassBoard(availableCards, game, true);
-		final long cloningTime = (System.nanoTime() - startTime) / 1000000;
+		final long cloningTime = (System.currentTimeMillis() - startTime);
 		System.out.println("Cloning time: " + cloningTime + "ms");
 
 		return ((CardMove) mcts.runMCTS_UCT(jassBoard, endingTime, false)).getPlayedCard();
