@@ -31,7 +31,7 @@ public class MCTS {
 	 * @param bounds        enable or disable score bounds.
 	 * @return
 	 */
-	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) {
+	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) throws Exception {
 		scoreBounds = bounds;
 		Move bestMoveFound = null;
 
@@ -66,6 +66,7 @@ public class MCTS {
 
 				ArrayList<Move> moves = new ArrayList<>();
 
+				// TODO: Problem is that all the rootNodes are null
 				for (Node node : rootNodes) {
 					if (node.isValid()) { // so, if there was at least one run
 						Move move = robustChild(node).getMove(); // Select robust child
@@ -73,6 +74,10 @@ public class MCTS {
 						moves.add(move);
 					}
 				}
+
+				// This is a Hotfix, causes a random card to be played
+				if (moves.isEmpty())
+				    throw new Exception("Moves list empty!");
 
 				assert (!moves.isEmpty());
 
