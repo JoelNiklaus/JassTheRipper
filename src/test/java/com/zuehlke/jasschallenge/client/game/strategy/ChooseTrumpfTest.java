@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
@@ -22,7 +23,7 @@ public class ChooseTrumpfTest {
 
     private GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
     private JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
-    private int shiftValue = jassStrategy.max_schift_rating_val;
+    private int shiftValue = jassStrategy.MAX_SCHIFT_RATING_VAL;
 
     private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
     private Set<Card> cards2 = EnumSet.of(Card.HEART_ACE, Card.HEART_EIGHT, Card.HEART_JACK, Card.CLUB_SIX, Card.CLUB_SEVEN, Card.DIAMOND_QUEEN, Card.SPADE_TEN, Card.DIAMOND_NINE, Card.DIAMOND_JACK);
@@ -37,12 +38,12 @@ public class ChooseTrumpfTest {
     @Test
     public void chooseTrumpfDiamondWithGreatDiamondCards() throws Exception {
         Set<Card> cards = veryGoodDiamondTrumpf;
-        int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
-        int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
-        int spades = jassStrategy.rateColorForTrumpf(cards, Color.SPADES);
-        int clubs = jassStrategy.rateColorForTrumpf(cards, Color.CLUBS);
-        int obeAbe = jassStrategy.rateObeabe(cards);
-        int undeUfe = jassStrategy.rateUndeufe(cards);
+        int diamonds = JassHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+        int hearts = JassHelper.rateColorForTrumpf(cards, Color.HEARTS);
+        int spades = JassHelper.rateColorForTrumpf(cards, Color.SPADES);
+        int clubs = JassHelper.rateColorForTrumpf(cards, Color.CLUBS);
+        int obeAbe = JassHelper.rateObeabe(cards);
+        int undeUfe = JassHelper.rateUndeufe(cards);
         System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
         System.out.println("Obeabe: " + obeAbe +", Undeufe: " + undeUfe);
         assertTrue(diamonds > hearts);
@@ -56,12 +57,12 @@ public class ChooseTrumpfTest {
     @Test
     public void testRateUndeUfeBestWithGreatUndeUfeCards() throws Exception {
         Set<Card> cards = veryGoodUndeUfe;
-        int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
-        int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
-        int spades = jassStrategy.rateColorForTrumpf(cards, Color.SPADES);
-        int clubs = jassStrategy.rateColorForTrumpf(cards, Color.CLUBS);
-        int obeAbe = jassStrategy.rateObeabe(cards);
-        int undeUfe = jassStrategy.rateUndeufe(cards);
+        int diamonds = JassHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+        int hearts = JassHelper.rateColorForTrumpf(cards, Color.HEARTS);
+        int spades = JassHelper.rateColorForTrumpf(cards, Color.SPADES);
+        int clubs = JassHelper.rateColorForTrumpf(cards, Color.CLUBS);
+        int obeAbe = JassHelper.rateObeabe(cards);
+        int undeUfe = JassHelper.rateUndeufe(cards);
         System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
         System.out.println("Obeabe: " + obeAbe +", Undeufe: " + undeUfe);
         assertTrue(undeUfe > obeAbe);
@@ -75,12 +76,12 @@ public class ChooseTrumpfTest {
     @Test
     public void testDefinitelyShift() throws Exception {
         Set<Card> cards = definitelyShift;
-        int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
-        int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
-        int spades = jassStrategy.rateColorForTrumpf(cards, Color.SPADES);
-        int clubs = jassStrategy.rateColorForTrumpf(cards, Color.CLUBS);
-        int obeAbe = jassStrategy.rateObeabe(cards);
-        int undeUfe = jassStrategy.rateUndeufe(cards);
+        int diamonds = JassHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+        int hearts = JassHelper.rateColorForTrumpf(cards, Color.HEARTS);
+        int spades = JassHelper.rateColorForTrumpf(cards, Color.SPADES);
+        int clubs = JassHelper.rateColorForTrumpf(cards, Color.CLUBS);
+        int obeAbe = JassHelper.rateObeabe(cards);
+        int undeUfe = JassHelper.rateUndeufe(cards);
         System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
         System.out.println("Obeabe: " + obeAbe +", Undeufe: " + undeUfe);
         assertTrue(undeUfe < shiftValue);
@@ -95,12 +96,12 @@ public class ChooseTrumpfTest {
     @Test
     public void testAllClubs() throws Exception {
         Set<Card> cards = allClubs;
-        int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
-        int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
-        int spades = jassStrategy.rateColorForTrumpf(cards, Color.SPADES);
-        int clubs = jassStrategy.rateColorForTrumpf(cards, Color.CLUBS);
-        int obeAbe = jassStrategy.rateObeabe(cards);
-        int undeUfe = jassStrategy.rateUndeufe(cards);
+        int diamonds = JassHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+        int hearts = JassHelper.rateColorForTrumpf(cards, Color.HEARTS);
+        int spades = JassHelper.rateColorForTrumpf(cards, Color.SPADES);
+        int clubs = JassHelper.rateColorForTrumpf(cards, Color.CLUBS);
+        int obeAbe = JassHelper.rateObeabe(cards);
+        int undeUfe = JassHelper.rateUndeufe(cards);
         System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
         System.out.println("Obeabe: " + obeAbe +", Undeufe: " + undeUfe);
         assertTrue(undeUfe == obeAbe);
@@ -114,54 +115,54 @@ public class ChooseTrumpfTest {
     @Test
     public void testRateObeAbeWithAllClubs() throws Exception {
         // 180 is maximum amount of points
-        assertEquals(180, jassStrategy.rateObeabeColor(allClubs,Color.CLUBS));
-        assertEquals(0, jassStrategy.rateObeabeColor(allClubs, Color.DIAMONDS));
-        assertEquals(0, jassStrategy.rateObeabeColor(allClubs, Color.HEARTS));
-        assertEquals(0, jassStrategy.rateObeabeColor(allClubs, Color.SPADES));
-        assertEquals(180, jassStrategy.rateObeabe(allClubs));
+        assertEquals(180, JassHelper.rateObeabeColor(allClubs,Color.CLUBS));
+        assertEquals(0, JassHelper.rateObeabeColor(allClubs, Color.DIAMONDS));
+        assertEquals(0, JassHelper.rateObeabeColor(allClubs, Color.HEARTS));
+        assertEquals(0, JassHelper.rateObeabeColor(allClubs, Color.SPADES));
+        assertEquals(180, JassHelper.rateObeabe(allClubs));
     }
 
     @Test
     public void testRateUndeUfeWithAllClubs() throws Exception {
         // 180 is maximum amount of points
-        assertEquals(180, jassStrategy.rateUndeufeColor(allClubs,Color.CLUBS));
-        assertEquals(0, jassStrategy.rateUndeufeColor(allClubs, Color.DIAMONDS));
-        assertEquals(0, jassStrategy.rateUndeufeColor(allClubs, Color.HEARTS));
-        assertEquals(0, jassStrategy.rateUndeufeColor(allClubs, Color.SPADES));
-        assertEquals(180, jassStrategy.rateUndeufe(allClubs));
+        assertEquals(180, JassHelper.rateUndeufeColor(allClubs,Color.CLUBS));
+        assertEquals(0, JassHelper.rateUndeufeColor(allClubs, Color.DIAMONDS));
+        assertEquals(0, JassHelper.rateUndeufeColor(allClubs, Color.HEARTS));
+        assertEquals(0, JassHelper.rateUndeufeColor(allClubs, Color.SPADES));
+        assertEquals(180, JassHelper.rateUndeufe(allClubs));
     }
 
     @Test
     public void testRateObeAbeWithIsBetween0And180() throws Exception {
-        assertTrue(jassStrategy.rateObeabe(cards1) >= 0);
-        assertTrue(jassStrategy.rateObeabe(cards2) >= 0);
-        assertTrue(jassStrategy.rateObeabe(cards3) >= 0);
-        assertTrue(jassStrategy.rateObeabe(cards4) >= 0);
-        assertTrue(jassStrategy.rateObeabe(cards1) <= 180);
-        assertTrue(jassStrategy.rateObeabe(cards2) <= 180);
-        assertTrue(jassStrategy.rateObeabe(cards3) <= 180);
-        assertTrue(jassStrategy.rateObeabe(cards4) <= 180);
+        assertTrue(JassHelper.rateObeabe(cards1) >= 0);
+        assertTrue(JassHelper.rateObeabe(cards2) >= 0);
+        assertTrue(JassHelper.rateObeabe(cards3) >= 0);
+        assertTrue(JassHelper.rateObeabe(cards4) >= 0);
+        assertTrue(JassHelper.rateObeabe(cards1) <= 180);
+        assertTrue(JassHelper.rateObeabe(cards2) <= 180);
+        assertTrue(JassHelper.rateObeabe(cards3) <= 180);
+        assertTrue(JassHelper.rateObeabe(cards4) <= 180);
     }
 
     @Test
     public void testRateUndeUfeWithIsBetween0And180() throws Exception {
-        assertTrue(jassStrategy.rateUndeufe(cards1) >= 0);
-        assertTrue(jassStrategy.rateUndeufe(cards2) >= 0);
-        assertTrue(jassStrategy.rateUndeufe(cards3) >= 0);
-        assertTrue(jassStrategy.rateUndeufe(cards4) >= 0);
-        assertTrue(jassStrategy.rateUndeufe(cards1) <= 180);
-        assertTrue(jassStrategy.rateUndeufe(cards2) <= 180);
-        assertTrue(jassStrategy.rateUndeufe(cards3) <= 180);
-        assertTrue(jassStrategy.rateUndeufe(cards4) <= 180);
+        assertTrue(JassHelper.rateUndeufe(cards1) >= 0);
+        assertTrue(JassHelper.rateUndeufe(cards2) >= 0);
+        assertTrue(JassHelper.rateUndeufe(cards3) >= 0);
+        assertTrue(JassHelper.rateUndeufe(cards4) >= 0);
+        assertTrue(JassHelper.rateUndeufe(cards1) <= 180);
+        assertTrue(JassHelper.rateUndeufe(cards2) <= 180);
+        assertTrue(JassHelper.rateUndeufe(cards3) <= 180);
+        assertTrue(JassHelper.rateUndeufe(cards4) <= 180);
     }
 
     @Test
     public void testCalculateInitialSafety() {
-        List<Card> sortedClubs = jassStrategy.sortCardsOfColorDescending(cards1, Color.CLUBS);
-        List<Card> sortedSpades = jassStrategy.sortCardsOfColorDescending(cards1, Color.SPADES);
-        assertEquals(jassStrategy.calculateInitialSafetyObeabe(sortedClubs), 1.0, 0.05);
-        assertTrue(jassStrategy.calculateInitialSafetyObeabe(sortedSpades) > 0.33);
-        assertTrue(jassStrategy.calculateInitialSafetyObeabe(sortedSpades) < 0.34);
+        List<Card> sortedClubs = JassHelper.sortCardsOfColorDescending(cards1, Color.CLUBS);
+        List<Card> sortedSpades = JassHelper.sortCardsOfColorDescending(cards1, Color.SPADES);
+        assertEquals(JassHelper.calculateInitialSafetyObeabe(sortedClubs), 1.0, 0.05);
+        assertTrue(JassHelper.calculateInitialSafetyObeabe(sortedSpades) > 0.33);
+        assertTrue(JassHelper.calculateInitialSafetyObeabe(sortedSpades) < 0.34);
 
     }
 
