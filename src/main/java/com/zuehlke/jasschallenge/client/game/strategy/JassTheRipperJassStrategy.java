@@ -23,8 +23,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// IMPORTANT: If but does not work properly, try setting this to false
 	private static final boolean PARALLELISATION_ENABLED = true;
 
-
-	private final int max_schift_rating_val = 60;
+	// TODO: Maybe this is too high or too low? => Write tests.
+	final int max_schift_rating_val = 75;
 
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
@@ -98,10 +98,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		if (cardsOfColor.size() >= 6)
 			rating += 120;
 		float qualityOfTrumpfCards = 0;
-		// rate plus 2.25 * Trumpfrank (9 for Jack, 8 for Nell, 7 for Ace, …)
+		// rate plus 2 * Trumpfrank (9 for Jack, 8 for Nell, 7 for Ace, …)
 		// Maximum is 90 this way
 		for (Card card : cardsOfColor) {
-			qualityOfTrumpfCards += 2.25 * card.getTrumpfRank();
+			qualityOfTrumpfCards += 2 * card.getTrumpfRank();
 		}
 		rating += (int) qualityOfTrumpfCards;
 		// If you have Jack, rate higher
@@ -114,10 +114,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		if (prospectiveTrumpfCards[8])
 			rating += 3;
 
-		// If a lot of a color, it is rather good Trumpf (small weight)
+		// If a lot of a color, it is rather good Trumpf
 		for (Card card : cardsOfColor) {
 			// TODO: maybe do something with * instead of + here?
-			rating += 3;
+			rating *= 1.15;
 		}
 		// If Jack and Nell and another Trumpf and 2 Aces: good Trumpf
 		if ((prospectiveTrumpfCards[5] && prospectiveTrumpfCards[3]) && cardsOfColor.size() > 2 && containsTwoOrMoreAces(cards))
