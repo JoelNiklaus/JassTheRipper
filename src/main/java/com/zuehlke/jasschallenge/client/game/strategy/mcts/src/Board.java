@@ -11,9 +11,9 @@ public interface Board {
 	 * 
 	 * @return
 	 */
-	public Board duplicate();
+	public Board duplicate() throws Exception;
 
-	Board duplicateWithNewRandomCards();
+	Board duplicateWithNewRandomCards() throws Exception;
 
 	/**
 	 * Get a list of all available moves for the current state. MCTS

@@ -24,7 +24,7 @@ public class JassBoard implements Board, Serializable {
 	private final int playerId;
 
 
-	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) {
+	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) throws Exception {
 		this.availableCards = copy(availableCards);
 		//this.availableCards = Collections.synchronizedSet((Set<Card>) DeepCopy.copy(availableCards));
 		this.game = SerializationUtils.clone(game);
@@ -44,7 +44,7 @@ public class JassBoard implements Board, Serializable {
 	 *
 	 * @param availableCards
 	 */
-	private void distributeCardsForPlayers(Set<Card> availableCards) {
+	private void distributeCardsForPlayers(Set<Card> availableCards) throws Exception {
 		final Round round = game.getCurrentRound();
 		final PlayingOrder order = round.getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards);
@@ -75,11 +75,11 @@ public class JassBoard implements Board, Serializable {
 		assert remainingCards.isEmpty();
 	}
 
-	public Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {
+	public Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) throws Exception {
 		return pickRandomSubSet(cards, numberOfCards);
 	}
 
-	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
+	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) throws Exception {
 		assert (numberOfCards > 0 || numberOfCards <= 9);
 		List<Card> listOfCards = cards.parallelStream().collect(Collectors.toList());
 		assert numberOfCards <= listOfCards.size();
@@ -111,12 +111,12 @@ public class JassBoard implements Board, Serializable {
 	 * @return
 	 */
 	@Override
-	public Board duplicate() {
+	public Board duplicate() throws Exception {
 		return new JassBoard(availableCards, game, false);
 	}
 
 	@Override
-	public Board duplicateWithNewRandomCards() {
+	public Board duplicateWithNewRandomCards() throws Exception {
 		return new JassBoard(availableCards, game, true);
 	}
 
