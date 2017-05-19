@@ -39,7 +39,7 @@ public class Node {
 	 * @param m
 	 * @param prnt
 	 */
-	public Node(Board b, Move m, Node prnt) {
+	public Node(Board b, Move m, Node prnt) throws Exception {
 		children = new ArrayList<>();
 		parent = prnt;
 		move = m;
@@ -85,7 +85,7 @@ public class Node {
 	 *
 	 * @param currentBoard
 	 */
-	public void expandNode(Board currentBoard) {
+	public void expandNode(Board currentBoard) throws Exception {
 		ArrayList<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
 		unvisitedChildren = new ArrayList<>();
 		for (Move legalMove : legalMoves) {

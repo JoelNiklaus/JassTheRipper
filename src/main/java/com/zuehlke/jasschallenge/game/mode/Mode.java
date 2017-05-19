@@ -63,4 +63,20 @@ public abstract class Mode implements Serializable {
     public abstract int getFactor();
 
     protected abstract Comparator<Card> createRankComparator();
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            Mode otherMode = (Mode) obj;
+            if (getTrumpfColor() == null) {
+                if (otherMode.getTrumpfColor() != null)
+                    return false;
+                return (getTrumpfName().equals(otherMode.getTrumpfName()));
+            }
+            return (getTrumpfName().equals(otherMode.getTrumpfName()) && getTrumpfColor() == otherMode.getTrumpfColor());
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
 }

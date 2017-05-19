@@ -34,7 +34,7 @@ public class MCTS {
 	 * @param bounds        enable or disable score bounds.
 	 * @return
 	 */
-	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) {
+	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) throws Exception {
 		scoreBounds = bounds;
 		Move bestMoveFound = null;
 
@@ -83,6 +83,7 @@ public class MCTS {
 
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
+				throw new Exception();
 			}
 
 			threadpool.shutdown();
@@ -102,12 +103,12 @@ public class MCTS {
 		return bestMoveFound;
 	}
 
-	private void runNTimes(Board startingBoard, Node rootNode, int runs) {
+	private void runNTimes(Board startingBoard, Node rootNode, int runs) throws Exception {
 		for (int i = 0; i < runs; i++)
 			select(startingBoard.duplicate(), rootNode);
 	}
 
-	private void runUntilTimeRunsOut(Board startingBoard, Node rootNode, long endingTime) {
+	private void runUntilTimeRunsOut(Board startingBoard, Node rootNode, long endingTime) throws Exception {
 		int runCounter = 0;
 		while ((System.currentTimeMillis() < endingTime)) {
 			// Start new path from root node
@@ -180,7 +181,7 @@ public class MCTS {
 	 * @param currentNode  Node from which to start selection
 	 * @param currentBoard Board state to work from.
 	 */
-	private void select(Board currentBoard, Node currentNode) {
+	private void select(Board currentBoard, Node currentNode) throws Exception {
 		// Begin tree policy. Traverse down the tree and expand. Return
 		// the new node or the deepest node it could reach. Return too
 		// a board matching the returned node.
@@ -200,7 +201,7 @@ public class MCTS {
 	/**
 	 *
 	 */
-	private BoardNodePair treePolicy(Board brd, Node node) {
+	private BoardNodePair treePolicy(Board brd, Node node) throws Exception {
 		Board b = brd.duplicate();
 
 		while (!b.gameOver()) {
@@ -347,7 +348,7 @@ public class MCTS {
 	 * @param state
 	 * @return
 	 */
-	private double[] playout(Node state, Board board) {
+	private double[] playout(Node state, Board board) throws Exception {
 		ArrayList<Move> moves;
 		Move move;
 		Board brd = board.duplicate();
@@ -378,7 +379,7 @@ public class MCTS {
 		return brd.getScore();
 	}
 
-	private Move getRandomMove(Board board, ArrayList<Move> moves) {
+	private Move getRandomMove(Board board, ArrayList<Move> moves) throws Exception {
 		double[] weights = board.getMoveWeights();
 
 		double totalWeight = 0.0d;
@@ -514,7 +515,7 @@ public class MCTS {
 		private Board board;
 		private long endingTime;
 
-		private MCTSTask(Board board, long endingTime) {
+		private MCTSTask(Board board, long endingTime) throws Exception {
 			this.endingTime = endingTime;
 			this.board = board.duplicateWithNewRandomCards();
 		}

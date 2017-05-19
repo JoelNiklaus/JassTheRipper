@@ -53,7 +53,7 @@ public class MCTSHelper {
 	 * @param endingTime
 	 * @return
 	 */
-	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
+	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime)  throws Exception{
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
 		if (!mcts.isParallelisationEnabled()) {
@@ -88,7 +88,7 @@ public class MCTSHelper {
 	 * @param endingTime
 	 * @return
 	 */
-	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
+	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime)  throws Exception{
 		final long startTime = System.currentTimeMillis();
 		JassBoard jassBoard = new JassBoard(availableCards, game, true);
 		final long cloningTime = (System.currentTimeMillis() - startTime);
