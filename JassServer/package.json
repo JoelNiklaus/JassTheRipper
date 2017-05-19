@@ -30,6 +30,10 @@
     "prestart": "npm run build",
     "start": "node build/server/app.js",
     "start:tournament": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=5 npm start",
+    "start:tournament10": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=10 npm start",
+    "start:tournament20": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=20 npm start",
+    "start:tournament50": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=50 npm start",
+    "start:tournament100": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=100 npm start",
     "start:watch": "nodemon -e js,jsx,less --watch server --watch shared --watch client --exec \"npm run start\"",
     "bot:start": "npm run build:js:bot && node build/bot/Bot.js",
     "debug": "cross-env DEBUG=true npm run start:watch -- --debug --debug-brk=5858"
