@@ -47,7 +47,7 @@ public class MCTSHelper {
 	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) throws Exception {
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
-		if (mcts.isParallelisationEnabled()) {
+		if (!mcts.isParallelisationEnabled()) {
 			long maxComputationTime = endingTime - System.currentTimeMillis();
 			int numberOfMCTSRuns = 4;
 
