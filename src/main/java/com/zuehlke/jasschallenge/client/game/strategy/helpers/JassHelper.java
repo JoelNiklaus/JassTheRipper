@@ -4,12 +4,11 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +31,7 @@ public class JassHelper {
 	}
 
 	public static Set<Card> getPossibleCards(Set<Card> availableCards, Game game) {
-		assert(availableCards.size() > 0);
+		assert (availableCards.size() > 0);
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card
@@ -58,6 +57,10 @@ public class JassHelper {
 		return getCardsOfColor(cards, color).size();
 	}
 
+	public static boolean isAngebenPossible(Set<Card> cards, Card startingCard) {
+		return countNumberOfCardsOfColor(cards, startingCard.getColor()) > 0;
+	}
+
 	public static Set<Card> getCardsOfColor(Set<Card> cards, Color color) {
 		return cards.parallelStream().filter(card -> card.getColor().equals(color)).collect(Collectors.toSet());
 	}
@@ -74,11 +77,13 @@ public class JassHelper {
 		return round.numberOfPlayedCards() == 2;
 	}
 
-
 	public static boolean lastPlayer(Round round) {
 		return round.numberOfPlayedCards() == 3;
 	}
 
+	public static boolean hasPartnerAlreadyPlayed(Round round) {
+		return round.numberOfPlayedCards() >= 2;
+	}
 
 	public static boolean isTeamMember(Player otherPlayer, Player player) {
 		return !isOpponent(otherPlayer, player);
@@ -96,4 +101,23 @@ public class JassHelper {
 		return cards.parallelStream().filter(card -> !card.getColor().equals(round.getRoundColor())).collect(Collectors.toSet());
 	}
 
+	// TODO could be made more sophisticated
+	public static Set<Card> getSchmierCards(Set<Card> possibleCards, Card cardOfPartner, Mode mode) {
+		Set<Card> cardsOfColour = getCardsOfColor(possibleCards, cardOfPartner.getColor());
+		assert !cardsOfColour.isEmpty();
+
+		List<CardValue> possibleCardValues = new LinkedList<>();
+		possibleCardValues.add(CardValue.TEN);
+		if (mode.equals(Mode.topDown()))
+			possibleCardValues.add(CardValue.EIGHT);
+
+		Set<Card> schmierCards = EnumSet.noneOf(Card.class);
+		for (Card card : cardsOfColour)
+			if (possibleCardValues.contains(card.getValue()))
+				schmierCards.add(card);
+
+		if (!schmierCards.isEmpty())
+			return schmierCards;
+		return cardsOfColour;
+	}
 }

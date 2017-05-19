@@ -6,6 +6,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
@@ -139,6 +140,7 @@ public class JassBoard implements Board, Serializable {
 		return moves;
 	}
 
+
 	public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
 		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round);
 
@@ -162,9 +164,44 @@ public class JassBoard implements Board, Serializable {
 		if (JassHelper.startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
 			return trumps;
 
+		// wenn partner schon gespielt hat
+		if (JassHelper.hasPartnerAlreadyPlayed(round)) {
+			Card cardOfPartner = JassHelper.getCardOfPartner(round);
+			// wenn partner den stich macht bis jetzt
+			if (round.getWinningCard().equals(cardOfPartner)) {
+				// wenn ich noch angeben kann -> SCHMIEREN
+				if (JassHelper.isAngebenPossible(possibleCards, cardOfPartner)) {
+					Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, cardOfPartner, round.getMode());
+					// wenn letzter spieler einfach schmieren
+					if (JassHelper.lastPlayer(round))
+						return schmierCards;
+						// TODO wenn zweitletzter spieler prüfen ob letzer spieler noch stechen kann
+					else {
+						assert JassHelper.thirdPlayer(round);
+						// TODO to change
+						return schmierCards;
+					}
+				}
+				// wenn nicht -> VERWERFEN (Gegenfarbe von Farbe wo ich gut bin)
+				else {
+					if (round.getMode().equals(Mode.bottomUp())) {
 
-		// TODO gegenseitiges verwerfen von gegenfarbe implementieren!
-		// Wenn obeabe oder undeufe: Bei Ausspielen von Partner tiefe Karte (tiefer als 10) von Gegenfarbe verwerfen wenn bei Farbe gut.
+
+					} else {
+						if (round.getMode().equals(Mode.topDown())) {
+
+						} else {
+
+						}
+					}
+
+				}
+			}
+		}
+
+		// TODO für jeden Spieler Karteneinschätzung machen!!!
+
+		// TODO geschätzte karten von partner anpassen, wenn verwerfen von ihm erkannt wurde!
 
 		return possibleCards;
 	}
