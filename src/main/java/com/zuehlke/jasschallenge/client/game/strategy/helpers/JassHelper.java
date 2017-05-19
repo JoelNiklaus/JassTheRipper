@@ -87,4 +87,13 @@ public class JassHelper {
 	public static boolean isOpponent(Player otherPlayer, Player player) {
 		return (otherPlayer.getSeatId() * player.getSeatId()) % 2 != player.getSeatId() % 2;
 	}
+
+	public static Set<Card> getTrumps(Set<Card> cards, Round round) {
+		return cards.parallelStream().filter(card -> card.getColor().equals(round.getRoundColor())).collect(Collectors.toSet());
+	}
+
+	public static Set<Card> getNotTrumps(Set<Card> cards, Round round) {
+		return cards.parallelStream().filter(card -> !card.getColor().equals(round.getRoundColor())).collect(Collectors.toSet());
+	}
+
 }

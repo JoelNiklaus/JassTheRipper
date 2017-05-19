@@ -55,7 +55,7 @@ public class JassBoard implements Board, Serializable {
 			Set<Card> cards;
 			if (tempPlayerId != playerId) { // randomize cards for the other players
 				//if (tempPlayerId > playerId) // if tempPlayer is seated after player add one card more
-				if(round.hasPlayerAlreadyPlayed(player))
+				if (round.hasPlayerAlreadyPlayed(player))
 					numberOfCardsToAdd = Math.floor(numberOfCards);
 				else
 					numberOfCardsToAdd = Math.ceil(numberOfCards);
@@ -140,38 +140,50 @@ public class JassBoard implements Board, Serializable {
 	}
 
 	public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
-		// stechen wenn letzter spieler und stich gehört gegner TODO noch erweitern
-		if (JassHelper.lastPlayer(round)) {
-			Player stichOwner = round.getWinner();
-			if (JassHelper.isOpponent(stichOwner, player)) {
-				Card winningCard = round.getWinningCard();
-				Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
-				for (Card card : possibleCards) {
-					List<Card> cards = new LinkedList<>();
-					cards.add(card);
-					cards.add(winningCard);
-					if (round.getMode().determineWinningCard(cards).equals(winningCard))
-						cardsToRemove.add(card);
-				}
-				if (possibleCards.size() > cardsToRemove.size())
-					possibleCards.removeAll(cardsToRemove);
-			}
+		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round);
+
+		// wenn letzter Spieler und Stich gehört Gegner
+		if (JassHelper.lastPlayer(round) && JassHelper.isOpponent(round.getWinner(), player)) {
+			int stichValue = round.calculateScore();
+			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
+
+			// wenn möglich mit nicht trumpf zu stechen
+			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, round);
+			if(!notTrumpsOfRoundWinningCards.isEmpty())
+				return notTrumpsOfRoundWinningCards;
+
+			// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
+			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, round);
+			if(!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
+				return trumpsOfRoundWinningCards;
 		}
+
+		// Wenn erster spieler am anfang des spiels (erste beide runden) und mindestens 2 trümpfe
+		if (JassHelper.startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
+			return trumps;
+
+
+		// TODO gegenseitiges verwerfen von gegenfarbe implementieren!
+		// Wenn obeabe oder undeufe: Bei Ausspielen von Partner tiefe Karte (tiefer als 10) von Gegenfarbe verwerfen wenn bei Farbe gut.
+
 		return possibleCards;
 	}
 
-	// TODO exclude very bad moves
-
-	// Wenn erster spieler am anfang des spiels und mindestens 2 trümpfe -> austrumpfen
-
-
-	// wenn letzter spieler und nicht möglich nicht mit trumpf zu stechen, dann stechen
-
-
-	// Wenn letzter Spieler und möglich mit nicht trumpf zu stechen, dann stechen.
-
-
-	// Wenn obeabe oder undeufe: Bei Ausspielen von Partner tiefe Karte (tiefer als 10) von Gegenfarbe verwerfen wenn bei Farbe gut.
+	private Set<Card> getRoundWinningCards(Set<Card> possibleCards, Round round) {
+		Set<Card> remainingCards = new HashSet<>(possibleCards);
+		Card winningCard = round.getWinningCard();
+		Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
+		for (Card card : remainingCards) {
+			List<Card> cards = new LinkedList<>();
+			cards.add(card);
+			cards.add(winningCard);
+			if (round.getMode().determineWinningCard(cards).equals(winningCard))
+				cardsToRemove.add(card);
+		}
+		if (remainingCards.size() > cardsToRemove.size())
+			remainingCards.removeAll(cardsToRemove);
+		return remainingCards;
+	}
 
 
 	/**
