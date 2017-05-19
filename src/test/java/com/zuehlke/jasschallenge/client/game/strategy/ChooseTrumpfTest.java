@@ -35,7 +35,7 @@ public class ChooseTrumpfTest {
 
 
     @Test
-    public void chooseTrumpfDiamondWithGreatDiamondCards() {
+    public void chooseTrumpfDiamondWithGreatDiamondCards() throws Exception {
         Set<Card> cards = veryGoodDiamondTrumpf;
         int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
         int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
@@ -54,7 +54,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testRateUndeUfeBestWithGreatUndeUfeCards() {
+    public void testRateUndeUfeBestWithGreatUndeUfeCards() throws Exception {
         Set<Card> cards = veryGoodUndeUfe;
         int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
         int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
@@ -73,7 +73,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testDefinitelyShift() {
+    public void testDefinitelyShift() throws Exception {
         Set<Card> cards = definitelyShift;
         int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
         int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
@@ -93,7 +93,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testAllClubs() {
+    public void testAllClubs() throws Exception {
         Set<Card> cards = allClubs;
         int diamonds = jassStrategy.rateColorForTrumpf(cards, Color.DIAMONDS);
         int hearts = jassStrategy.rateColorForTrumpf(cards, Color.HEARTS);
@@ -112,7 +112,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testRateObeAbeWithAllClubs() {
+    public void testRateObeAbeWithAllClubs() throws Exception {
         // 180 is maximum amount of points
         assertEquals(180, jassStrategy.rateObeabeColor(allClubs,Color.CLUBS));
         assertEquals(0, jassStrategy.rateObeabeColor(allClubs, Color.DIAMONDS));
@@ -122,7 +122,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testRateUndeUfeWithAllClubs() {
+    public void testRateUndeUfeWithAllClubs() throws Exception {
         // 180 is maximum amount of points
         assertEquals(180, jassStrategy.rateUndeufeColor(allClubs,Color.CLUBS));
         assertEquals(0, jassStrategy.rateUndeufeColor(allClubs, Color.DIAMONDS));
@@ -132,7 +132,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testRateObeAbeWithIsBetween0And180() {
+    public void testRateObeAbeWithIsBetween0And180() throws Exception {
         assertTrue(jassStrategy.rateObeabe(cards1) >= 0);
         assertTrue(jassStrategy.rateObeabe(cards2) >= 0);
         assertTrue(jassStrategy.rateObeabe(cards3) >= 0);
@@ -144,7 +144,7 @@ public class ChooseTrumpfTest {
     }
 
     @Test
-    public void testRateUndeUfeWithIsBetween0And180() {
+    public void testRateUndeUfeWithIsBetween0And180() throws Exception {
         assertTrue(jassStrategy.rateUndeufe(cards1) >= 0);
         assertTrue(jassStrategy.rateUndeufe(cards2) >= 0);
         assertTrue(jassStrategy.rateUndeufe(cards3) >= 0);
