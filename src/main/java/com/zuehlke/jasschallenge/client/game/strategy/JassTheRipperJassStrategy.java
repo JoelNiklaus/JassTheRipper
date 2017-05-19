@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
 
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 250;
+	private static final int MAX_THINKING_TIME = 350;
 
 	// IMPORTANT: If but does not work properly, try setting this to false
 	private static final boolean PARALLELISATION_ENABLED = true;
@@ -327,7 +327,6 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			if (session.isFirstMove())
 				time -= 50;
 			final long endingTime = startTime + time;
-			// TODO: Somewhere before here, sometimes an error is thrown and the bot leaves the game. Why?
 			printCards(availableCards);
 			final Game game = session.getCurrentGame();
 			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);

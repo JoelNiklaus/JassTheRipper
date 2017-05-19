@@ -37,14 +37,14 @@ public class MCTSHelper {
 
 
 		//final int threads = 10; // The more the merrier ;)
-		final int threads = Runtime.getRuntime().availableProcessors() * 5;
+		final int threads = Runtime.getRuntime().availableProcessors() * 2;
 		if (parallelisation)
 			mcts.enableRootParallelisation(threads);
 
 		return runPrediction(availableCards, game, mcts, endingTime);
 	}
 
-	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) throws Exception {
+	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
 		if (!mcts.isParallelisationEnabled()) {
@@ -62,8 +62,8 @@ public class MCTSHelper {
 				}
 				numberOfSelections.put(card, number);
 			}
-			Card card2 = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst().get().getKey();
-			return card2;
+			Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst().get().getKey();
+			return card;
 		}
 
 
@@ -71,7 +71,7 @@ public class MCTSHelper {
 	}
 
 
-	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) throws Exception {
+	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
 		final long startTime = System.currentTimeMillis();
 		JassBoard jassBoard = new JassBoard(availableCards, game, true);
 		final long cloningTime = (System.currentTimeMillis() - startTime);
