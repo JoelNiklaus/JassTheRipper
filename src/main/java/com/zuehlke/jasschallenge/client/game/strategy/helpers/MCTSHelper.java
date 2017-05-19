@@ -19,7 +19,7 @@ public class MCTSHelper {
 	private static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors() * 3;
 
 	/**
-	 * Runs the MCTS and predicts a Card
+	 * Sets the MCTS parameters, runs it and predicts a Card
 	 *
 	 * @param availableCards
 	 * @param game
@@ -44,6 +44,15 @@ public class MCTSHelper {
 		return runPrediction(availableCards, game, mcts, endingTime);
 	}
 
+	/**
+	 * Runs the prediction of the card. Runs differently whether or not parallelisation is enabled.
+	 *
+	 * @param availableCards
+	 * @param game
+	 * @param mcts
+	 * @param endingTime
+	 * @return
+	 */
 	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
@@ -70,7 +79,15 @@ public class MCTSHelper {
 		return predictCard(availableCards, game, mcts, endingTime);
 	}
 
-
+	/**
+	 * Chooses a card by running the mcts method.
+	 *
+	 * @param availableCards
+	 * @param game
+	 * @param mcts
+	 * @param endingTime
+	 * @return
+	 */
 	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) {
 		final long startTime = System.currentTimeMillis();
 		JassBoard jassBoard = new JassBoard(availableCards, game, true);

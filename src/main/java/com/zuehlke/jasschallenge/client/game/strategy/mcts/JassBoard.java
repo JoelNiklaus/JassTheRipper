@@ -21,16 +21,21 @@ public class JassBoard implements Board, Serializable {
 
 	private final Set<Card> availableCards;
 	private final Game game;
-	private final int playerId;
 
 
+	/**
+	 * Constructs a new Jassboard. If the flag is set, deals new random cards to the players.
+	 *
+	 * @param availableCards
+	 * @param game
+	 * @param newRandomCards
+	 */
 	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) {
 		this.availableCards = copy(availableCards);
 		//this.availableCards = Collections.synchronizedSet((Set<Card>) DeepCopy.copy(availableCards));
 		this.game = SerializationUtils.clone(game);
 		//this.session = (GameSession) DeepCopy.copy(session);
 		//this.session = (GameSession) ObjectCloner.deepCopy(session);
-		this.playerId = this.game.getCurrentPlayer().getSeatId();
 		if (newRandomCards)
 			distributeCardsForPlayers(this.availableCards);
 	}
@@ -45,6 +50,7 @@ public class JassBoard implements Board, Serializable {
 	 * @param availableCards
 	 */
 	private void distributeCardsForPlayers(Set<Card> availableCards) {
+		final int playerId = this.game.getCurrentPlayer().getSeatId();
 		final Round round = game.getCurrentRound();
 		final PlayingOrder order = round.getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards);
@@ -79,9 +85,16 @@ public class JassBoard implements Board, Serializable {
 		return pickRandomSubSet(cards, numberOfCards);
 	}
 
+	/**
+	 * Picks a random sub set out of the given cards with the given size.
+	 *
+	 * @param cards
+	 * @param numberOfCards
+	 * @return
+	 */
 	private Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		assert (numberOfCards > 0 || numberOfCards <= 9);
-		List<Card> listOfCards = cards.parallelStream().collect(Collectors.toList());
+		List<Card> listOfCards = new LinkedList<>(cards);
 		assert numberOfCards <= listOfCards.size();
 		Collections.shuffle(listOfCards);
 		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
@@ -90,6 +103,13 @@ public class JassBoard implements Board, Serializable {
 		return randomSubSet;
 	}
 
+	/**
+	 * Get the cards remaining to be split up on the other players.
+	 * All cards - already played cards - available cards
+	 *
+	 * @param availableCards
+	 * @return
+	 */
 	private Set<Card> getRemainingCards(Set<Card> availableCards) {
 		Set<Card> cards = Collections.synchronizedSet(EnumSet.allOf(Card.class));
 		assert cards.size() == 36;
@@ -120,6 +140,12 @@ public class JassBoard implements Board, Serializable {
 		return new JassBoard(availableCards, game, true);
 	}
 
+	/**
+	 * Puts together a list of moves containing possible (or reduced to only sensible) cards to play.
+	 *
+	 * @param location
+	 * @return
+	 */
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
 		ArrayList<Move> moves = new ArrayList<>();
@@ -141,35 +167,76 @@ public class JassBoard implements Board, Serializable {
 	}
 
 
+	/**
+	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
+	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
+	 * and therfore the simulation gets the most realistic outcome.
+	 *
+	 * @param possibleCards
+	 * @param round
+	 * @param player
+	 * @return
+	 */
 	public Set<Card> refineMovesWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
-		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round);
+		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round.getMode());
 
+		/**
+		 * STECHEN (als letzter Spieler)
+		 */
 		// wenn letzter Spieler und Stich gehört Gegner
 		if (JassHelper.lastPlayer(round) && JassHelper.isOpponent(round.getWinner(), player)) {
 			int stichValue = round.calculateScore();
 			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
 
 			// wenn möglich mit nicht trumpf zu stechen
-			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, round);
+			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, round.getMode());
 			if (!notTrumpsOfRoundWinningCards.isEmpty())
 				return notTrumpsOfRoundWinningCards;
 
 			// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
-			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, round);
+			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, round.getMode());
 			if (!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
 				return trumpsOfRoundWinningCards;
 		}
 
+		/**
+		 * AUSTRUMPFEN
+		 */
 		// Wenn erster spieler am anfang des spiels (erste beide runden) und mindestens 2 trümpfe
 		if (JassHelper.startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
 			return trumps;
+
+
+		// Wenn erster spieler
+		if (JassHelper.startingPlayer(round)) {
+			/**
+			 * ANZIEHEN (NACHRICHT SENDEN)
+			 */
+			// look for a not trumpf color where i have a king or queen but someone else has the ace
+			// -> play small card so king or queen gets bock
+
+			/**
+			 * ANZIEHEN (NACHRICHT EMPFANGEN)
+			 */
+			// if my partner played anziehen in one of the previous rounds, play this color
+
+
+			/**
+			 * VERWERFEN (NACHRICHT EMPFANGEN)
+			 */
+			// if my partner played verwerfen in one of the previous rounds, play opposite color
+		}
+
 
 		// wenn partner schon gespielt hat
 		if (JassHelper.hasPartnerAlreadyPlayed(round)) {
 			Card cardOfPartner = JassHelper.getCardOfPartner(round);
 			// wenn partner den stich macht bis jetzt
 			if (round.getWinningCard().equals(cardOfPartner)) {
-				// wenn ich noch angeben kann -> SCHMIEREN
+				/**
+				 * SCHMIEREN
+				 */
+				// wenn ich noch angeben kann
 				if (JassHelper.isAngebenPossible(possibleCards, cardOfPartner)) {
 					Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, cardOfPartner, round.getMode());
 					// wenn letzter spieler einfach schmieren
@@ -182,7 +249,10 @@ public class JassBoard implements Board, Serializable {
 						return schmierCards;
 					}
 				}
-				// wenn nicht -> VERWERFEN (Gegenfarbe von Farbe wo ich gut bin)
+				/**
+				 * VERWERFEN
+				 */
+				// wenn nicht -> (Gegenfarbe von Farbe wo ich gut bin)
 				else {
 					if (round.getMode().equals(Mode.bottomUp())) {
 
@@ -206,6 +276,13 @@ public class JassBoard implements Board, Serializable {
 		return possibleCards;
 	}
 
+	/**
+	 * Get all of my cards which can win the round.
+	 *
+	 * @param possibleCards
+	 * @param round
+	 * @return
+	 */
 	private Set<Card> getRoundWinningCards(Set<Card> possibleCards, Round round) {
 		Set<Card> remainingCards = new HashSet<>(possibleCards);
 		Card winningCard = round.getWinningCard();

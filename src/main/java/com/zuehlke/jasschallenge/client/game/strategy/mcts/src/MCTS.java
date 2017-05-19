@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+/**
+ * The main class responsible for the Monte Carlo Tree Search Method.
+ */
 public class MCTS {
 	private final Random random = new Random();
 

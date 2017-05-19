@@ -9,13 +9,27 @@ import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+
+/**
+ * The main class for the famous JassTheRipper Jass Strategy.
+ * <p>
+ * Some jass terms are introduced here for clarification:
+ * Brettli: A card with value 0
+ * Bock: The highest card of a color
+ * opposite colors: HEARTS AND SPADES, DIAMONDS AND CLUBS
+ * Stechen: Play a card such that I win the round.
+ * Anziehen: Being the starting player in the round playing a Brettli in order to show my partner that I am good at this color (have either King or Queen but not Ace)
+ * Verwerfen: If my partner wins the round play a Brettli of a color in order to show him/her that I am strong at the opposite color.
+ * Schmieren: If my partner wins the round play a valuable card to gain many points.
+ */
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
+
+
+	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
+	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
 
 	// the maximal number of milliseconds per choose card move
 	private static final int MAX_THINKING_TIME = 350;
@@ -349,10 +363,10 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 					System.out.println("Chose Card based on MCTS, Hurra!");
 					card = mctsCard;
 				} else
-					System.out.println("Card chosen not in available cards. Had to choose random card, Damn it!");
+					System.out.println("Card chosen not in possible cards. Had to choose random card, damn it!");
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Something went wrong. Had to choose random card, Damn it!");
+				System.out.println("Something went wrong. Had to choose random card, damn it!");
 			}
 
 			final long endTime = (System.currentTimeMillis() - startTime);
@@ -362,8 +376,9 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			assert possibleCards.contains(card);
 			return card;
 		} catch (Exception e) {
+			System.out.println("Something unexpectidly went terribly wrong! But could catch exception and play random card now.");
 			e.printStackTrace();
-			return new RandomJassStrategy().chooseCard(availableCards, session);
+			return super.chooseCard(availableCards, session);
 		}
 	}
 
