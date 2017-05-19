@@ -51,6 +51,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
             return mode;
         }
         catch (Exception e) {
+            e.printStackTrace();
             return JassHelper.getRandomMode(isGschobe);
         }
 	}
