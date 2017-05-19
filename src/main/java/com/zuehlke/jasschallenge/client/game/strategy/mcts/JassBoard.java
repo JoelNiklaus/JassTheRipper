@@ -149,12 +149,12 @@ public class JassBoard implements Board, Serializable {
 
 			// wenn möglich mit nicht trumpf zu stechen
 			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, round);
-			if(!notTrumpsOfRoundWinningCards.isEmpty())
+			if (!notTrumpsOfRoundWinningCards.isEmpty())
 				return notTrumpsOfRoundWinningCards;
 
 			// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
 			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, round);
-			if(!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
+			if (!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
 				return trumpsOfRoundWinningCards;
 		}
 

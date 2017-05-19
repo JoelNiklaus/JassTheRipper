@@ -64,7 +64,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		// TODO: This is an ugly hotfix, make it nicer ;)
 		float gschobeFactor = 1;
 		if (isGschobe)
-			gschobeFactor = 1/3;
+			gschobeFactor = 1 / 3;
 		if (gschobeFactor * rateObeabe(availableCards) > max) {
 			prospectiveMode = Mode.topDown();
 			max = rateObeabe(availableCards);
@@ -86,8 +86,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		List<Card> cardsOfColorL = new ArrayList<>(cardsOfColor);
 		boolean[] prospectiveTrumpfCards = new boolean[9];
 		for (int i = 0; i < 9; i++) {
-		    if (cardsOfColorL.isEmpty())
-		        break;
+			if (cardsOfColorL.isEmpty())
+				break;
 			if (cardsOfColorL.get(0).getRank() == i + 1) {
 				prospectiveTrumpfCards[i] = true;
 				cardsOfColorL.remove(0);
@@ -95,8 +95,8 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		}
 		int rating = 0;
 		// If you have 6 or more Cards of this color, rate it insanely high!
-        if (cardsOfColor.size() >= 6)
-            rating += 120;
+		if (cardsOfColor.size() >= 6)
+			rating += 120;
 		float qualityOfTrumpfCards = 0;
 		// rate plus 2.25 * Trumpfrank (9 for Jack, 8 for Nell, 7 for Ace, …)
 		// Maximum is 90 this way
@@ -261,7 +261,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		// Only rough estimate of the probability, that a player of the other team has enough cards to discard (i.e. I
 		// have an Ace and King, but he has 6 and 7 so can discard those invaluable cards
 		estimate *= (float) (otherColorCards) / otherCards;
-		estimate *= factorial(otherColorCards-1);
+		estimate *= factorial(otherColorCards - 1);
 		for (int i = 0; i < higherCards; i++) {
 			otherColorCards--;
 			estimate *= (float) (otherColorCards) / otherCards;
@@ -271,7 +271,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		for (int i = 0; i < numberOfCardsBetween; i++)
 			estimate *= 0.45;
 		if (estimate > 1)
-		    estimate = 0.8f;
+			estimate = 0.8f;
 		if (estimate > 0)
 			return estimate;
 		else
@@ -361,8 +361,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			assert card != null;
 			assert possibleCards.contains(card);
 			return card;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return new RandomJassStrategy().chooseCard(availableCards, session);
 		}

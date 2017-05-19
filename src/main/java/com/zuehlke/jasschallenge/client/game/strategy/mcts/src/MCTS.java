@@ -93,7 +93,7 @@ public class MCTS {
 
 		if (this.trackTime) {
 			System.out.println("Making choice for player: " + bestMoveFound);
-			System.out.println("Thinking time for move: " + (endTime - startTime) / 1000000 + "ms");
+			System.out.println("Thinking time for move: " + (endTime - startTime) + "ms");
 		}
 
 		return bestMoveFound;

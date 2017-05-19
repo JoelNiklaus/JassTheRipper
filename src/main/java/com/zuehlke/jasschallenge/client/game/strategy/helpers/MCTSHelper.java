@@ -16,6 +16,8 @@ import java.util.Set;
  */
 public class MCTSHelper {
 
+	private static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors() * 3;
+
 	/**
 	 * Runs the MCTS and predicts a Card
 	 *
@@ -36,10 +38,8 @@ public class MCTSHelper {
 		//mcts.setPlayoutSelection(new JassPlayoutSelection());
 
 
-		//final int threads = 10; // The more the merrier ;)
-		final int threads = Runtime.getRuntime().availableProcessors() * 2;
 		if (parallelisation)
-			mcts.enableRootParallelisation(threads);
+			mcts.enableRootParallelisation(NUMBER_OF_THREADS);
 
 		return runPrediction(availableCards, game, mcts, endingTime);
 	}
