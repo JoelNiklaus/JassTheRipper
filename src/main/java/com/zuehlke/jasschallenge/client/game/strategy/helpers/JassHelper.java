@@ -132,7 +132,103 @@ public class JassHelper {
 		return possibleCards;
 	}
 
-	/**
+	public static int rateColorObeAbeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
+	    List<Card> playedCardsOfColor = sortCardsOfColorDescending(alreadyPlayedCards, color);
+        // Get the cards in descending order
+        List<Card> sortedCardsOfColor = sortCardsOfColorDescending(ownCards, color);
+        if (sortedCardsOfColor.isEmpty())
+            return 0;
+        // Number of cards I have that are higher than the nextCard
+        int higherCards = 0;
+        // Number of the cards I have of this color
+        int numberOfMyCards = sortedCardsOfColor.size();
+        // Estimate how safe you make a Stich with your highest card
+        float safety = calculateInitialSafetyObeabeRespectingPlayedCards(sortedCardsOfColor, playedCardsOfColor);
+        // The last card rated
+        Card lastCard = sortedCardsOfColor.get(0);
+        // 1 Stich entspricht 20 ratingPoints
+        float rating = safety * 20;
+        // remove the last card tested
+        sortedCardsOfColor.remove(lastCard);
+        while (sortedCardsOfColor.size() > 0) {
+            // The next card to be tested
+            Card nextCard = sortedCardsOfColor.get(0);
+            // Estimate how safe you Stich with that card
+            int numberOfCardsInbetween = calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(lastCard, nextCard, playedCardsOfColor);
+            higherCards += numberOfCardsInbetween;
+            safety *= safetyOfStichVerwerfen(numberOfMyCards, higherCards, nextCard, lastCard, numberOfCardsInbetween);
+            // How safe is the Stich? * Stichvalue
+            rating += safety * 20;
+            sortedCardsOfColor.remove(0);
+            // One card is higher than the last
+            higherCards++;
+            lastCard = nextCard;
+        }
+        return (int) Math.ceil(rating);
+    }
+
+    public static int rateColorUndeUfeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
+        List<Card> playedCardsOfColor = sortCardsOfColorAscending(alreadyPlayedCards, color);
+        // Get the cards in descending order
+        List<Card> sortedCardsOfColor = sortCardsOfColorAscending(ownCards, color);
+        if (sortedCardsOfColor.isEmpty())
+            return 0;
+        // Number of cards I have that are higher than the nextCard
+        int lowerCards = 0;
+        // Number of the cards I have of this color
+        int numberOfMyCards = sortedCardsOfColor.size();
+        // Estimate how safe you make a Stich with your highest card
+        float safety = calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedCardsOfColor, playedCardsOfColor);
+        // The last card rated
+        Card lastCard = sortedCardsOfColor.get(0);
+        // 1 Stich entspricht 20 ratingPoints
+        float rating = safety * 20;
+        // remove the last card tested
+        sortedCardsOfColor.remove(lastCard);
+        while (sortedCardsOfColor.size() > 0) {
+            // The next card to be tested
+            Card nextCard = sortedCardsOfColor.get(0);
+            // Estimate how safe you Stich with that card
+            int numberOfCardsInbetween = calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(lastCard, nextCard, playedCardsOfColor);
+            lowerCards += numberOfCardsInbetween;
+            safety *= safetyOfStichVerwerfen(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
+            // How safe is the Stich? * Stichvalue
+            rating += safety * 20;
+            sortedCardsOfColor.remove(0);
+            // One card is higher than the last
+            lowerCards++;
+            lastCard = nextCard;
+        }
+        return (int) Math.ceil(rating);
+    }
+
+    public static int calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(Card lastCard, Card nextCard, List<Card> playedCardsOfColor) {
+        int numberOfCardsInbetween = lastCard.getRank() - nextCard.getRank() - 1;
+        for (Card card : playedCardsOfColor) {
+            int rank = card.getRank();
+            if (rank < lastCard.getRank() && rank > nextCard.getRank()) {
+                numberOfCardsInbetween--;
+            }
+        }
+        if (numberOfCardsInbetween < 0)
+            return 0;
+        return numberOfCardsInbetween;
+    }
+
+    public static int calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(Card lastCard, Card nextCard, List<Card> playedCardsOfColor) {
+        int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
+        for (Card card : playedCardsOfColor) {
+            int rank = card.getRank();
+            if (rank > lastCard.getRank() && rank < nextCard.getRank()) {
+                numberOfCardsInbetween--;
+            }
+        }
+        if (numberOfCardsInbetween < 0)
+            return 0;
+        return numberOfCardsInbetween;
+    }
+
+    /**
 	 * Get all of my cards which can win the round.
 	 *
 	 * @param possibleCards
@@ -532,7 +628,7 @@ public class JassHelper {
 			// Estimate how safe you Stich with that card
 			int numberOfCardsInbetween = lastCard.getRank() - nextCard.getRank() - 1;
 			higherCards += numberOfCardsInbetween;
-			safety *= safetyOfStich(numberOfMyCards, higherCards, nextCard, lastCard);
+			safety *= safetyOfStich(numberOfMyCards, higherCards, nextCard, lastCard, numberOfCardsInbetween);
 			// How safe is the Stich? * Stichvalue
 			rating += safety * 20;
 			sortedCardOfColor.remove(0);
@@ -564,7 +660,29 @@ public class JassHelper {
 		return safety;
 	}
 
-	public static float calculateInitialSafetyUndeUfe(List<Card> sortedCards) {
+    public static float calculateInitialSafetyObeabeRespectingPlayedCards(List<Card> sortedCards, List<Card> alreadyPlayedCards) {
+	    if (alreadyPlayedCards.isEmpty())
+	        return calculateInitialSafetyObeabe(sortedCards);
+        Card nextCard = sortedCards.get(0);
+        Card nextPlayedCard = alreadyPlayedCards.get(0);
+        int rank = nextCard.getRank();
+        float safety = 1;
+        // Probability that my partner has all the higher cards
+        for (int i = 0; i < 9 - rank; i++)
+            if (nextPlayedCard.getRank() != 9 - i) {
+                safety /= 3;
+            }
+            else {
+                if (!alreadyPlayedCards.isEmpty())
+                    alreadyPlayedCards.remove(0);
+                if (!alreadyPlayedCards.isEmpty())
+                    nextPlayedCard = alreadyPlayedCards.get(0);
+            }
+        return safety;
+    }
+
+
+    public static float calculateInitialSafetyUndeUfe(List<Card> sortedCards) {
 		Card nextCard = sortedCards.get(0);
 		int rank = nextCard.getRank();
 		float safety = 1;
@@ -574,15 +692,48 @@ public class JassHelper {
 		return safety;
 	}
 
-	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard) throws Exception {
-		int numberOfCardsBetween = lastCard.getRank() - nextCard.getRank() - 1;
+    public static float calculateInitialSafetyUndeUfeRespectingPlayedCards(List<Card> sortedCards, List<Card> alreadyPlayedCards) {
+        if (alreadyPlayedCards.isEmpty())
+            return calculateInitialSafetyUndeUfe(sortedCards);
+        Card nextCard = sortedCards.get(0);
+        Card nextPlayedCard = alreadyPlayedCards.get(0);
+        int rank = nextCard.getRank();
+        float safety = 1;
+        // Probability that my partner has all the higher cards
+        for (int i = 0; i < rank - 1; i++)
+            if (nextPlayedCard.getRank() != i + 1) {
+                safety /= 3;
+            }
+            else {
+                if (!alreadyPlayedCards.isEmpty())
+                    alreadyPlayedCards.remove(0);
+                if (!alreadyPlayedCards.isEmpty())
+                    nextPlayedCard = alreadyPlayedCards.get(0);
+            }
+        return safety;
+    }
+
+	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
 		// Have the next-higher card => probability to stich is the same as with the next higher card
-		if (numberOfCardsBetween == 0)
+		if (numberOfCardsInbetween == 0)
 			return 1;
 			// Probability to stich is 1 - the probability, that enemy has a higher card + enough cards to discard
 		else
-			return 1 - ((float) 2 / 3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsBetween));
+			return 1 - ((float) 2 / 3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsInbetween));
 	}
+
+    private static float safetyOfStichVerwerfen(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
+        // Have the next-higher card => probability to stich is the same as with the next higher card
+        if (numberOfCardsInbetween == 0)
+            return 1;
+
+        float safetyFactor = 1;
+        // For each card inbetweeen, reduce safety to a fourth
+        for (int i = 0; i < numberOfCardsInbetween; i++) {
+            safetyFactor *= 0.25;
+        }
+        return safetyFactor;
+    }
 
 	private static float enemenyHasNoMoreCards(int numberOfMyCards, int higherCards, int numberOfCardsBetween) throws Exception {
 		float estimate = 1;
@@ -629,7 +780,8 @@ public class JassHelper {
 			// The next card to be tested
 			Card nextCard = sortedCards.get(0);
 			// Estimate how safe you Stich with that card
-			safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard);
+            int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
+			safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
 			// How safe is the Stich? * Stichvalue
 			rating += safety * 20;
 			sortedCards.remove(0);
