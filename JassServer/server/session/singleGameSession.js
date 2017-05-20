@@ -186,16 +186,13 @@ const Session = {
 
             this.gameCycle()
                 .then((winningTeam) => {
+                    this.finishGame(winningTeam);
+
                     if (tournamentLogging) {
                         resultProxy.destroy();
                     }
-                    this.finishGame(winningTeam);
                 })
                 .catch(error => {
-                    if (tournamentLogging) {
-                        resultProxy.destroy();
-                    }
-
                     if (error && error.data) {
                         const failingPlayer = error.data;
                         Logger.error(`Player ${failingPlayer.name}: ${error.message}`);
@@ -207,6 +204,9 @@ const Session = {
                         this.finishGame(winningTeam);
                     }
 
+                    if (tournamentLogging) {
+                        resultProxy.destroy();
+                    }
                 });
         });
     },
