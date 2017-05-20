@@ -31,11 +31,17 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
 
-	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 350;
 
 	// IMPORTANT: If but does not work properly, try setting this to false
 	private static final boolean PARALLELISATION_ENABLED = true;
+
+	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
+	// If we make to many then the thread overhead is too much. On the other hand not enough cannot garantuee a good prediction
+	public static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors();
+
+	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
+	// the maximal number of milliseconds per choose card move
+	private static final int MAX_THINKING_TIME = 250;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	public static final int MAX_SCHIFT_RATING_VAL = 75;
@@ -58,7 +64,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
             mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
 
-            final long endTime = (System.currentTimeMillis() - startTime);
+            final long endTime = System.currentTimeMillis() - startTime;
             System.out.println("Total time for move: " + endTime + "ms");
             System.out.println("Chose Trumpf " + mode);
 
@@ -108,7 +114,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 				System.out.println("Something went wrong. Had to choose random card, damn it!");
 			}
 
-			final long endTime = (System.currentTimeMillis() - startTime);
+			final long endTime = System.currentTimeMillis() - startTime;
 			System.out.println("Total time for move: " + endTime + "ms");
 			System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards + "\n\n");
 			assert card != null;

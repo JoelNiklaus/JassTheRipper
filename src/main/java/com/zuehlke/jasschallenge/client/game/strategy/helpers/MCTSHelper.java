@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
@@ -17,9 +18,6 @@ import java.util.Set;
  */
 public class MCTSHelper {
 
-	// If we make to many then the thread overhead is too much. On the other hand not enough cannot garantuee a good prediction
-	private static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors() * 3;
-
 	/**
 	 * Sets the MCTS parameters, runs it and predicts a Card
 	 *
@@ -35,7 +33,7 @@ public class MCTSHelper {
 		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game.getCurrentRound(), game.getCurrentPlayer());
 		if (possibleCards.size() == 1) {
 			for (Card card : possibleCards) {
-				System.out.print("Based on expert Jass Knowledge there is only one sensible card available now. Played " + card);
+				System.out.println("Based on expert Jass Knowledge there is only one sensible card available now.");
 				return card;
 			}
 		}
@@ -51,7 +49,7 @@ public class MCTSHelper {
 
 
 		if (parallelisation)
-			mcts.enableRootParallelisation(NUMBER_OF_THREADS);
+			mcts.enableRootParallelisation(JassTheRipperJassStrategy.NUMBER_OF_THREADS);
 
 		return runPrediction(availableCards, game, mcts, endingTime);
 	}

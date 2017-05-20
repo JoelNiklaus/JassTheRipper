@@ -1,6 +1,8 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.DeepCopy;
+import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.ObjectCloner;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
@@ -8,6 +10,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -33,10 +36,21 @@ public class JassBoard implements Board, Serializable {
 		long startTime = System.currentTimeMillis();
 
 		this.availableCards = copy(availableCards);
-		//this.availableCards = Collections.synchronizedSet((Set<Card>) DeepCopy.copy(availableCards));
+
+		startTime = System.currentTimeMillis();
+		this.game = (Game) DeepCopy.copy(game);
+		System.out.println("DeepCopy " + (System.currentTimeMillis() - startTime));
+
+		/*
+		startTime = System.currentTimeMillis();
 		this.game = SerializationUtils.clone(game);
-		//this.session = (GameSession) DeepCopy.copy(session);
-		//this.session = (GameSession) ObjectCloner.deepCopy(session);
+		System.out.println("SerializationUtils " + (System.currentTimeMillis() - startTime));
+
+		startTime = System.currentTimeMillis();
+		ObjectCloner.deepCopySerialization(game);
+		System.out.println("Objectcloner " + (System.currentTimeMillis() - startTime));
+		*/
+
 		if (newRandomCards)
 			distributeCardsForPlayers(this.availableCards);
 
@@ -152,7 +166,7 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
-		long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
 
 		ArrayList<Move> moves = new ArrayList<>();
 		final Round round = game.getCurrentRound();
@@ -182,7 +196,7 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public void makeMove(Move move) {
-		long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
 
 		// We can do that because we are only creating CardMoves
 		final CardMove cardMove = (CardMove) move;
@@ -196,7 +210,6 @@ public class JassBoard implements Board, Serializable {
 		assert cardMove.getPlayer().equals(player);
 		player.getCards().remove((cardMove).getPlayedCard());
 
-		// TODO wrap in try block!
 		game.makeMove(cardMove);
 
 
@@ -233,7 +246,7 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public double[] getScore() {
-		long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
 
 		double[] score = new double[getQuantityOfPlayers()];
 		Result result = game.getResult();
