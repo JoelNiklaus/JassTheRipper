@@ -193,6 +193,16 @@ public class JassHelper {
 		return possibleCards;
 	}
 
+    /**
+     * Rates the given color for the Mode ObeAbe respecting the cards that have already been played (e.g. rating a
+     * King higher if the Ace has been played).
+     *
+     * @param ownCards - cards of the player
+     * @param alreadyPlayedCards - cards already played in the round
+     * @param color - the color being rated
+     * @return the rating
+     * @throws Exception
+     */
 	public static int rateColorObeAbeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
 	    List<Card> playedCardsOfColor = sortCardsOfColorDescending(alreadyPlayedCards, color);
         // Get the cards in descending order
@@ -228,6 +238,16 @@ public class JassHelper {
         return (int) Math.ceil(rating);
     }
 
+    /**
+     * Rates the given color for the Mode UndeUfe respecting the cards that have already been played (e.g. rating a
+     * Seven higher if the Six has been played).
+     *
+     * @param ownCards - cards of the player
+     * @param alreadyPlayedCards - cards already played in the round
+     * @param color - the color being rated
+     * @return the rating
+     * @throws Exception
+     */
     public static int rateColorUndeUfeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
         List<Card> playedCardsOfColor = sortCardsOfColorAscending(alreadyPlayedCards, color);
         // Get the cards in descending order
