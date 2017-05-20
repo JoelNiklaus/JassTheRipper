@@ -71,9 +71,9 @@ public class MCTS {
 
 				for (Node node : rootNodes) {
 					if (node.isValid()) { // so, if there was at least one run
-						Move move = robustChild(node).getMove(); // Select robust child
-						System.out.println(move);
+						Move move = finalMoveSelection(node);
 						moves.add(move);
+						System.out.println(move);
 					}
 				}
 
@@ -185,16 +185,20 @@ public class MCTS {
 		// Begin tree policy. Traverse down the tree and expand. Return
 		// the new node or the deepest node it could reach. Return too
 		// a board matching the returned node.
+		long startTime = System.currentTimeMillis();
 		BoardNodePair data = treePolicy(currentBoard, currentNode);
+		System.out.println("treePolicy: " + (System.currentTimeMillis() - startTime) + "ms");
 
 		// Run a random playout until the end of the game.
-		double[] score = playout(data.getNode(), data.getBoard());
+		startTime = System.currentTimeMillis();
+		double[] score = playout(data.getBoard());
+		System.out.println("playout: " + (System.currentTimeMillis() - startTime) + "ms");
 
 		// Backpropagate results of playout.
-		Node n = data.getNode();
-		n.backPropagateScore(score);
+		Node node = data.getNode();
+		node.backPropagateScore(score);
 		if (scoreBounds) {
-			n.backPropagateBounds(score);
+			node.backPropagateBounds(score);
 		}
 	}
 
@@ -202,21 +206,21 @@ public class MCTS {
 	 *
 	 */
 	private BoardNodePair treePolicy(Board brd, Node node) throws Exception {
-		Board b = brd.duplicate();
+		Board board = brd.duplicate();
 
-		while (!b.gameOver()) {
+		while (!board.gameOver()) {
 			if (node.getPlayer() >= 0) { // this is a regular node
 				if (node.getUnvisitedChildren() == null) {
-					node.expandNode(b);
+					node.expandNode(board);
 				}
 
 				if (!node.getUnvisitedChildren().isEmpty()) {
 					Node temp = node.getUnvisitedChildren().remove(random.nextInt(node.getUnvisitedChildren().size()));
 					node.getChildren().add(temp);
-					b.makeMove(temp.getMove());
-					return new BoardNodePair(b, temp);
+					board.makeMove(temp.getMove());
+					return new BoardNodePair(board, temp);
 				} else {
-					ArrayList<Node> bestNodes = findChildren(node, b, optimisticBias, pessimisticBias,
+					ArrayList<Node> bestNodes = findChildren(node, board, optimisticBias, pessimisticBias,
 							explorationConstant);
 
 					if (bestNodes.size() == 0) {
@@ -224,12 +228,12 @@ public class MCTS {
 						// from a non-terminal node, so we conclude that
 						// all children must have been pruned, and that
 						// therefore there is no reason to continue.
-						return new BoardNodePair(b, node);
+						return new BoardNodePair(board, node);
 					}
 
 					Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
 					node = finalNode;
-					b.makeMove(finalNode.getMove());
+					board.makeMove(finalNode.getMove());
 				}
 			} else { // this is a random node
 
@@ -241,7 +245,7 @@ public class MCTS {
 				// all of this node's children properly.
 
 				if (node.getUnvisitedChildren() == null) {
-					node.expandNode(b);
+					node.expandNode(board);
 
 					for (Node n : node.getUnvisitedChildren()) {
 						node.getChildren().add(n);
@@ -253,13 +257,13 @@ public class MCTS {
 				// ignore selection heuristics and pick one node at
 				// random based on the weight vector.
 
-				Node selectedNode = node.getChildren().get(node.randomSelect(b));
+				Node selectedNode = node.getChildren().get(node.randomSelect(board));
 				node = selectedNode;
-				b.makeMove(selectedNode.getMove());
+				board.makeMove(selectedNode.getMove());
 			}
 		}
 
-		return new BoardNodePair(b, node);
+		return new BoardNodePair(board, node);
 	}
 
 	/**
@@ -270,21 +274,21 @@ public class MCTS {
 	 * @return the best Move the algorithm can find
 	 */
 	private Move finalMoveSelection(Node node) {
-		Node r;
+		Node finalMove;
 
 		switch (finalSelectionPolicy) {
 			case maxChild:
-				r = maxChild(node);
+				finalMove = maxChild(node);
 				break;
 			case robustChild:
-				r = robustChild(node);
+				finalMove = robustChild(node);
 				break;
 			default:
-				r = robustChild(node);
+				finalMove = robustChild(node);
 				break;
 		}
 
-		return r.getMove();
+		return finalMove.getMove();
 	}
 
 	/**
@@ -298,9 +302,9 @@ public class MCTS {
 		double tempBest;
 		ArrayList<Node> bestNodes = new ArrayList<>();
 
-		for (Node s : node.getChildren()) {
-			tempBest = s.getGames();
-			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
+		for (Node current : node.getChildren()) {
+			tempBest = current.getGames();
+			bestValue = getBestValue(bestValue, tempBest, bestNodes, current);
 		}
 
 		Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
@@ -345,10 +349,10 @@ public class MCTS {
 	/**
 	 * Playout function for MCTS
 	 *
-	 * @param state
+	 * @param board
 	 * @return
 	 */
-	private double[] playout(Node state, Board board) throws Exception {
+	private double[] playout(Board board) throws Exception {
 		ArrayList<Move> moves;
 		Move move;
 		Board brd = board.duplicate();
@@ -372,6 +376,7 @@ public class MCTS {
 
 				brd.makeMove(move);
 			} else {
+				// WHY DOES IT PROCESS THE NOT DUPLICATED BOARD HERE
 				playoutpolicy.process(board);
 			}
 		}
@@ -437,42 +442,42 @@ public class MCTS {
 	 * the optimal value through testing. This can have a big impact on
 	 * performance. Default value is sqrt(2)
 	 *
-	 * @param exp
+	 * @param explorationConstant
 	 */
-	public void setExplorationConstant(double exp) {
-		explorationConstant = exp;
+	public void setExplorationConstant(double explorationConstant) {
+		this.explorationConstant = explorationConstant;
 	}
 
-	public void setMoveSelectionPolicy(FinalSelectionPolicy policy) {
-		finalSelectionPolicy = policy;
+	public void setMoveSelectionPolicy(FinalSelectionPolicy finalSelectionPolicy) {
+		this.finalSelectionPolicy = finalSelectionPolicy;
 	}
 
-	public void setHeuristicFunction(HeuristicFunction h) {
-		heuristic = h;
+	public void setHeuristicFunction(HeuristicFunction heuristicFunction) {
+		heuristic = heuristicFunction;
 	}
 
-	public void setPlayoutSelection(PlayoutSelection p) {
-		playoutpolicy = p;
+	public void setPlayoutSelection(PlayoutSelection playoutSelection) {
+		playoutpolicy = playoutSelection;
 	}
 
 	/**
 	 * This is multiplied by the pessimistic bounds of any considered move
 	 * during selection.
 	 *
-	 * @param b
+	 * @param pessimisticBias
 	 */
-	public void setPessimisticBias(double b) {
-		pessimisticBias = b;
+	public void setPessimisticBias(double pessimisticBias) {
+		this.pessimisticBias = pessimisticBias;
 	}
 
 	/**
 	 * This is multiplied by the optimistic bounds of any considered move during
 	 * selection.
 	 *
-	 * @param b
+	 * @param optimisticBias
 	 */
-	public void setOptimisticBias(double b) {
-		optimisticBias = b;
+	public void setOptimisticBias(double optimisticBias) {
+		this.optimisticBias = optimisticBias;
 	}
 
 	public void setTimeDisplay(boolean displayTime) {

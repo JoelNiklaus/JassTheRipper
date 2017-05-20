@@ -117,7 +117,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		} catch (Exception e) {
 			System.out.println("Something unexpectedly went terribly wrong! But could catch exception and play random card now.");
 			e.printStackTrace();
-			return super.chooseCard(availableCards, session);
+			return JassHelper.getRandomCard(availableCards, session.getCurrentGame());
 		}
 	}
 

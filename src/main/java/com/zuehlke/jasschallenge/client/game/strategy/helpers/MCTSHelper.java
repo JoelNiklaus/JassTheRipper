@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public class MCTSHelper {
 
+	// If we make to many then the thread overhead is too much. On the other hand not enough cannot garantuee a good prediction
 	private static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors() * 3;
 
 	/**
@@ -28,6 +29,16 @@ public class MCTSHelper {
 	 * @throws Exception
 	 */
 	public static Card getCard(Set<Card> availableCards, Game game, long endingTime, boolean parallelisation) throws Exception {
+		// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
+		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
+		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game.getCurrentRound(), game.getCurrentPlayer());
+		if(possibleCards.size() == 1) {
+			for(Card card: possibleCards) {
+				System.out.print("Based on expert Jass Knowledge there is only one sensible card available now. Played " + card);
+				return card;
+			}
+		}
+
 		MCTS mcts = new MCTS();
 		mcts.setExplorationConstant(1.4);
 		mcts.setOptimisticBias(0);

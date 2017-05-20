@@ -19,6 +19,138 @@ import java.util.stream.Collectors;
 public class JassHelper {
 
 	/**
+	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
+	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
+	 * and therfore the simulation gets the most realistic outcome.
+	 *
+	 * @param possibleCards
+	 * @param round
+	 * @param player
+	 * @return
+	 */
+	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
+		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round.getMode());
+
+		/**
+		 * STECHEN (als letzter Spieler)
+		 */
+		// wenn letzter Spieler und Stich gehört Gegner
+		if (JassHelper.lastPlayer(round) && JassHelper.isOpponent(round.getWinner(), player)) {
+			int stichValue = round.calculateScore();
+			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
+
+			// wenn möglich mit nicht trumpf zu stechen
+			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, round.getMode());
+			if (!notTrumpsOfRoundWinningCards.isEmpty())
+				return notTrumpsOfRoundWinningCards;
+
+			// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
+			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, round.getMode());
+			if (!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
+				return trumpsOfRoundWinningCards;
+		}
+
+		/**
+		 * AUSTRUMPFEN
+		 */
+		// Wenn erster spieler am anfang des spiels (erste beide runden) und mindestens 2 trümpfe
+		if (JassHelper.startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
+			return trumps;
+
+
+		// Wenn erster spieler
+		if (JassHelper.startingPlayer(round)) {
+			/**
+			 * ANZIEHEN (NACHRICHT SENDEN)
+			 */
+			// look for a not trumpf color where i have a king or queen but someone else has the ace
+			// -> play small card so king or queen gets bock
+
+			/**
+			 * ANZIEHEN (NACHRICHT EMPFANGEN)
+			 */
+			// if my partner played anziehen in one of the previous rounds, play this color
+
+
+			/**
+			 * VERWERFEN (NACHRICHT EMPFANGEN)
+			 */
+			// if my partner played verwerfen in one of the previous rounds, play opposite color
+		}
+
+
+		// wenn partner schon gespielt hat
+		if (JassHelper.hasPartnerAlreadyPlayed(round)) {
+			Card cardOfPartner = JassHelper.getCardOfPartner(round);
+			// wenn partner den stich macht bis jetzt
+			if (round.getWinningCard().equals(cardOfPartner)) {
+				/**
+				 * SCHMIEREN
+				 */
+				// wenn ich noch angeben kann
+				if (JassHelper.isAngebenPossible(possibleCards, cardOfPartner)) {
+					Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, cardOfPartner, round.getMode());
+					// wenn letzter spieler einfach schmieren
+					if (JassHelper.lastPlayer(round))
+						return schmierCards;
+						// TODO wenn zweitletzter spieler prüfen ob letzer spieler noch stechen kann
+					else {
+						assert JassHelper.thirdPlayer(round);
+						// TODO to change
+						return schmierCards;
+					}
+				}
+				/**
+				 * VERWERFEN
+				 */
+				// wenn nicht -> (Gegenfarbe von Farbe wo ich gut bin)
+				else {
+					if (round.getMode().equals(Mode.bottomUp())) {
+
+
+					} else {
+						if (round.getMode().equals(Mode.topDown())) {
+
+						} else {
+
+						}
+					}
+
+				}
+			}
+		}
+
+		// TODO für jeden Spieler Karteneinschätzung machen!!!
+
+		// TODO geschätzte karten von partner anpassen, wenn verwerfen von ihm erkannt wurde!
+
+		return possibleCards;
+	}
+
+	/**
+	 * Get all of my cards which can win the round.
+	 *
+	 * @param possibleCards
+	 * @param round
+	 * @return
+	 */
+	private static Set<Card> getRoundWinningCards(Set<Card> possibleCards, Round round) {
+		Set<Card> remainingCards = new HashSet<>(possibleCards);
+		Card winningCard = round.getWinningCard();
+		Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
+		for (Card card : remainingCards) {
+			List<Card> cards = new LinkedList<>();
+			cards.add(card);
+			cards.add(winningCard);
+			if (round.getMode().determineWinningCard(cards).equals(winningCard))
+				cardsToRemove.add(card);
+		}
+		if (remainingCards.size() > cardsToRemove.size())
+			remainingCards.removeAll(cardsToRemove);
+		return remainingCards;
+	}
+
+	/**
 	 * Choose a random trump mode
 	 *
 	 * @param isGschobe
@@ -241,8 +373,6 @@ public class JassHelper {
 			return schmierCards;
 		return cardsOfColour;
 	}
-
-
 
 
 	public static Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode, boolean isGschobe) throws Exception {
