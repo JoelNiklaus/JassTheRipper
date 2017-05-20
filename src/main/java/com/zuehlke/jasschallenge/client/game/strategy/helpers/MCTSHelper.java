@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 
 import java.util.Collections;
@@ -32,8 +33,8 @@ public class MCTSHelper {
 		// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
 		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game.getCurrentRound(), game.getCurrentPlayer());
-		if(possibleCards.size() == 1) {
-			for(Card card: possibleCards) {
+		if (possibleCards.size() == 1) {
+			for (Card card : possibleCards) {
 				System.out.print("Based on expert Jass Knowledge there is only one sensible card available now. Played " + card);
 				return card;
 			}
@@ -64,7 +65,7 @@ public class MCTSHelper {
 	 * @param endingTime
 	 * @return
 	 */
-	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime)  throws Exception{
+	private static Card runPrediction(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) throws Exception {
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
 		if (!mcts.isParallelisationEnabled()) {
@@ -99,13 +100,10 @@ public class MCTSHelper {
 	 * @param endingTime
 	 * @return
 	 */
-	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime)  throws Exception{
-		final long startTime = System.currentTimeMillis();
+	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) throws Exception {
 		JassBoard jassBoard = new JassBoard(availableCards, game, true);
-		final long cloningTime = (System.currentTimeMillis() - startTime);
-		System.out.println("Cloning time: " + cloningTime + "ms");
-
-		return ((CardMove) mcts.runMCTS_UCT(jassBoard, endingTime, false)).getPlayedCard();
+		Move move = mcts.runMCTS_UCT(jassBoard, endingTime, false);
+		return ((CardMove) move).getPlayedCard();
 	}
 
 }

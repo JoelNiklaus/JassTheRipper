@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.PlayingOrder;
 import com.zuehlke.jasschallenge.client.game.Team;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -47,14 +48,14 @@ public class JassBoardTest {
     public void refineMovesWithJassKnowledgeWhenNotFiltering() throws Exception {
         JassBoard jassBoard = new JassBoard(allCards, diamondsGame, true);
         Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
-        assertEquals(jassBoard.refineMovesWithJassKnowledge(possibleCards, diamondsGame.getCurrentRound(), diamondsGame.getCurrentPlayer()), possibleCards);
+        assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame.getCurrentRound(), diamondsGame.getCurrentPlayer()), possibleCards);
     }
 
     @Test
     public void refineMovesWithJassKnowledgeNeverRemovesAllCards() throws Exception {
         JassBoard jassBoard = new JassBoard(allCards, diamondsGame, true);
         Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
-        assertEquals(jassBoard.refineMovesWithJassKnowledge(possibleCards, diamondsGame.getCurrentRound(), diamondsGame.getCurrentPlayer()), possibleCards);
+        assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame.getCurrentRound(), diamondsGame.getCurrentPlayer()), possibleCards);
     }
 
     @Test

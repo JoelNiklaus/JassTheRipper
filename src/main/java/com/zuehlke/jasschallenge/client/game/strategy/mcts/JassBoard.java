@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
@@ -29,6 +30,8 @@ public class JassBoard implements Board, Serializable {
 	 * @param newRandomCards
 	 */
 	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) throws Exception {
+		long startTime = System.currentTimeMillis();
+
 		this.availableCards = copy(availableCards);
 		//this.availableCards = Collections.synchronizedSet((Set<Card>) DeepCopy.copy(availableCards));
 		this.game = SerializationUtils.clone(game);
@@ -36,7 +39,10 @@ public class JassBoard implements Board, Serializable {
 		//this.session = (GameSession) ObjectCloner.deepCopy(session);
 		if (newRandomCards)
 			distributeCardsForPlayers(this.availableCards);
+
+		Helper.printMethodTime(startTime);
 	}
+
 
 	private Set<Card> copy(Set<Card> cards) {
 		return Collections.synchronizedSet(EnumSet.copyOf(cards));
@@ -146,6 +152,8 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
+		long startTime = System.currentTimeMillis();
+
 		ArrayList<Move> moves = new ArrayList<>();
 		final Round round = game.getCurrentRound();
 		final Player player = game.getCurrentPlayer();
@@ -161,11 +169,10 @@ public class JassBoard implements Board, Serializable {
 			moves.add(new CardMove(player, card));
 		assert (moves.size() > 0);
 
+		Helper.printMethodTime(startTime);
+
 		return moves;
 	}
-
-
-
 
 
 	/**
@@ -175,6 +182,8 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public void makeMove(Move move) {
+		long startTime = System.currentTimeMillis();
+
 		// We can do that because we are only creating CardMoves
 		final CardMove cardMove = (CardMove) move;
 
@@ -203,6 +212,8 @@ public class JassBoard implements Board, Serializable {
 				assert current.getCards().size() == 9 - round.getRoundNumber();
 			}
 		}
+
+		Helper.printMethodTime(startTime);
 	}
 
 	@Override
@@ -222,11 +233,15 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public double[] getScore() {
+		long startTime = System.currentTimeMillis();
+
 		double[] score = new double[getQuantityOfPlayers()];
 		Result result = game.getResult();
 		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
 		for (Player player : order.getPlayerInOrder())
 			score[player.getSeatId()] = result.getTeamScore(player);
+
+		Helper.printMethodTime(startTime);
 
 		return score;
 	}

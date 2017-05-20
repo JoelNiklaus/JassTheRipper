@@ -586,7 +586,7 @@ public class JassHelper {
 		// Only rough estimate of the probability, that a player of the other team has enough cards to discard (i.e. I
 		// have an Ace and King, but he has 6 and 7 so can discard those invaluable cards
 		estimate *= (float) (otherColorCards) / otherCards;
-		estimate *= factorial(otherColorCards - 1);
+		estimate *= Helper.factorial(otherColorCards - 1);
 		for (int i = 0; i < higherCards; i++) {
 			otherColorCards--;
 			estimate *= (float) (otherColorCards) / otherCards;
@@ -633,14 +633,5 @@ public class JassHelper {
 			lastCard = nextCard;
 		}
 		return (int) Math.ceil(rating);
-	}
-
-	private static float factorial(int n) {
-		if (n == 1 || n == 0)
-			return 1;
-		else if (n < 0)
-			return 0;
-		else
-			return n * factorial(n - 1);
 	}
 }

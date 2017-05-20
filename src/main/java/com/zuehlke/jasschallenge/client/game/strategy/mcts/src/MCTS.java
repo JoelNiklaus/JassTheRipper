@@ -1,5 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -185,14 +187,11 @@ public class MCTS {
 		// Begin tree policy. Traverse down the tree and expand. Return
 		// the new node or the deepest node it could reach. Return too
 		// a board matching the returned node.
-		long startTime = System.currentTimeMillis();
 		BoardNodePair data = treePolicy(currentBoard, currentNode);
-		System.out.println("treePolicy: " + (System.currentTimeMillis() - startTime) + "ms");
+
 
 		// Run a random playout until the end of the game.
-		startTime = System.currentTimeMillis();
 		double[] score = playout(data.getBoard());
-		System.out.println("playout: " + (System.currentTimeMillis() - startTime) + "ms");
 
 		// Backpropagate results of playout.
 		Node node = data.getNode();
@@ -206,6 +205,8 @@ public class MCTS {
 	 *
 	 */
 	private BoardNodePair treePolicy(Board brd, Node node) throws Exception {
+		long startTime = System.currentTimeMillis();
+
 		Board board = brd.duplicate();
 
 		while (!board.gameOver()) {
@@ -262,6 +263,8 @@ public class MCTS {
 				board.makeMove(selectedNode.getMove());
 			}
 		}
+
+		Helper.printMethodTime(startTime);
 
 		return new BoardNodePair(board, node);
 	}
@@ -353,6 +356,8 @@ public class MCTS {
 	 * @return
 	 */
 	private double[] playout(Board board) throws Exception {
+		long startTime = System.currentTimeMillis();
+
 		ArrayList<Move> moves;
 		Move move;
 		Board brd = board.duplicate();
@@ -380,6 +385,8 @@ public class MCTS {
 				playoutpolicy.process(board);
 			}
 		}
+
+		Helper.printMethodTime(startTime);
 
 		return brd.getScore();
 	}
