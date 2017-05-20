@@ -43,7 +43,6 @@ public class Round implements Serializable {
 		}
 	}
 
-
 	public void makeMove(Move move) {
 		if (!move.getPlayer().equals(playingOrder.getCurrentPlayer()))
 			throw new RuntimeException("It's not players " + move.getPlayer() + " turn. It's " + playingOrder.getCurrentPlayer() + " turn.");

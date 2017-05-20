@@ -115,6 +115,13 @@ public class Game implements Serializable {
 		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
 	}
 
+	public Player getPartnerOfPlayer(Player player) {
+		for (Player other: order.getPlayerInOrder()) {
+			if (other.isPartner(player))
+				return other;
+		}
+		return null;
+	}
 
 	public boolean isShifted() {
 		return shifted;

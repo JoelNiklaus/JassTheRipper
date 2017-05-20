@@ -53,6 +53,10 @@ public class Player implements Serializable {
 		}
 	}
 
+	public boolean isPartner(Player other) {
+		return !this.equals(other) && (getSeatId() + other.getSeatId()) % 2 == 0;
+	}
+
 	public JassStrategy getCurrentJassStrategy() {
 		return currentJassStrategy;
 	}

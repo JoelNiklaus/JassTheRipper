@@ -31,7 +31,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
 
 
-	// IMPORTANT: If but does not work properly, try setting this to false
+	// IMPORTANT: If does not work properly, try setting this to false
 	private static final boolean PARALLELISATION_ENABLED = true;
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
@@ -89,6 +89,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 			final long endingTime = startTime + time;
 			printCards(availableCards);
 			final Game game = session.getCurrentGame();
+
 			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
 			if (possibleCards.isEmpty())

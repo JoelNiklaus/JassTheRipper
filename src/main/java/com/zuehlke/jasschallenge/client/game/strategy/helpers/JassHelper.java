@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
+import com.zuehlke.jasschallenge.client.game.Move;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
@@ -18,17 +19,75 @@ import java.util.stream.Collectors;
  */
 public class JassHelper {
 
+
+	public static Color detectAnziehen(Game game) {
+		Mode mode = game.getMode();
+		if (isTopDown(mode) || isBottomUp(mode))
+			return null; // abort if notTrumpf
+		Player player = game.getCurrentPlayer();
+		Player partner = game.getPartnerOfPlayer(player);
+		List<Round> previousRounds = game.getPreviousRounds();
+		for (Round round : previousRounds) {
+
+		}
+		return null;
+	}
+
+
+	// TODO schauen dass der schluss es nicht verfälscht -> es sollte die runde mit kleinster round number zuerst anschauen
+	public static Color detectVerwerfen(Game game) {
+		Mode mode = game.getMode();
+		if (!(isTopDown(mode) || isBottomUp(mode)))
+			return null; // abort if trumpf
+
+		Player player = game.getCurrentPlayer();
+		Player partner = game.getPartnerOfPlayer(player);
+		List<Round> previousRounds = game.getPreviousRounds();
+		for (Round round : previousRounds) {
+			if (wasStartingPlayer(player, round)
+					&& round.getWinner().equals(player)) {
+				Move myMove = round.getMoves().get(0);
+				assert myMove.getPlayer().equals(player);
+				Card myCard = myMove.getPlayedCard();
+				Move moveOfPartner = round.getMoves().get(2);
+				assert moveOfPartner.getPlayer().equals(partner);
+				Card cardOfPartner = moveOfPartner.getPlayedCard();
+				if (!cardOfPartner.getColor().equals(myCard)) {
+					int decisionBoundary = 5; // TEN
+					if (isBottomUp(mode) && cardOfPartner.getValue().getRank() > decisionBoundary)
+						return cardOfPartner.getColor();
+					if (isTopDown(mode) && cardOfPartner.getValue().getRank() < decisionBoundary)
+						return cardOfPartner.getColor();
+				}
+			}
+		}
+		return null;
+	}
+
+	private static boolean isBottomUp(Mode mode) {
+		return mode.equals(Mode.bottomUp());
+	}
+
+	private static boolean isTopDown(Mode mode) {
+		return mode.equals(Mode.topDown());
+	}
+
+	private static boolean wasStartingPlayer(Player player, Round round) {
+		return round.getPlayingOrder().getPlayerInOrder().get(0).equals(player);
+	}
+
+
 	/**
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
 	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
 	 * and therfore the simulation gets the most realistic outcome.
 	 *
 	 * @param possibleCards
-	 * @param round
-	 * @param player
 	 * @return
 	 */
-	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Round round, Player player) {
+	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) {
+		final Round round = game.getCurrentRound();
+		final Player player = game.getCurrentPlayer();
 		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round.getMode());
 
 		/**
@@ -64,10 +123,12 @@ public class JassHelper {
 			 * VERWERFEN (NACHRICHT EMPFANGEN)
 			 */
 			// if my partner played verwerfen in one of the previous rounds, do not play this color
-			if (round.getMode().equals(Mode.bottomUp())) {
+			// Undeufe
+			if (isBottomUp(round.getMode())) {
 
 			}
-			if (round.getMode().equals(Mode.topDown())) {
+			// Obeabe
+			if (isTopDown(round.getMode())) {
 
 			}
 			// Falls Trumpf
@@ -113,11 +174,11 @@ public class JassHelper {
 				 */
 				// wenn nicht -> (Gegenfarbe von Farbe wo ich gut bin)
 				else {
-					if (round.getMode().equals(Mode.bottomUp())) {
+					if (isBottomUp(round.getMode())) {
 						// if at least one color is good -> get best color
 
 					}
-					if (round.getMode().equals(Mode.topDown())) {
+					if (isTopDown(round.getMode())) {
 						// if at least one color is good -> get best color
 
 					}
@@ -366,7 +427,7 @@ public class JassHelper {
 
 		List<CardValue> possibleCardValues = new LinkedList<>();
 		possibleCardValues.add(CardValue.TEN);
-		if (mode.equals(Mode.topDown()))
+		if (isTopDown(mode))
 			possibleCardValues.add(CardValue.EIGHT);
 
 		Set<Card> schmierCards = EnumSet.noneOf(Card.class);
@@ -639,4 +700,5 @@ public class JassHelper {
 		}
 		return (int) Math.ceil(rating);
 	}
+
 }

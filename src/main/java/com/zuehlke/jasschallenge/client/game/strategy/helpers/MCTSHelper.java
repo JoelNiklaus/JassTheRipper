@@ -7,6 +7,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.Color;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class MCTSHelper {
 	public static Card getCard(Set<Card> availableCards, Game game, long endingTime, boolean parallelisation) throws Exception {
 		// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
 		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
-		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game.getCurrentRound(), game.getCurrentPlayer());
+		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
 		if (possibleCards.size() == 1) {
 			for (Card card : possibleCards) {
 				System.out.println("Based on expert Jass Knowledge there is only one sensible card available now.");
