@@ -11,6 +11,26 @@ public class Result implements Serializable {
 		this.teamBScore = new TeamScore(teamB);
 	}
 
+	/**
+	 * Copy constructor for deep copy
+	 *
+	 * @param result
+	 */
+	public Result(Result result) {
+		synchronized (result) {
+			this.teamAScore = new TeamScore(result.getTeamAScore());
+			this.teamBScore = new TeamScore(result.getTeamBScore());
+		}
+	}
+
+	public TeamScore getTeamAScore() {
+		return teamAScore;
+	}
+
+	public TeamScore getTeamBScore() {
+		return teamBScore;
+	}
+
 	public int getTeamScore(Player player) {
 		return getTeamScoreForPlayer(player).getScore();
 	}
@@ -70,6 +90,24 @@ public class Result implements Serializable {
 		else return teamAScore;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Result)) return false;
+
+		Result result = (Result) o;
+
+		if (teamAScore != null ? !teamAScore.equals(result.teamAScore) : result.teamAScore != null) return false;
+		return teamBScore != null ? teamBScore.equals(result.teamBScore) : result.teamBScore == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = teamAScore != null ? teamAScore.hashCode() : 0;
+		result = 31 * result + (teamBScore != null ? teamBScore.hashCode() : 0);
+		return result;
+	}
+
 	private static class TeamScore implements Serializable {
 		private final Team team;
 		private int score;
@@ -77,6 +115,18 @@ public class Result implements Serializable {
 		public TeamScore(Team team) {
 			this.team = team;
 			this.score = 0;
+		}
+
+		/**
+		 * Copy constructor for deep copy
+		 *
+		 * @param teamScore
+		 */
+		public TeamScore(TeamScore teamScore) {
+			synchronized (teamScore) {
+				this.team = new Team(teamScore.getTeam());
+				this.score = teamScore.getScore();
+			}
 		}
 
 		void addScore(int score) {
@@ -89,6 +139,24 @@ public class Result implements Serializable {
 
 		public Team getTeam() {
 			return team;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (!(o instanceof TeamScore)) return false;
+
+			TeamScore teamScore = (TeamScore) o;
+
+			if (score != teamScore.score) return false;
+			return team != null ? team.equals(teamScore.team) : teamScore.team == null;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = team != null ? team.hashCode() : 0;
+			result = 31 * result + score;
+			return result;
 		}
 	}
 }

@@ -13,6 +13,18 @@ public class Move implements Serializable {
 		this.playedCard = playedCard;
 	}
 
+	/**
+	 * Copy constructor for deep copy
+	 *
+	 * @param move
+	 */
+	public Move(Move move) {
+		synchronized (move) {
+			this.player = new Player(move.getPlayer());
+			this.playedCard = move.getPlayedCard();
+		}
+	}
+
 	public Player getPlayer() {
 		return player;
 	}

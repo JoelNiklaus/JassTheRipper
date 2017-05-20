@@ -28,6 +28,22 @@ public class Round implements Serializable {
 		this.playingOrder = playingOrder;
 	}
 
+	/**
+	 * Copy constructor for deep copy
+	 *
+	 * @param round
+	 */
+	public Round(Round round) {
+		synchronized (round) {
+			this.mode = round.getMode(); // TODO maybe copy mode too
+			this.roundNumber = round.getRoundNumber();
+			this.playingOrder = new PlayingOrder(round.getPlayingOrder());
+			for (Move move : round.getMoves())
+				this.moves.add(new Move(move));
+		}
+	}
+
+
 	public void makeMove(Move move) {
 		if (!move.getPlayer().equals(playingOrder.getCurrentPlayer()))
 			throw new RuntimeException("It's not players " + move.getPlayer() + " turn. It's " + playingOrder.getCurrentPlayer() + " turn.");
@@ -106,6 +122,28 @@ public class Round implements Serializable {
 
 	public boolean isLastRound() {
 		return getRoundNumber() == Game.LAST_ROUND_NUMBER;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Round)) return false;
+
+		Round round = (Round) o;
+
+		if (roundNumber != round.roundNumber) return false;
+		if (mode != null ? !mode.equals(round.mode) : round.mode != null) return false;
+		if (playingOrder != null ? !playingOrder.equals(round.playingOrder) : round.playingOrder != null) return false;
+		return moves != null ? moves.equals(round.moves) : round.moves == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = mode != null ? mode.hashCode() : 0;
+		result = 31 * result + roundNumber;
+		result = 31 * result + (playingOrder != null ? playingOrder.hashCode() : 0);
+		result = 31 * result + (moves != null ? moves.hashCode() : 0);
+		return result;
 	}
 
 	@Override

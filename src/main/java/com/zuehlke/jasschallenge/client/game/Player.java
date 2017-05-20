@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Player implements Serializable {
@@ -35,6 +36,25 @@ public class Player implements Serializable {
 		this.name = name;
 		this.cards = EnumSet.noneOf(Card.class);
 		this.currentJassStrategy = strategy;
+	}
+
+	/**
+	 * Copy constructor for deep copy
+	 *
+	 * @param player
+	 */
+	public Player(Player player) {
+		synchronized (player) {
+			this.id = player.getId();
+			this.name = player.getName();
+			this.seatId = player.getSeatId();
+			this.cards = new HashSet<>(player.getCards());
+			this.currentJassStrategy = player.getCurrentJassStrategy();
+		}
+	}
+
+	public JassStrategy getCurrentJassStrategy() {
+		return currentJassStrategy;
 	}
 
 	public String getId() {

@@ -29,6 +29,24 @@ public class Game implements Serializable {
 		this.shifted = shifted;
 	}
 
+	/**
+	 * Copy constructor for deep copy
+	 *
+	 * @param game
+	 */
+	public Game(Game game) {
+		synchronized (game) {
+			this.mode = game.getCurrentRoundMode(); // TODO maybe we have to copy mode too somehow
+			this.order = new PlayingOrder(game.getOrder());
+			this.currentRound = new Round(game.getCurrentRound());
+			this.result = new Result(game.getResult());
+			this.shifted = game.isShifted();
+			this.previousRounds = new ArrayList<>();
+			for (Round previousRound : game.getPreviousRounds())
+				this.previousRounds.add(new Round(previousRound));
+		}
+	}
+
 	public static Game startGame(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
 
 		return new Game(mode, order, teams, shifted);
@@ -98,8 +116,41 @@ public class Game implements Serializable {
 	}
 
 
-
 	public boolean isShifted() {
 		return shifted;
+	}
+
+	public Mode getMode() {
+		return mode;
+	}
+
+	public PlayingOrder getOrder() {
+		return order;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Game)) return false;
+
+		Game game = (Game) o;
+
+		if (shifted != game.shifted) return false;
+		if (!mode.equals(game.mode)) return false;
+		if (!order.equals(game.order)) return false;
+		if (!currentRound.equals(game.currentRound)) return false;
+		if (!result.equals(game.result)) return false;
+		return previousRounds.equals(game.previousRounds);
+	}
+
+	@Override
+	public int hashCode() {
+		int result1 = mode.hashCode();
+		result1 = 31 * result1 + order.hashCode();
+		result1 = 31 * result1 + currentRound.hashCode();
+		result1 = 31 * result1 + result.hashCode();
+		result1 = 31 * result1 + (shifted ? 1 : 0);
+		result1 = 31 * result1 + previousRounds.hashCode();
+		return result1;
 	}
 }
