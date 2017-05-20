@@ -19,10 +19,9 @@ import java.util.stream.Collectors;
  * Some jass terms are introduced here for clarification:
  * Brettli: A card with value 0
  * Bock: The highest card of a color
- * opposite colors: HEARTS AND SPADES, DIAMONDS AND CLUBS
  * Stechen: Play a card such that I win the round.
- * Anziehen: Being the starting player in the round playing a Brettli in order to show my partner that I am good at this color (have either King or Queen but not Ace)
- * Verwerfen: If my partner wins the round play a Brettli of a color in order to show him/her that I am strong at the opposite color.
+ * Anziehen: (Nur bei Trumpf) Being the starting player in the round playing a Brettli in order to show my partner that I am good at this color (have either King or Queen but not Ace)
+ * Verwerfen: (Nur bei Obeabe oder Undeufe) If my partner wins the round play a Brettli of a color in order to show him/her that I am weak at that color
  * Schmieren: If my partner wins the round play a valuable card to gain many points.
  */
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
@@ -56,26 +55,24 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// wenn nicht gut -> schieben
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
-        try {
-            final long startTime = System.currentTimeMillis();
-            printCards(availableCards);
+		try {
+			final long startTime = System.currentTimeMillis();
+			printCards(availableCards);
 
-            Mode mode = JassHelper.getRandomMode(isGschobe);
+			Mode mode = JassHelper.getRandomMode(isGschobe);
 
-            mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
+			mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
 
-            final long endTime = System.currentTimeMillis() - startTime;
-            System.out.println("Total time for move: " + endTime + "ms");
-            System.out.println("Chose Trumpf " + mode);
+			final long endTime = System.currentTimeMillis() - startTime;
+			System.out.println("Total time for move: " + endTime + "ms");
+			System.out.println("Chose Trumpf " + mode);
 
-            return mode;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return JassHelper.getRandomMode(isGschobe);
-        }
+			return mode;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return JassHelper.getRandomMode(isGschobe);
+		}
 	}
-
 
 
 	@Override
@@ -83,8 +80,12 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 		try {
 			final long startTime = System.currentTimeMillis();
 			long time = MAX_THINKING_TIME;
-			if (session.isFirstMove())
+			if (session.isFirstMove()) {
 				time -= 50;
+				// Reset for new round
+				partnerHatAngezogen = EnumSet.noneOf(Color.class);
+				partnerHatVerworfen = EnumSet.noneOf(Color.class);
+			}
 			final long endingTime = startTime + time;
 			printCards(availableCards);
 			final Game game = session.getCurrentGame();

@@ -61,21 +61,29 @@ public class JassHelper {
 		// Wenn erster spieler
 		if (JassHelper.startingPlayer(round)) {
 			/**
-			 * ANZIEHEN (NACHRICHT SENDEN)
-			 */
-			// look for a not trumpf color where i have a king or queen but someone else has the ace
-			// -> play small card so king or queen gets bock
-
-			/**
-			 * ANZIEHEN (NACHRICHT EMPFANGEN)
-			 */
-			// if my partner played anziehen in one of the previous rounds, play this color
-
-
-			/**
 			 * VERWERFEN (NACHRICHT EMPFANGEN)
 			 */
-			// if my partner played verwerfen in one of the previous rounds, play opposite color
+			// if my partner played verwerfen in one of the previous rounds, do not play this color
+			if (round.getMode().equals(Mode.bottomUp())) {
+
+			}
+			if (round.getMode().equals(Mode.topDown())) {
+
+			}
+			// Falls Trumpf
+			else {
+				/**
+				 * ANZIEHEN (NACHRICHT SENDEN)
+				 */
+				// look for a not trumpf color where i have a king or queen but someone else has the ace
+				// -> play small card so king or queen gets bock
+
+				/**
+				 * ANZIEHEN (NACHRICHT EMPFANGEN)
+				 */
+				// if my partner played anziehen in one of the previous rounds, play this color
+
+			}
 		}
 
 
@@ -101,28 +109,25 @@ public class JassHelper {
 					}
 				}
 				/**
-				 * VERWERFEN
+				 * VERWERFEN (Nachricht senden)
 				 */
 				// wenn nicht -> (Gegenfarbe von Farbe wo ich gut bin)
 				else {
 					if (round.getMode().equals(Mode.bottomUp())) {
+						// if at least one color is good -> get best color
 
-
-					} else {
-						if (round.getMode().equals(Mode.topDown())) {
-
-						} else {
-
-						}
 					}
+					if (round.getMode().equals(Mode.topDown())) {
+						// if at least one color is good -> get best color
 
+					}
 				}
+
 			}
 		}
 
-		// TODO für jeden Spieler Karteneinschätzung machen!!!
 
-		// TODO geschätzte karten von partner anpassen, wenn verwerfen von ihm erkannt wurde!
+		// TODO für jeden Spieler Karteneinschätzung machen!!!
 
 		return possibleCards;
 	}
