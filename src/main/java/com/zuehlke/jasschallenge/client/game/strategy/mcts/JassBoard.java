@@ -1,5 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
+import com.rits.cloning.Cloner;
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.DeepCopy;
 import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.ObjectCloner;
@@ -37,11 +38,17 @@ public class JassBoard implements Board, Serializable {
 
 		this.availableCards = copy(availableCards);
 
+		this.game = (Game) DeepCopy.copy(game);
+
+		//this.game = (Game) new Cloner().deepClone(game);
+		//this.game = new Game(game);
+
+		/*
 		startTime = System.currentTimeMillis();
 		this.game = (Game) DeepCopy.copy(game);
 		System.out.println("DeepCopy " + (System.currentTimeMillis() - startTime));
 
-		/*
+
 		startTime = System.currentTimeMillis();
 		this.game = SerializationUtils.clone(game);
 		System.out.println("SerializationUtils " + (System.currentTimeMillis() - startTime));
