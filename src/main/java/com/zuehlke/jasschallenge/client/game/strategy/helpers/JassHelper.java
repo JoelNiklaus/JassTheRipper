@@ -193,6 +193,151 @@ public class JassHelper {
 		return possibleCards;
 	}
 
+	/* TODO: Hey Joel, this is the boolean helperMethod you asked for. If you want to change the return logic (e.g.
+    * return true if you can make 3 Stichs) you shouldn't have any problems, I've written down what the return
+    * statements calculated mean in a comment above them.
+    * Below: Same for verworfen, returns true if you can make less than one Stich with your worst color (almost always
+    * the case; if you want it to be if you are very unlikely to make a Stich, make it return worstRating <= 2,
+    * if you want it to be quite unlikely make it return worstRating <= 8
+    * @Note: If you want to have the best and worst Color for 'Anziehen' and 'Verwerfen', there are helperMethods for
+    * that below this method.
+    * */
+
+    /**
+     * Returns true if the player can make ca. > 65% of the remaining Stichs or at minimum 5 Stich or at minimum
+     * ca. 3 Stichs with his best color (the one to be angezogen)
+     *
+     * @param ownCards - the cards of the player
+     * @param alreadyPlayedCards - the cards which have already been played in the game
+     * @param obeAbe - if Obeabe true, if Undeufe false
+     * @return
+     * @throws Exception
+     */
+	private static boolean shouldAnziehen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+	    // sum is (#Stichs the Player can make) * 19
+	    int sum = 0;
+	    // bestRating is (#Stichs the Player can make with his best color) * 19
+	    int bestRating = 0;
+        int rating;
+        Color bestColor = Color.CLUBS;
+        for (Color color:Color.values()) {
+            if (obeAbe)
+                rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+            else
+                rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+            if (bestRating < rating) {
+                bestRating = rating;
+                bestColor = color;
+            }
+            sum += rating;
+        }
+        Set<Card> cardsOfBestColor = getCardsOfColor(ownCards, bestColor);
+        // As a safety measure ;)
+        if (ownCards.isEmpty())
+            return false;
+        // 65 means: 65% (~2/3) of the remaining Stichs can be made
+        // 100 = 5*20 ~ 5 Stichs => sum >= 95 (-5 for float imprecision as each of the 5 Stichs may be valued with only 19)
+        // means can make at minimum 5 Stichs
+        if (5f*sum/ownCards.size() > 65 || sum >= 95)
+            return true;
+        // 60 is about three Stich (3*20); -3 for float imprecision
+        if (!cardsOfBestColor.isEmpty())
+            return (bestRating >= 57);
+        return false;
+    }
+
+    /**
+     * Returns true if the player can <=1 Stich with the worst color (the one to be verworfen)
+     *
+     * @param ownCards - the cards of the player
+     * @param alreadyPlayedCards - the cards which have already been played in the game
+     * @param obeAbe - if Obeabe true, if Undeufe false
+     * @return
+     * @throws Exception
+     */
+    private static boolean shouldVerwerfen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+        // sum is (#Stichs the Player can make) * 19
+        int sum = 0;
+        // bestRating is (#Stichs the Player can make with his best color) * 19
+        int worstRating = 0;
+        int rating;
+        Color worstColor = Color.CLUBS;
+        for (Color color:Color.values()) {
+            Set<Card> cardsOfColor = getCardsOfColor(ownCards, color);
+            if (!cardsOfColor.isEmpty()) {
+                if (obeAbe)
+                    rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+                else
+                    rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+                if (worstRating > rating) {
+                    worstRating = rating;
+                    worstColor = color;
+                }
+                sum += rating;
+            }
+        }
+        Set<Card> cardsOfWorstColor = getCardsOfColor(ownCards, worstColor);
+        // As a safety measure ;)
+        if (ownCards.isEmpty())
+            return false;
+        // Can make less than one Stich => verwerfen
+        if (!cardsOfWorstColor.isEmpty())
+            return (worstRating < 20);
+        return false;
+    }
+
+    /**
+     * Returns the best color to be 'angezogen'.
+     *
+     * @param ownCards - the cards of the player
+     * @param alreadyPlayedCards - the cards which have already been played in the game
+     * @param obeAbe - if Obeabe true, if Undeufe false
+     * @return
+     * @throws Exception
+     */
+    private static Color getBestAnziehenColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+        int bestRating = 0;
+        int rating;
+        Color bestColor = Color.DIAMONDS;
+        for (Color color:Color.values()) {
+            if (obeAbe)
+                rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+            else
+                rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+            if (bestRating < rating) {
+                bestRating = rating;
+                bestColor = color;
+            }
+        }
+        return bestColor;
+    }
+
+    /**
+     * Returns the best color to be 'verworfen' (so the player's worst color, actually).
+     *
+     * @param ownCards - the cards of the player
+     * @param alreadyPlayedCards - the cards which have already been played in the game
+     * @param obeAbe - if Obeabe true, if Undeufe false
+     * @return
+     * @throws Exception
+     */
+    private static Color getBestVerwerfColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+        int worstRating = 500;
+        int rating;
+        Color worstColor = Color.CLUBS;
+        for (Color color:Color.values()) {
+            if (obeAbe)
+                rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+            else
+                rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+            if (worstRating > rating) {
+                worstRating = rating;
+                worstColor = color;
+            }
+        }
+        return worstColor;
+    }
+
     /**
      * Rates the given color for the Mode ObeAbe respecting the cards that have already been played (e.g. rating a
      * King higher if the Ace has been played).
