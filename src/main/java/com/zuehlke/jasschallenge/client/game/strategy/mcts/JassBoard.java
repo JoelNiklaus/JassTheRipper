@@ -84,7 +84,7 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public ArrayList<Move> getMoves(CallLocation location) {
-		final long startTime = System.currentTimeMillis();
+		//final long startTime = System.currentTimeMillis();
 
 		ArrayList<Move> moves = new ArrayList<>();
 		final Player player = game.getCurrentPlayer();
@@ -93,10 +93,9 @@ public class JassBoard implements Board, Serializable {
 		assert (possibleCards.size() > 0);
 
 		try {
-			System.out.println("Possible cards before refining: " + possibleCards);
+			//System.out.println("Possible cards before refining: " + possibleCards);
 			possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
-			System.out.println("Possible cards after refining: " + possibleCards);
-
+			//System.out.println("Possible cards after refining: " + possibleCards);
 		} catch (Exception e) {
 			System.out.println("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
 			e.printStackTrace();
@@ -108,7 +107,7 @@ public class JassBoard implements Board, Serializable {
 			moves.add(new CardMove(player, card));
 		assert (moves.size() > 0);
 
-		Helper.printMethodTime(startTime);
+		//Helper.printMethodTime(startTime);
 
 		return moves;
 	}
@@ -121,7 +120,7 @@ public class JassBoard implements Board, Serializable {
 	 */
 	@Override
 	public void makeMove(Move move) {
-		final long startTime = System.currentTimeMillis();
+		//final long startTime = System.currentTimeMillis();
 
 		// We can do that because we are only creating CardMoves
 		final CardMove cardMove = (CardMove) move;
@@ -149,7 +148,7 @@ public class JassBoard implements Board, Serializable {
 			}
 		}
 
-		Helper.printMethodTime(startTime);
+		//Helper.printMethodTime(startTime);
 	}
 
 	@Override
@@ -169,7 +168,7 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public double[] getScore() {
-		final long startTime = System.currentTimeMillis();
+		//final long startTime = System.currentTimeMillis();
 
 		double[] score = new double[getQuantityOfPlayers()];
 		Result result = game.getResult();
@@ -177,7 +176,7 @@ public class JassBoard implements Board, Serializable {
 		for (Player player : order.getPlayerInOrder())
 			score[player.getSeatId()] = result.getTeamScore(player);
 
-		Helper.printMethodTime(startTime);
+		//Helper.printMethodTime(startTime);
 
 		return score;
 	}
