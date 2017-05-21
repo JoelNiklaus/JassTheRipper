@@ -1,9 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.Move;
-import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.Round;
+import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -168,11 +165,6 @@ public class JassHelper {
 		return round.getPlayingOrder().getPlayerInOrder().get(3).equals(player);
 	}
 
-
-	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) throws Exception {
-		return refineCardsWithJassKnowledge(possibleCards, game.getCurrentRound(), game.getCurrentPlayer(), game.getAlreadyPlayedCards());
-	}
-
 	/**
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
 	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
@@ -181,15 +173,16 @@ public class JassHelper {
 	 * @param possibleCards
 	 * @return
 	 */
-	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Round round, Player player, Set<Card> alreadyPlayedCards) throws Exception {
+	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) throws Exception {
+		final Round round = game.getCurrentRound();
+		final Player player = game.getCurrentPlayer();
+		final Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
 		final Mode mode = round.getMode();
-		final Set<Card> trumps = getTrumps(possibleCards, mode);
 
 		/**
 		 * STECHEN (als letzter Spieler)
 		 */
-		// wenn letzter Spieler und Stich gehört Gegner
-		if (lastPlayer(round) && isOpponent(round.getWinner(), player)) {
+		if (shouldStechen(round, player)) {
 			int stichValue = round.calculateScore();
 			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
 
@@ -207,37 +200,47 @@ public class JassHelper {
 		/**
 		 * AUSTRUMPFEN
 		 */
-		// Wenn erster spieler am anfang des spiels (erste beide runden) und mindestens 2 trümpfe
-		if (startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
+		final Set<Card> trumps = getTrumps(possibleCards, mode);
+		if (shouldAustrumpfen(round, trumps))
 			return trumps;
 
-
-		// Wenn erster spieler und ein Trumpf
-		if (startingPlayer(round) && isTrumpf(mode)) {
-			/**
-			 * ANZIEHEN STARTING (Nachricht senden)
-			 */
-			// look for a not trumpf color where i have a king or queen but someone else has the ace (Now it is done with a much more sophisticated rating
-			// -> play small card so king or queen gets bock
-			if (shouldAnziehen(possibleCards, alreadyPlayedCards, true)) {
-				Color color = getBestAnziehenColor(possibleCards, alreadyPlayedCards, true);
-				Set<Card> brettli = getBrettli(possibleCards, mode, color);
-				if (!brettli.isEmpty())
-					return brettli;
-			}
+		/**
+		 * VERWERFEN (Nachricht empfangen)
+		 */
+		Color verworfen = detectVerwerfen(game);
+		Set<Card> cardsVerworfenColor = getCardsOfColor(possibleCards, verworfen);
+		if(verworfen != null && cardsVerworfenColor.size() < possibleCards.size()) {
+			possibleCards.removeAll(cardsVerworfenColor);
 		}
 
+		/**
+		 * ANZIEHEN (Nachricht empfangen)
+		 */
+		Color angezogen = detectAnziehen(game);
+		Set<Card> cardsAngezogenColor = getCardsOfColor(possibleCards, angezogen);
+		if(verworfen != null && !cardsAngezogenColor.isEmpty())
+			return cardsAngezogenColor;
+
+		/**
+		 * ANZIEHEN STARTING (Nachricht senden)
+		 */
+		if (shouldAnziehenStarting(possibleCards, round, alreadyPlayedCards, mode)) {
+			Color color = getBestAnziehenColor(possibleCards, alreadyPlayedCards, true);
+			Set<Card> brettli = getBrettli(possibleCards, mode, color);
+			if (!brettli.isEmpty())
+				return brettli;
+		}
 
 		// wenn partner schon gespielt hat
 		if (hasPartnerAlreadyPlayed(round)) {
 			Card cardOfPartner = getCardOfPartner(round);
 			// wenn partner den stich macht bis jetzt
 			if (round.getWinningCard().equals(cardOfPartner)) {
-				/**
-				 * SCHMIEREN
-				 */
 				// wenn ich noch angeben kann
 				if (isAngebenPossible(possibleCards, cardOfPartner)) {
+					/**
+					 * SCHMIEREN
+					 */
 					Set<Card> schmierCards = getSchmierCards(possibleCards, cardOfPartner, mode);
 					// wenn letzter spieler einfach schmieren
 					if (lastPlayer(round))
@@ -282,6 +285,22 @@ public class JassHelper {
 		}
 
 		return possibleCards;
+	}
+
+	private static boolean shouldStechen(Round round, Player player) {
+		// wenn letzter Spieler und Stich gehört Gegner
+		return lastPlayer(round) && isOpponent(round.getWinner(), player);
+	}
+
+	private static boolean shouldAnziehenStarting(Set<Card> possibleCards, Round round, Set<Card> alreadyPlayedCards, Mode mode) throws Exception {
+		// Wenn erster spieler und ein Trumpf und anziehen macht sinn
+		return startingPlayer(round) && isTrumpf(mode)
+				&& shouldAnziehen(possibleCards, alreadyPlayedCards, true);
+	}
+
+	private static boolean shouldAustrumpfen(Round round, Set<Card> trumps) {
+		// Wenn erster spieler am anfang des spiels (erste beide runden) und mindestens 2 trümpfe
+		return startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2;
 	}
 
 	private static Set<Card> getBrettli(Set<Card> possibleCards, Mode mode, Color color) {
@@ -1125,6 +1144,83 @@ public class JassHelper {
 			lastCard = nextCard;
 		}
 		return (int) Math.ceil(rating);
+	}
+
+	/**
+	 * add randomized available Cards for the other players based on already played cards
+	 *
+	 * @param availableCards
+	 */
+	public static void distributeCardsForPlayers(Set<Card> availableCards, Game game) throws Exception {
+		final int playerId = game.getCurrentPlayer().getSeatId();
+		final Round round = game.getCurrentRound();
+		final PlayingOrder order = round.getPlayingOrder();
+		Set<Card> remainingCards = getRemainingCards(availableCards, game);
+		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
+
+		for (Player player : order.getPlayerInOrder()) {
+			double numberOfCardsToAdd;
+			final int tempPlayerId = player.getSeatId();
+			Set<Card> cards;
+			if (tempPlayerId != playerId) { // randomize cards for the other players
+				//if (tempPlayerId > playerId) // if tempPlayer is seated after player add one card more
+				if (round.hasPlayerAlreadyPlayed(player))
+					numberOfCardsToAdd = Math.floor(numberOfCards);
+				else
+					numberOfCardsToAdd = Math.ceil(numberOfCards);
+
+				cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
+
+
+				if (!remainingCards.removeAll(cards))
+					System.err.println("Could not remove picked cards from remaining cards");
+				assert !remainingCards.containsAll(cards);
+			} else
+				cards = Helper.copy(availableCards);
+
+			player.setCards(cards);
+		}
+		assert remainingCards.isEmpty();
+	}
+
+	public static Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) throws Exception {
+		return pickRandomSubSet(cards, numberOfCards);
+	}
+
+	/**
+	 * Picks a random sub set out of the given cards with the given size.
+	 *
+	 * @param cards
+	 * @param numberOfCards
+	 * @return
+	 */
+	public static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) throws Exception {
+		assert (numberOfCards > 0 || numberOfCards <= 9);
+		List<Card> listOfCards = new LinkedList<>(cards);
+		assert numberOfCards <= listOfCards.size();
+		Collections.shuffle(listOfCards);
+		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
+		Set<Card> randomSubSet = new HashSet<>(randomSublist);
+		assert (cards.containsAll(randomSubSet));
+		return randomSubSet;
+	}
+
+	/**
+	 * Get the cards remaining to be split up on the other players.
+	 * All cards - already played cards - available cards
+	 *
+	 * @param availableCards
+	 * @return
+	 */
+	public static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
+		Set<Card> cards = Collections.synchronizedSet(EnumSet.allOf(Card.class));
+		assert cards.size() == 36;
+		cards.removeAll(availableCards);
+		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
+		Round round = game.getCurrentRound();
+		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
+		cards.removeAll(alreadyPlayedCards);
+		return cards;
 	}
 
 }

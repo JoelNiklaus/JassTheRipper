@@ -1,11 +1,21 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
+import com.zuehlke.jasschallenge.game.cards.Card;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * Created by joelniklaus on 20.05.17.
  */
 public class Helper {
 
 	public static int BORDER_TIME = 10;
+
+	public static Set<Card> copy(Set<Card> cards) {
+		return Collections.synchronizedSet(EnumSet.copyOf(cards));
+	}
 
 	public static void printMethodTime(long startTime) {
 		final long time = (System.currentTimeMillis() - startTime);

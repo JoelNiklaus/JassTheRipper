@@ -205,7 +205,7 @@ public class MCTS {
 	 *
 	 */
 	private BoardNodePair treePolicy(Board brd, Node node) throws Exception {
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 
 		Board board = brd.duplicate();
 
@@ -264,7 +264,7 @@ public class MCTS {
 			}
 		}
 
-		Helper.printMethodTime(startTime);
+		//Helper.printMethodTime(startTime);
 
 		return new BoardNodePair(board, node);
 	}
@@ -356,7 +356,7 @@ public class MCTS {
 	 * @return
 	 */
 	private double[] playout(Board board) throws Exception {
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 
 		ArrayList<Move> moves;
 		Move move;
@@ -386,7 +386,7 @@ public class MCTS {
 			}
 		}
 
-		Helper.printMethodTime(startTime);
+		//Helper.printMethodTime(startTime);
 
 		return brd.getScore();
 	}

@@ -69,6 +69,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 
 			return mode;
 		} catch (Exception e) {
+			System.out.println("Something unexpectedly went terribly wrong! But could catch exception and choose random trumpf now.");
 			e.printStackTrace();
 			return JassHelper.getRandomMode(isGschobe);
 		}
