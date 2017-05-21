@@ -182,7 +182,12 @@ public class JassBoard implements Board, Serializable {
 
 		assert (possibleCards.size() > 0);
 
-		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
+		try {
+			possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
+		} catch (Exception e) {
+			System.out.println("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
+			e.printStackTrace();
+		}
 
 		assert possibleCards.size() > 0;
 

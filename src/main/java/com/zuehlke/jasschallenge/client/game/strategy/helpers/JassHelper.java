@@ -19,25 +19,50 @@ import java.util.stream.Collectors;
  */
 public class JassHelper {
 
+	public static final int BRETTLI_BOUNDARY = 5; // TEN
+	public static final int EIGHT = 3; // EIGHT
+	public static final int NELL = 4; // NELL
 
+
+	/**
+	 * ANZIEHEN (Nachricht empfangen)
+	 */
+	// if my partner played anziehen in one of the previous rounds, play this color
 	public static Color detectAnziehen(Game game) {
 		Mode mode = game.getMode();
-		if (isTopDown(mode) || isBottomUp(mode))
+		if (isNotTrumpf(mode))
 			return null; // abort if notTrumpf
 		Player player = game.getCurrentPlayer();
 		Player partner = game.getPartnerOfPlayer(player);
 		List<Round> previousRounds = game.getPreviousRounds();
 		for (Round round : previousRounds) {
-
+			Card myCard = round.getCardOfPlayer(player);
+			assert myCard != null;
+			Card cardOfPartner = round.getCardOfPlayer(partner);
+			assert cardOfPartner != null;
+			if (isBrettli(cardOfPartner, mode)) {
+				// ANZIEHEN STARTING
+				if (wasStartingPlayer(partner, round))
+					return cardOfPartner.getColor();
+				// ANZIEHEN LATER
+				if ((wasThirdPlayer(partner, round) || wasLastPlayer(partner, round))
+						&& cardOfPartner.hasDifferentColor(myCard))
+					return cardOfPartner.getColor();
+			}
 		}
 		return null;
 	}
 
 
 	// TODO schauen dass der schluss es nicht verfälscht -> es sollte die runde mit kleinster round number zuerst anschauen
+
+	/**
+	 * VERWERFEN (Nachricht empfangen)
+	 */
+	// if my partner played verwerfen in one of the previous rounds, do not play this color
 	public static Color detectVerwerfen(Game game) {
 		Mode mode = game.getMode();
-		if (!(isTopDown(mode) || isBottomUp(mode)))
+		if (isTrumpf(mode))
 			return null; // abort if trumpf
 
 		Player player = game.getCurrentPlayer();
@@ -46,22 +71,49 @@ public class JassHelper {
 		for (Round round : previousRounds) {
 			if (wasStartingPlayer(player, round)
 					&& round.getWinner().equals(player)) {
-				Move myMove = round.getMoves().get(0);
-				assert myMove.getPlayer().equals(player);
-				Card myCard = myMove.getPlayedCard();
-				Move moveOfPartner = round.getMoves().get(2);
-				assert moveOfPartner.getPlayer().equals(partner);
-				Card cardOfPartner = moveOfPartner.getPlayedCard();
-				if (!cardOfPartner.getColor().equals(myCard)) {
-					int decisionBoundary = 5; // TEN
-					if (isBottomUp(mode) && cardOfPartner.getValue().getRank() > decisionBoundary)
-						return cardOfPartner.getColor();
-					if (isTopDown(mode) && cardOfPartner.getValue().getRank() < decisionBoundary)
-						return cardOfPartner.getColor();
-				}
+				Card myCard = round.getCardOfPlayer(player);
+				assert myCard != null;
+				Card cardOfPartner = round.getCardOfPlayer(partner);
+				assert cardOfPartner != null;
+
+				if (!cardOfPartner.getColor().equals(myCard) && isBrettli(cardOfPartner, mode))
+					return cardOfPartner.getColor();
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Determines if the card is a brettli (a low card which has zero points)
+	 *
+	 * @param card
+	 * @param mode
+	 * @return
+	 */
+	private static boolean isBrettli(Card card, Mode mode) {
+		int rank = card.getRank();
+		if (isBottomUp(mode)) {
+			if (rank > BRETTLI_BOUNDARY)
+				return true;
+			return false;
+		}
+		if (rank < BRETTLI_BOUNDARY) {
+			if (isTopDown(mode)) {
+				if (rank != EIGHT)
+					return true;
+			} else if (!hasTrumpfColor(card, mode))
+				return true;
+		}
+		return false;
+	}
+
+	private static boolean isNell(Card card, Mode mode) {
+		int rank = card.getRank();
+		return hasTrumpfColor(card, mode) && rank == NELL;
+	}
+
+	private static boolean hasTrumpfColor(Card card, Mode mode) {
+		return card.getColor().equals(mode.getTrumpfColor());
 	}
 
 	private static boolean isBottomUp(Mode mode) {
@@ -72,10 +124,54 @@ public class JassHelper {
 		return mode.equals(Mode.topDown());
 	}
 
+	/**
+	 * Checks if the player was the starting player in the past round
+	 *
+	 * @param player
+	 * @param round
+	 * @return
+	 */
 	private static boolean wasStartingPlayer(Player player, Round round) {
 		return round.getPlayingOrder().getPlayerInOrder().get(0).equals(player);
 	}
 
+	/**
+	 * Checks if the player was the second player in the past round
+	 *
+	 * @param player
+	 * @param round
+	 * @return
+	 */
+	private static boolean wasSecondPlayer(Player player, Round round) {
+		return round.getPlayingOrder().getPlayerInOrder().get(1).equals(player);
+	}
+
+	/**
+	 * Checks if the player was the third player in the past round
+	 *
+	 * @param player
+	 * @param round
+	 * @return
+	 */
+	private static boolean wasThirdPlayer(Player player, Round round) {
+		return round.getPlayingOrder().getPlayerInOrder().get(2).equals(player);
+	}
+
+	/**
+	 * Checks if the player was the last player in the past round
+	 *
+	 * @param player
+	 * @param round
+	 * @return
+	 */
+	private static boolean wasLastPlayer(Player player, Round round) {
+		return round.getPlayingOrder().getPlayerInOrder().get(3).equals(player);
+	}
+
+
+	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) throws Exception {
+		return refineCardsWithJassKnowledge(possibleCards, game.getCurrentRound(), game.getCurrentPlayer(), game.getAlreadyPlayedCards());
+	}
 
 	/**
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
@@ -85,26 +181,25 @@ public class JassHelper {
 	 * @param possibleCards
 	 * @return
 	 */
-	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) {
-		final Round round = game.getCurrentRound();
-		final Player player = game.getCurrentPlayer();
-		Set<Card> trumps = JassHelper.getTrumps(player.getCards(), round.getMode());
+	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Round round, Player player, Set<Card> alreadyPlayedCards) throws Exception {
+		final Mode mode = round.getMode();
+		final Set<Card> trumps = getTrumps(possibleCards, mode);
 
 		/**
 		 * STECHEN (als letzter Spieler)
 		 */
 		// wenn letzter Spieler und Stich gehört Gegner
-		if (JassHelper.lastPlayer(round) && JassHelper.isOpponent(round.getWinner(), player)) {
+		if (lastPlayer(round) && isOpponent(round.getWinner(), player)) {
 			int stichValue = round.calculateScore();
 			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
 
 			// wenn möglich mit nicht trumpf zu stechen
-			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, round.getMode());
+			Set<Card> notTrumpsOfRoundWinningCards = getNotTrumps(roundWinningCards, mode);
 			if (!notTrumpsOfRoundWinningCards.isEmpty())
 				return notTrumpsOfRoundWinningCards;
 
 			// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
-			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, round.getMode());
+			Set<Card> trumpsOfRoundWinningCards = getTrumps(roundWinningCards, mode);
 			if (!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
 				return trumpsOfRoundWinningCards;
 		}
@@ -113,88 +208,104 @@ public class JassHelper {
 		 * AUSTRUMPFEN
 		 */
 		// Wenn erster spieler am anfang des spiels (erste beide runden) und mindestens 2 trümpfe
-		if (JassHelper.startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
+		if (startingPlayer(round) && round.getRoundNumber() <= 1 && trumps.size() >= 2)
 			return trumps;
 
 
-		// Wenn erster spieler
-		if (JassHelper.startingPlayer(round)) {
+		// Wenn erster spieler und ein Trumpf
+		if (startingPlayer(round) && isTrumpf(mode)) {
 			/**
-			 * VERWERFEN (NACHRICHT EMPFANGEN)
+			 * ANZIEHEN STARTING (Nachricht senden)
 			 */
-			// if my partner played verwerfen in one of the previous rounds, do not play this color
-			// Undeufe
-			if (isBottomUp(round.getMode())) {
-
-			}
-			// Obeabe
-			if (isTopDown(round.getMode())) {
-
-			}
-			// Falls Trumpf
-			else {
-				/**
-				 * ANZIEHEN (NACHRICHT SENDEN)
-				 */
-				// look for a not trumpf color where i have a king or queen but someone else has the ace
-				// -> play small card so king or queen gets bock
-
-				/**
-				 * ANZIEHEN (NACHRICHT EMPFANGEN)
-				 */
-				// if my partner played anziehen in one of the previous rounds, play this color
-
+			// look for a not trumpf color where i have a king or queen but someone else has the ace (Now it is done with a much more sophisticated rating
+			// -> play small card so king or queen gets bock
+			if (shouldAnziehen(possibleCards, alreadyPlayedCards, true)) {
+				Color color = getBestAnziehenColor(possibleCards, alreadyPlayedCards, true);
+				Set<Card> brettli = getBrettli(possibleCards, mode, color);
+				if (!brettli.isEmpty())
+					return brettli;
 			}
 		}
 
 
 		// wenn partner schon gespielt hat
-		if (JassHelper.hasPartnerAlreadyPlayed(round)) {
-			Card cardOfPartner = JassHelper.getCardOfPartner(round);
+		if (hasPartnerAlreadyPlayed(round)) {
+			Card cardOfPartner = getCardOfPartner(round);
 			// wenn partner den stich macht bis jetzt
 			if (round.getWinningCard().equals(cardOfPartner)) {
 				/**
 				 * SCHMIEREN
 				 */
 				// wenn ich noch angeben kann
-				if (JassHelper.isAngebenPossible(possibleCards, cardOfPartner)) {
-					Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, cardOfPartner, round.getMode());
+				if (isAngebenPossible(possibleCards, cardOfPartner)) {
+					Set<Card> schmierCards = getSchmierCards(possibleCards, cardOfPartner, mode);
 					// wenn letzter spieler einfach schmieren
-					if (JassHelper.lastPlayer(round))
+					if (lastPlayer(round))
 						return schmierCards;
 						// TODO wenn zweitletzter spieler prüfen ob letzer spieler noch stechen kann
+						// TODO für jeden Spieler Karteneinschätzung machen!!!
 					else {
-						assert JassHelper.thirdPlayer(round);
+						assert thirdPlayer(round);
 						// TODO to change
 						return schmierCards;
 					}
 				}
-				/**
-				 * VERWERFEN (Nachricht senden)
-				 */
-				// wenn nicht -> (Gegenfarbe von Farbe wo ich gut bin)
+				// wenn ich nicht mehr angeben kann
 				else {
-					if (isBottomUp(round.getMode())) {
+					/**
+					 * VERWERFEN (Nachricht senden)
+					 */
+					if (!isTrumpf(mode)) {
 						// if at least one color is good -> get best color
-
+						if (shouldVerwerfen(possibleCards, alreadyPlayedCards, isTopDown(mode))) {
+							Color color = getBestVerwerfColor(possibleCards, alreadyPlayedCards, isTopDown(mode));
+							Set<Card> brettli = getBrettli(possibleCards, mode, color);
+							if (!brettli.isEmpty())
+								return brettli;
+						}
 					}
-					if (isTopDown(round.getMode())) {
-						// if at least one color is good -> get best color
-
+					/**
+					 * ANZIEHEN LATER (Nachricht senden)
+					 */
+					// look for a not trumpf color where i have a king or queen but someone else has the ace
+					// -> play small card so king or queen gets bock
+					else {
+						if (shouldAnziehen(possibleCards, alreadyPlayedCards, true)) {
+							Color color = getBestAnziehenColor(possibleCards, alreadyPlayedCards, true);
+							Set<Card> brettli = getBrettli(possibleCards, mode, color);
+							if (!brettli.isEmpty())
+								return brettli;
+						}
 					}
 				}
-
 			}
 		}
-
-
-		// TODO für jeden Spieler Karteneinschätzung machen!!!
 
 		return possibleCards;
 	}
 
+	private static Set<Card> getBrettli(Set<Card> possibleCards, Mode mode, Color color) {
+		Set<Card> cards = getCardsOfColor(possibleCards, color);
+		if (isBottomUp(mode))
+			cards = cards.parallelStream().filter(card -> card.getRank() > BRETTLI_BOUNDARY).collect(Collectors.toSet());
+		else {
+			cards = cards.parallelStream().filter(card -> card.getRank() < BRETTLI_BOUNDARY).collect(Collectors.toSet());
+			if (isTopDown(mode))
+				cards = cards.parallelStream().filter(card -> card.getRank() != EIGHT).collect(Collectors.toSet());
+		}
+		return cards;
+	}
+
+	private static boolean isTrumpf(Mode mode) {
+		return !isNotTrumpf(mode);
+	}
+
+	private static boolean isNotTrumpf(Mode mode) {
+		return isBottomUp(mode) || isTopDown(mode);
+	}
+
 	/* TODO: Hey Joel, this is the boolean helperMethod you asked for. If you want to change the return logic (e.g.
-    * return true if you can make 3 Stichs) you shouldn't have any problems, I've written down what the return
+	* return true if you can make 3 Stichs) you shouldn't have any problems, I've written down what the return
     * statements calculated mean in a comment above them.
     * Below: Same for verworfen, returns true if you can make less than one Stich with your worst color (almost always
     * the case; if you want it to be if you are very unlikely to make a Stich, make it return worstRating <= 2,
@@ -203,258 +314,258 @@ public class JassHelper {
     * that below this method.
     * */
 
-    /**
-     * Returns true if the player can make ca. > 65% of the remaining Stichs or at minimum 5 Stich or at minimum
-     * ca. 3 Stichs with his best color (the one to be angezogen)
-     *
-     * @param ownCards - the cards of the player
-     * @param alreadyPlayedCards - the cards which have already been played in the game
-     * @param obeAbe - if Obeabe true, if Undeufe false
-     * @return
-     * @throws Exception
-     */
+	/**
+	 * Returns true if the player can make ca. > 65% of the remaining Stichs or at minimum 5 Stich or at minimum
+	 * ca. 3 Stichs with his best color (the one to be angezogen)
+	 *
+	 * @param ownCards           - the cards of the player
+	 * @param alreadyPlayedCards - the cards which have already been played in the game
+	 * @param obeAbe             - if Obeabe true, if Undeufe false (we only do anziehen if it is trumpf -> therefore obeabe rating is relevant
+	 * @return
+	 * @throws Exception
+	 */
 	private static boolean shouldAnziehen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
-	    // sum is (#Stichs the Player can make) * 19
-	    int sum = 0;
-	    // bestRating is (#Stichs the Player can make with his best color) * 19
-	    int bestRating = 0;
-        int rating;
-        Color bestColor = Color.CLUBS;
-        for (Color color:Color.values()) {
-            if (obeAbe)
-                rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-            else
-                rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-            if (bestRating < rating) {
-                bestRating = rating;
-                bestColor = color;
-            }
-            sum += rating;
-        }
-        Set<Card> cardsOfBestColor = getCardsOfColor(ownCards, bestColor);
-        // As a safety measure ;)
-        if (ownCards.isEmpty())
-            return false;
-        // 65 means: 65% (~2/3) of the remaining Stichs can be made
-        // 100 = 5*20 ~ 5 Stichs => sum >= 95 (-5 for float imprecision as each of the 5 Stichs may be valued with only 19)
-        // means can make at minimum 5 Stichs
-        if (5f*sum/ownCards.size() > 65 || sum >= 95)
-            return true;
-        // 60 is about three Stich (3*20); -3 for float imprecision
-        if (!cardsOfBestColor.isEmpty())
-            return (bestRating >= 57);
-        return false;
-    }
+		// sum is (#Stichs the Player can make) * 19
+		int sum = 0;
+		// bestRating is (#Stichs the Player can make with his best color) * 19
+		int bestRating = 0;
+		int rating;
+		Color bestColor = Color.CLUBS;
+		for (Color color : Color.values()) {
+			if (obeAbe)
+				rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+			else
+				rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+			if (bestRating < rating) {
+				bestRating = rating;
+				bestColor = color;
+			}
+			sum += rating;
+		}
+		Set<Card> cardsOfBestColor = getCardsOfColor(ownCards, bestColor);
+		// As a safety measure ;)
+		if (ownCards.isEmpty())
+			return false;
+		// 65 means: 65% (~2/3) of the remaining Stichs can be made
+		// 100 = 5*20 ~ 5 Stichs => sum >= 95 (-5 for float imprecision as each of the 5 Stichs may be valued with only 19)
+		// means can make at minimum 5 Stichs
+		if (5f * sum / ownCards.size() > 65 || sum >= 95)
+			return true;
+		// 60 is about three Stich (3*20); -3 for float imprecision
+		if (!cardsOfBestColor.isEmpty())
+			return (bestRating >= 57);
+		return false;
+	}
 
-    /**
-     * Returns true if the player can <=1 Stich with the worst color (the one to be verworfen)
-     *
-     * @param ownCards - the cards of the player
-     * @param alreadyPlayedCards - the cards which have already been played in the game
-     * @param obeAbe - if Obeabe true, if Undeufe false
-     * @return
-     * @throws Exception
-     */
-    private static boolean shouldVerwerfen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
-        // sum is (#Stichs the Player can make) * 19
-        int sum = 0;
-        // bestRating is (#Stichs the Player can make with his best color) * 19
-        int worstRating = 0;
-        int rating;
-        Color worstColor = Color.CLUBS;
-        for (Color color:Color.values()) {
-            Set<Card> cardsOfColor = getCardsOfColor(ownCards, color);
-            if (!cardsOfColor.isEmpty()) {
-                if (obeAbe)
-                    rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-                else
-                    rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-                if (worstRating > rating) {
-                    worstRating = rating;
-                    worstColor = color;
-                }
-                sum += rating;
-            }
-        }
-        Set<Card> cardsOfWorstColor = getCardsOfColor(ownCards, worstColor);
-        // As a safety measure ;)
-        if (ownCards.isEmpty())
-            return false;
-        // Can make less than one Stich => verwerfen
-        if (!cardsOfWorstColor.isEmpty())
-            return (worstRating < 20);
-        return false;
-    }
+	/**
+	 * Returns true if the player can <=1 Stich with the worst color (the one to be verworfen)
+	 *
+	 * @param ownCards           - the cards of the player
+	 * @param alreadyPlayedCards - the cards which have already been played in the game
+	 * @param obeAbe             - if Obeabe true, if Undeufe false
+	 * @return
+	 * @throws Exception
+	 */
+	private static boolean shouldVerwerfen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+		// sum is (#Stichs the Player can make) * 19
+		int sum = 0;
+		// bestRating is (#Stichs the Player can make with his best color) * 19
+		int worstRating = 0;
+		int rating;
+		Color worstColor = Color.CLUBS;
+		for (Color color : Color.values()) {
+			Set<Card> cardsOfColor = getCardsOfColor(ownCards, color);
+			if (!cardsOfColor.isEmpty()) {
+				if (obeAbe)
+					rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+				else
+					rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+				if (worstRating > rating) {
+					worstRating = rating;
+					worstColor = color;
+				}
+				sum += rating;
+			}
+		}
+		Set<Card> cardsOfWorstColor = getCardsOfColor(ownCards, worstColor);
+		// As a safety measure ;)
+		if (ownCards.isEmpty())
+			return false;
+		// Can make less than one Stich => verwerfen
+		if (!cardsOfWorstColor.isEmpty())
+			return (worstRating < 20);
+		return false;
+	}
 
-    /**
-     * Returns the best color to be 'angezogen'.
-     *
-     * @param ownCards - the cards of the player
-     * @param alreadyPlayedCards - the cards which have already been played in the game
-     * @param obeAbe - if Obeabe true, if Undeufe false
-     * @return
-     * @throws Exception
-     */
-    private static Color getBestAnziehenColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
-        int bestRating = 0;
-        int rating;
-        Color bestColor = Color.DIAMONDS;
-        for (Color color:Color.values()) {
-            if (obeAbe)
-                rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-            else
-                rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-            if (bestRating < rating) {
-                bestRating = rating;
-                bestColor = color;
-            }
-        }
-        return bestColor;
-    }
+	/**
+	 * Returns the best color to be 'angezogen'.
+	 *
+	 * @param ownCards           - the cards of the player
+	 * @param alreadyPlayedCards - the cards which have already been played in the game
+	 * @param obeAbe             - if Obeabe true, if Undeufe false
+	 * @return
+	 * @throws Exception
+	 */
+	private static Color getBestAnziehenColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+		int bestRating = 0;
+		int rating;
+		Color bestColor = Color.DIAMONDS;
+		for (Color color : Color.values()) {
+			if (obeAbe)
+				rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+			else
+				rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+			if (bestRating < rating) {
+				bestRating = rating;
+				bestColor = color;
+			}
+		}
+		return bestColor;
+	}
 
-    /**
-     * Returns the best color to be 'verworfen' (so the player's worst color, actually).
-     *
-     * @param ownCards - the cards of the player
-     * @param alreadyPlayedCards - the cards which have already been played in the game
-     * @param obeAbe - if Obeabe true, if Undeufe false
-     * @return
-     * @throws Exception
-     */
-    private static Color getBestVerwerfColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
-        int worstRating = 500;
-        int rating;
-        Color worstColor = Color.CLUBS;
-        for (Color color:Color.values()) {
-            if (obeAbe)
-                rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-            else
-                rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
-            if (worstRating > rating) {
-                worstRating = rating;
-                worstColor = color;
-            }
-        }
-        return worstColor;
-    }
+	/**
+	 * Returns the best color to be 'verworfen' (so the player's worst color, actually).
+	 *
+	 * @param ownCards           - the cards of the player
+	 * @param alreadyPlayedCards - the cards which have already been played in the game
+	 * @param obeAbe             - if Obeabe true, if Undeufe false
+	 * @return
+	 * @throws Exception
+	 */
+	private static Color getBestVerwerfColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+		int worstRating = 500;
+		int rating;
+		Color worstColor = Color.CLUBS;
+		for (Color color : Color.values()) {
+			if (obeAbe)
+				rating = rateColorObeAbeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+			else
+				rating = rateColorUndeUfeRespectingAlreadyPlayedCards(ownCards, alreadyPlayedCards, color);
+			if (worstRating > rating) {
+				worstRating = rating;
+				worstColor = color;
+			}
+		}
+		return worstColor;
+	}
 
-    /**
-     * Rates the given color for the Mode ObeAbe respecting the cards that have already been played (e.g. rating a
-     * King higher if the Ace has been played).
-     *
-     * @param ownCards - cards of the player
-     * @param alreadyPlayedCards - cards already played in the round
-     * @param color - the color being rated
-     * @return the rating
-     * @throws Exception
-     */
+	/**
+	 * Rates the given color for the Mode ObeAbe respecting the cards that have already been played (e.g. rating a
+	 * King higher if the Ace has been played).
+	 *
+	 * @param ownCards           - cards of the player
+	 * @param alreadyPlayedCards - cards already played in the round
+	 * @param color              - the color being rated
+	 * @return the rating
+	 * @throws Exception
+	 */
 	public static int rateColorObeAbeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
-	    List<Card> playedCardsOfColor = sortCardsOfColorDescending(alreadyPlayedCards, color);
-        // Get the cards in descending order
-        List<Card> sortedCardsOfColor = sortCardsOfColorDescending(ownCards, color);
-        if (sortedCardsOfColor.isEmpty())
-            return 0;
-        // Number of cards I have that are higher than the nextCard
-        int higherCards = 0;
-        // Number of the cards I have of this color
-        int numberOfMyCards = sortedCardsOfColor.size();
-        // Estimate how safe you make a Stich with your highest card
-        float safety = calculateInitialSafetyObeabeRespectingPlayedCards(sortedCardsOfColor, playedCardsOfColor);
-        // The last card rated
-        Card lastCard = sortedCardsOfColor.get(0);
-        // 1 Stich entspricht 20 ratingPoints
-        float rating = safety * 20;
-        // remove the last card tested
-        sortedCardsOfColor.remove(lastCard);
-        while (sortedCardsOfColor.size() > 0) {
-            // The next card to be tested
-            Card nextCard = sortedCardsOfColor.get(0);
-            // Estimate how safe you Stich with that card
-            int numberOfCardsInbetween = calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(lastCard, nextCard, playedCardsOfColor);
-            higherCards += numberOfCardsInbetween;
-            safety *= safetyOfStichVerwerfen(numberOfMyCards, higherCards, nextCard, lastCard, numberOfCardsInbetween);
-            // How safe is the Stich? * Stichvalue
-            rating += safety * 20;
-            sortedCardsOfColor.remove(0);
-            // One card is higher than the last
-            higherCards++;
-            lastCard = nextCard;
-        }
-        return (int) Math.ceil(rating);
-    }
+		List<Card> playedCardsOfColor = sortCardsOfColorDescending(alreadyPlayedCards, color);
+		// Get the cards in descending order
+		List<Card> sortedCardsOfColor = sortCardsOfColorDescending(ownCards, color);
+		if (sortedCardsOfColor.isEmpty())
+			return 0;
+		// Number of cards I have that are higher than the nextCard
+		int higherCards = 0;
+		// Number of the cards I have of this color
+		int numberOfMyCards = sortedCardsOfColor.size();
+		// Estimate how safe you make a Stich with your highest card
+		float safety = calculateInitialSafetyObeabeRespectingPlayedCards(sortedCardsOfColor, playedCardsOfColor);
+		// The last card rated
+		Card lastCard = sortedCardsOfColor.get(0);
+		// 1 Stich entspricht 20 ratingPoints
+		float rating = safety * 20;
+		// remove the last card tested
+		sortedCardsOfColor.remove(lastCard);
+		while (sortedCardsOfColor.size() > 0) {
+			// The next card to be tested
+			Card nextCard = sortedCardsOfColor.get(0);
+			// Estimate how safe you Stich with that card
+			int numberOfCardsInbetween = calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(lastCard, nextCard, playedCardsOfColor);
+			higherCards += numberOfCardsInbetween;
+			safety *= safetyOfStichVerwerfen(numberOfMyCards, higherCards, nextCard, lastCard, numberOfCardsInbetween);
+			// How safe is the Stich? * Stichvalue
+			rating += safety * 20;
+			sortedCardsOfColor.remove(0);
+			// One card is higher than the last
+			higherCards++;
+			lastCard = nextCard;
+		}
+		return (int) Math.ceil(rating);
+	}
 
-    /**
-     * Rates the given color for the Mode UndeUfe respecting the cards that have already been played (e.g. rating a
-     * Seven higher if the Six has been played).
-     *
-     * @param ownCards - cards of the player
-     * @param alreadyPlayedCards - cards already played in the round
-     * @param color - the color being rated
-     * @return the rating
-     * @throws Exception
-     */
-    public static int rateColorUndeUfeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
-        List<Card> playedCardsOfColor = sortCardsOfColorAscending(alreadyPlayedCards, color);
-        // Get the cards in descending order
-        List<Card> sortedCardsOfColor = sortCardsOfColorAscending(ownCards, color);
-        if (sortedCardsOfColor.isEmpty())
-            return 0;
-        // Number of cards I have that are higher than the nextCard
-        int lowerCards = 0;
-        // Number of the cards I have of this color
-        int numberOfMyCards = sortedCardsOfColor.size();
-        // Estimate how safe you make a Stich with your highest card
-        float safety = calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedCardsOfColor, playedCardsOfColor);
-        // The last card rated
-        Card lastCard = sortedCardsOfColor.get(0);
-        // 1 Stich entspricht 20 ratingPoints
-        float rating = safety * 20;
-        // remove the last card tested
-        sortedCardsOfColor.remove(lastCard);
-        while (sortedCardsOfColor.size() > 0) {
-            // The next card to be tested
-            Card nextCard = sortedCardsOfColor.get(0);
-            // Estimate how safe you Stich with that card
-            int numberOfCardsInbetween = calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(lastCard, nextCard, playedCardsOfColor);
-            lowerCards += numberOfCardsInbetween;
-            safety *= safetyOfStichVerwerfen(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
-            // How safe is the Stich? * Stichvalue
-            rating += safety * 20;
-            sortedCardsOfColor.remove(0);
-            // One card is higher than the last
-            lowerCards++;
-            lastCard = nextCard;
-        }
-        return (int) Math.ceil(rating);
-    }
+	/**
+	 * Rates the given color for the Mode UndeUfe respecting the cards that have already been played (e.g. rating a
+	 * Seven higher if the Six has been played).
+	 *
+	 * @param ownCards           - cards of the player
+	 * @param alreadyPlayedCards - cards already played in the round
+	 * @param color              - the color being rated
+	 * @return the rating
+	 * @throws Exception
+	 */
+	public static int rateColorUndeUfeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
+		List<Card> playedCardsOfColor = sortCardsOfColorAscending(alreadyPlayedCards, color);
+		// Get the cards in descending order
+		List<Card> sortedCardsOfColor = sortCardsOfColorAscending(ownCards, color);
+		if (sortedCardsOfColor.isEmpty())
+			return 0;
+		// Number of cards I have that are higher than the nextCard
+		int lowerCards = 0;
+		// Number of the cards I have of this color
+		int numberOfMyCards = sortedCardsOfColor.size();
+		// Estimate how safe you make a Stich with your highest card
+		float safety = calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedCardsOfColor, playedCardsOfColor);
+		// The last card rated
+		Card lastCard = sortedCardsOfColor.get(0);
+		// 1 Stich entspricht 20 ratingPoints
+		float rating = safety * 20;
+		// remove the last card tested
+		sortedCardsOfColor.remove(lastCard);
+		while (sortedCardsOfColor.size() > 0) {
+			// The next card to be tested
+			Card nextCard = sortedCardsOfColor.get(0);
+			// Estimate how safe you Stich with that card
+			int numberOfCardsInbetween = calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(lastCard, nextCard, playedCardsOfColor);
+			lowerCards += numberOfCardsInbetween;
+			safety *= safetyOfStichVerwerfen(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
+			// How safe is the Stich? * Stichvalue
+			rating += safety * 20;
+			sortedCardsOfColor.remove(0);
+			// One card is higher than the last
+			lowerCards++;
+			lastCard = nextCard;
+		}
+		return (int) Math.ceil(rating);
+	}
 
-    public static int calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(Card lastCard, Card nextCard, List<Card> playedCardsOfColor) {
-        int numberOfCardsInbetween = lastCard.getRank() - nextCard.getRank() - 1;
-        for (Card card : playedCardsOfColor) {
-            int rank = card.getRank();
-            if (rank < lastCard.getRank() && rank > nextCard.getRank()) {
-                numberOfCardsInbetween--;
-            }
-        }
-        if (numberOfCardsInbetween < 0)
-            return 0;
-        return numberOfCardsInbetween;
-    }
+	public static int calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(Card lastCard, Card nextCard, List<Card> playedCardsOfColor) {
+		int numberOfCardsInbetween = lastCard.getRank() - nextCard.getRank() - 1;
+		for (Card card : playedCardsOfColor) {
+			int rank = card.getRank();
+			if (rank < lastCard.getRank() && rank > nextCard.getRank()) {
+				numberOfCardsInbetween--;
+			}
+		}
+		if (numberOfCardsInbetween < 0)
+			return 0;
+		return numberOfCardsInbetween;
+	}
 
-    public static int calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(Card lastCard, Card nextCard, List<Card> playedCardsOfColor) {
-        int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
-        for (Card card : playedCardsOfColor) {
-            int rank = card.getRank();
-            if (rank > lastCard.getRank() && rank < nextCard.getRank()) {
-                numberOfCardsInbetween--;
-            }
-        }
-        if (numberOfCardsInbetween < 0)
-            return 0;
-        return numberOfCardsInbetween;
-    }
+	public static int calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(Card lastCard, Card nextCard, List<Card> playedCardsOfColor) {
+		int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
+		for (Card card : playedCardsOfColor) {
+			int rank = card.getRank();
+			if (rank > lastCard.getRank() && rank < nextCard.getRank()) {
+				numberOfCardsInbetween--;
+			}
+		}
+		if (numberOfCardsInbetween < 0)
+			return 0;
+		return numberOfCardsInbetween;
+	}
 
-    /**
+	/**
 	 * Get all of my cards which can win the round.
 	 *
 	 * @param possibleCards
@@ -575,7 +686,7 @@ public class JassHelper {
 	}
 
 	/**
-	 * Checks if the current player is the first player in the round
+	 * Checks if the current player is the first player in the current round
 	 *
 	 * @param round
 	 * @return
@@ -585,7 +696,7 @@ public class JassHelper {
 	}
 
 	/**
-	 * Checks if the current player is the second player in the round
+	 * Checks if the current player is the second player in the current round
 	 *
 	 * @param round
 	 * @return
@@ -595,7 +706,7 @@ public class JassHelper {
 	}
 
 	/**
-	 * Checks if the current player is the third player in the round
+	 * Checks if the current player is the third player in the current round
 	 *
 	 * @param round
 	 * @return
@@ -605,7 +716,7 @@ public class JassHelper {
 	}
 
 	/**
-	 * Checks if the current player is the last player in the round
+	 * Checks if the current player is the last player in the current round
 	 *
 	 * @param round
 	 * @return
@@ -615,7 +726,7 @@ public class JassHelper {
 	}
 
 	/**
-	 * Checks if the partner has already played a card in the round
+	 * Checks if the partner has already played a card in the current round
 	 *
 	 * @param round
 	 * @return
@@ -655,7 +766,7 @@ public class JassHelper {
 	 */
 	public static Set<Card> getTrumps(Set<Card> cards, Mode mode) {
 		return cards.parallelStream()
-				.filter(card -> card.getColor().equals(mode.getTrumpfColor()))
+				.filter(card -> hasTrumpfColor(card, mode))
 				.collect(Collectors.toSet());
 	}
 
@@ -668,7 +779,7 @@ public class JassHelper {
 	 */
 	public static Set<Card> getNotTrumps(Set<Card> cards, Mode mode) {
 		return cards.parallelStream()
-				.filter(card -> !card.getColor().equals(mode.getTrumpfColor()))
+				.filter(card -> !hasTrumpfColor(card, mode))
 				.collect(Collectors.toSet());
 	}
 
@@ -732,7 +843,7 @@ public class JassHelper {
 	}
 
 	public static int rateColorForTrumpf(Set<Card> cards, Color color) throws Exception {
-		Set<Card> cardsOfColor = JassHelper.getCardsOfColor(cards, color);
+		Set<Card> cardsOfColor = getCardsOfColor(cards, color);
 		if (cardsOfColor.size() <= 1)
 			return 0;
 		List<Card> cardsOfColorL = new ArrayList<>(cardsOfColor);
@@ -867,12 +978,12 @@ public class JassHelper {
 	}
 
 	public static List<Card> sortCardsOfColorDescending(Set<Card> cards, Color color) {
-		Set<Card> cardsOfColor = JassHelper.getCardsOfColor(cards, color);
+		Set<Card> cardsOfColor = getCardsOfColor(cards, color);
 		return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank).reversed()).collect(Collectors.toList());
 	}
 
 	public static List<Card> sortCardsOfColorAscending(Set<Card> cards, Color color) {
-		Set<Card> cardsOfColor = JassHelper.getCardsOfColor(cards, color);
+		Set<Card> cardsOfColor = getCardsOfColor(cards, color);
 		return cardsOfColor.stream().sorted(Comparator.comparing(Card::getRank)).collect(Collectors.toList());
 	}
 
@@ -886,29 +997,28 @@ public class JassHelper {
 		return safety;
 	}
 
-    public static float calculateInitialSafetyObeabeRespectingPlayedCards(List<Card> sortedCards, List<Card> alreadyPlayedCards) {
-	    if (alreadyPlayedCards.isEmpty())
-	        return calculateInitialSafetyObeabe(sortedCards);
-        Card nextCard = sortedCards.get(0);
-        Card nextPlayedCard = alreadyPlayedCards.get(0);
-        int rank = nextCard.getRank();
-        float safety = 1;
-        // Probability that my partner has all the higher cards
-        for (int i = 0; i < 9 - rank; i++)
-            if (nextPlayedCard.getRank() != 9 - i) {
-                safety /= 3;
-            }
-            else {
-                if (!alreadyPlayedCards.isEmpty())
-                    alreadyPlayedCards.remove(0);
-                if (!alreadyPlayedCards.isEmpty())
-                    nextPlayedCard = alreadyPlayedCards.get(0);
-            }
-        return safety;
-    }
+	public static float calculateInitialSafetyObeabeRespectingPlayedCards(List<Card> sortedCards, List<Card> alreadyPlayedCards) {
+		if (alreadyPlayedCards.isEmpty())
+			return calculateInitialSafetyObeabe(sortedCards);
+		Card nextCard = sortedCards.get(0);
+		Card nextPlayedCard = alreadyPlayedCards.get(0);
+		int rank = nextCard.getRank();
+		float safety = 1;
+		// Probability that my partner has all the higher cards
+		for (int i = 0; i < 9 - rank; i++)
+			if (nextPlayedCard.getRank() != 9 - i) {
+				safety /= 3;
+			} else {
+				if (!alreadyPlayedCards.isEmpty())
+					alreadyPlayedCards.remove(0);
+				if (!alreadyPlayedCards.isEmpty())
+					nextPlayedCard = alreadyPlayedCards.get(0);
+			}
+		return safety;
+	}
 
 
-    public static float calculateInitialSafetyUndeUfe(List<Card> sortedCards) {
+	public static float calculateInitialSafetyUndeUfe(List<Card> sortedCards) {
 		Card nextCard = sortedCards.get(0);
 		int rank = nextCard.getRank();
 		float safety = 1;
@@ -918,26 +1028,25 @@ public class JassHelper {
 		return safety;
 	}
 
-    public static float calculateInitialSafetyUndeUfeRespectingPlayedCards(List<Card> sortedCards, List<Card> alreadyPlayedCards) {
-        if (alreadyPlayedCards.isEmpty())
-            return calculateInitialSafetyUndeUfe(sortedCards);
-        Card nextCard = sortedCards.get(0);
-        Card nextPlayedCard = alreadyPlayedCards.get(0);
-        int rank = nextCard.getRank();
-        float safety = 1;
-        // Probability that my partner has all the higher cards
-        for (int i = 0; i < rank - 1; i++)
-            if (nextPlayedCard.getRank() != i + 1) {
-                safety /= 3;
-            }
-            else {
-                if (!alreadyPlayedCards.isEmpty())
-                    alreadyPlayedCards.remove(0);
-                if (!alreadyPlayedCards.isEmpty())
-                    nextPlayedCard = alreadyPlayedCards.get(0);
-            }
-        return safety;
-    }
+	public static float calculateInitialSafetyUndeUfeRespectingPlayedCards(List<Card> sortedCards, List<Card> alreadyPlayedCards) {
+		if (alreadyPlayedCards.isEmpty())
+			return calculateInitialSafetyUndeUfe(sortedCards);
+		Card nextCard = sortedCards.get(0);
+		Card nextPlayedCard = alreadyPlayedCards.get(0);
+		int rank = nextCard.getRank();
+		float safety = 1;
+		// Probability that my partner has all the higher cards
+		for (int i = 0; i < rank - 1; i++)
+			if (nextPlayedCard.getRank() != i + 1) {
+				safety /= 3;
+			} else {
+				if (!alreadyPlayedCards.isEmpty())
+					alreadyPlayedCards.remove(0);
+				if (!alreadyPlayedCards.isEmpty())
+					nextPlayedCard = alreadyPlayedCards.get(0);
+			}
+		return safety;
+	}
 
 	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
 		// Have the next-higher card => probability to stich is the same as with the next higher card
@@ -948,18 +1057,18 @@ public class JassHelper {
 			return 1 - ((float) 2 / 3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsInbetween));
 	}
 
-    private static float safetyOfStichVerwerfen(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
-        // Have the next-higher card => probability to stich is the same as with the next higher card
-        if (numberOfCardsInbetween == 0)
-            return 1;
+	private static float safetyOfStichVerwerfen(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
+		// Have the next-higher card => probability to stich is the same as with the next higher card
+		if (numberOfCardsInbetween == 0)
+			return 1;
 
-        float safetyFactor = 1;
-        // For each card inbetweeen, reduce safety to a fourth
-        for (int i = 0; i < numberOfCardsInbetween; i++) {
-            safetyFactor *= 0.25;
-        }
-        return safetyFactor;
-    }
+		float safetyFactor = 1;
+		// For each card inbetweeen, reduce safety to a fourth
+		for (int i = 0; i < numberOfCardsInbetween; i++) {
+			safetyFactor *= 0.25;
+		}
+		return safetyFactor;
+	}
 
 	private static float enemenyHasNoMoreCards(int numberOfMyCards, int higherCards, int numberOfCardsBetween) throws Exception {
 		float estimate = 1;
@@ -1006,7 +1115,7 @@ public class JassHelper {
 			// The next card to be tested
 			Card nextCard = sortedCards.get(0);
 			// Estimate how safe you Stich with that card
-            int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
+			int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
 			safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
 			// How safe is the Stich? * Stichvalue
 			rating += safety * 20;

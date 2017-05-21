@@ -37,7 +37,7 @@ public class JassHelperTest {
         round.makeMove(new CardMove(secondPlayer, Card.CLUB_JACK));
         round.makeMove(new CardMove(thirdPlayer, Card.CLUB_QUEEN));
         Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_KING);
-        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer);
+        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer, EnumSet.noneOf(Card.class));
         Set<Card> expectedCards = EnumSet.of(Card.CLUB_KING);
         assertEquals(expectedCards, refinedCards);
     }
@@ -49,7 +49,7 @@ public class JassHelperTest {
         round.makeMove(new CardMove(secondPlayer, Card.CLUB_JACK));
         round.makeMove(new CardMove(thirdPlayer, Card.CLUB_QUEEN));
         Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_KING, Card.DIAMOND_JACK);
-        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer);
+        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer, EnumSet.noneOf(Card.class));
         Set<Card> expectedCards = EnumSet.of(Card.CLUB_KING);
         assertEquals(expectedCards, refinedCards);
     }
@@ -61,7 +61,7 @@ public class JassHelperTest {
         round.makeMove(new CardMove(secondPlayer, Card.CLUB_JACK));
         round.makeMove(new CardMove(thirdPlayer, Card.CLUB_QUEEN));
         Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_JACK, Card.DIAMOND_NINE);
-        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer);
+        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer, EnumSet.noneOf(Card.class));
         Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_JACK, Card.DIAMOND_NINE);
         assertEquals(expectedCards, refinedCards);
         assertTrue(round.calculateScore() > 10);
@@ -74,7 +74,7 @@ public class JassHelperTest {
         round.makeMove(new CardMove(secondPlayer, Card.CLUB_JACK));
         round.makeMove(new CardMove(thirdPlayer, Card.CLUB_QUEEN));
         Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN);
-        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer);
+        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, lastPlayer, EnumSet.noneOf(Card.class));
         assertEquals(cards, refinedCards);
         assertTrue(round.calculateScore() < 10);
     }
@@ -90,7 +90,7 @@ public class JassHelperTest {
         Player player = firstPlayer;
         player.setCards(cards);
         Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.DIAMOND_EIGHT);
-        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, player);
+        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, player, EnumSet.noneOf(Card.class));
         assertEquals(expectedCards, refinedCards);
     }
 
@@ -100,7 +100,7 @@ public class JassHelperTest {
         Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
         Player player = firstPlayer;
         player.setCards(cards);
-        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, player);
+        Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, round, player, EnumSet.noneOf(Card.class));
         Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
         assertEquals(expectedCards, refinedCards);
     }

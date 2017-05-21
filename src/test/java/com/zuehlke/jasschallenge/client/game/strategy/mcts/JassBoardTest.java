@@ -48,14 +48,14 @@ public class JassBoardTest {
     public void refineMovesWithJassKnowledgeWhenNotFiltering() throws Exception {
         JassBoard jassBoard = new JassBoard(allCards, diamondsGame, true);
         Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
-        assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame.getCurrentRound(), diamondsGame.getCurrentPlayer()), possibleCards);
+        assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame), possibleCards);
     }
 
     @Test
     public void refineMovesWithJassKnowledgeNeverRemovesAllCards() throws Exception {
         JassBoard jassBoard = new JassBoard(allCards, diamondsGame, true);
         Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
-        assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame.getCurrentRound(), diamondsGame.getCurrentPlayer()), possibleCards);
+        assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame), possibleCards);
     }
 
     @Test

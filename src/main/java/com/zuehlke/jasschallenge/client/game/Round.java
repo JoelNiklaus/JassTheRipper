@@ -53,6 +53,14 @@ public class Round implements Serializable {
 		playingOrder.moveToNextPlayer();
 	}
 
+	public Card getCardOfPlayer(Player player) {
+		for (Move move: moves) {
+			if (move.getPlayer().equals(player))
+				return move.getPlayedCard();
+		}
+		return null;
+	}
+
 	public int getRoundNumber() {
 		return roundNumber;
 	}
