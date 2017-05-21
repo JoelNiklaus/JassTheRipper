@@ -207,29 +207,39 @@ public class JassHelper {
 		/**
 		 * VERWERFEN (Nachricht empfangen)
 		 */
+		// TODO this has to be more thoroughly thought through! What if I am really good at the color I should not play now?
+		/*
 		Color verworfen = detectVerwerfen(game);
 		Set<Card> cardsVerworfenColor = getCardsOfColor(possibleCards, verworfen);
-		if(verworfen != null && cardsVerworfenColor.size() < possibleCards.size()) {
+		if (startingPlayer(round) && verworfen != null
+				&& cardsVerworfenColor.size() < possibleCards.size()) {
 			possibleCards.removeAll(cardsVerworfenColor);
 		}
+		*/
 
 		/**
 		 * ANZIEHEN (Nachricht empfangen)
 		 */
+		// TODO this has to be more thoroughly thought through! What if there are no trumps left and I can just do all the obeabe stichs?
+		/*
 		Color angezogen = detectAnziehen(game);
 		Set<Card> cardsAngezogenColor = getCardsOfColor(possibleCards, angezogen);
-		if(verworfen != null && !cardsAngezogenColor.isEmpty())
+		if (startingPlayer(round) && verworfen != null
+				&& !cardsAngezogenColor.isEmpty())
 			return cardsAngezogenColor;
+		*/
 
 		/**
 		 * ANZIEHEN STARTING (Nachricht senden)
 		 */
+		/*
 		if (shouldAnziehenStarting(possibleCards, round, alreadyPlayedCards, mode)) {
 			Color color = getBestAnziehenColor(possibleCards, alreadyPlayedCards, true);
 			Set<Card> brettli = getBrettli(possibleCards, mode, color);
 			if (!brettli.isEmpty())
 				return brettli;
 		}
+		*/
 
 		// wenn partner schon gespielt hat
 		if (hasPartnerAlreadyPlayed(round)) {
@@ -258,6 +268,7 @@ public class JassHelper {
 					/**
 					 * VERWERFEN (Nachricht senden)
 					 */
+					/*
 					if (!isTrumpf(mode)) {
 						// if at least one color is good -> get best color
 						if (shouldVerwerfen(possibleCards, alreadyPlayedCards, isTopDown(mode))) {
@@ -267,11 +278,11 @@ public class JassHelper {
 								return brettli;
 						}
 					}
+					*/
 					/**
 					 * ANZIEHEN LATER (Nachricht senden)
 					 */
-					// look for a not trumpf color where i have a king or queen but someone else has the ace
-					// -> play small card so king or queen gets bock
+					/*
 					else {
 						if (shouldAnziehen(possibleCards, alreadyPlayedCards, true)) {
 							Color color = getBestAnziehenColor(possibleCards, alreadyPlayedCards, true);
@@ -280,6 +291,7 @@ public class JassHelper {
 								return brettli;
 						}
 					}
+					*/
 				}
 			}
 		}
