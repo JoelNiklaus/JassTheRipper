@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class MCTSTest {
 
+	public static final long ENDING_TIME = System.currentTimeMillis() + 500; // 500 ms
+
 	@Test
 	public void testMCTSStart() throws Exception {
 		final GameSession gameSession = GameSessionBuilder.newSession()
@@ -22,8 +24,7 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		long endingTime = System.nanoTime() + 1000000 * 500;
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), endingTime, true);
+		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), ENDING_TIME, true);
 
 	}
 
@@ -42,8 +43,7 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		long endingTime = System.nanoTime() + 1000000 * 500;
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), endingTime, true);
+		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), ENDING_TIME, true);
 
 	}
 
@@ -72,8 +72,7 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		long endingTime = System.nanoTime() + 1000000 * 500;
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), endingTime, true);
+		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), ENDING_TIME, true);
 
 	}
 
