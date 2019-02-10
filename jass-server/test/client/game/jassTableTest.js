@@ -1,0 +1,166 @@
+
+
+import {expect} from 'chai';
+import React from 'react';
+import {default as GameStore, CardType, GameState, PlayerType} from '../../../client/js/game/gameStore';
+import CardTypeSwitcher from '../../../client/js/game/cardTypeSwitcher.jsx';
+import JassCarpet from '../../../client/js/game/jassCarpet.jsx';
+import Points from '../../../client/js/game/points.jsx';
+import PlayerCards from '../../../client/js/game/playerCards.jsx';
+import SpectatorControls from '../../../client/js/game/spectatorControls.jsx';
+import WinnerNotification from '../../../client/js/game/winnerNotification.jsx';
+import * as Card from '../../../shared/deck/card';
+
+import TestUtils from 'react-addons-test-utils';
+
+import JassTable from '../../../client/js/game/jassTable.jsx';
+import {CardColor} from '../../../shared/deck/cardColor';
+
+describe('JassTable Component', () => {
+
+    const shallowRenderer = TestUtils.createRenderer();
+
+    let initialGameState;
+
+    beforeEach(() => {
+        initialGameState = GameStore.state;
+    });
+
+    afterEach(() => {
+        GameStore.state = initialGameState;
+    });
+
+    it('should render a div element with id', () => {
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        expect(actual.type).to.equal('div');
+        expect(actual.props.id).to.equal('jassTable');
+    });
+
+    it('should render children when player', () => {
+        GameStore.state.status = GameState.REQUESTING_CARD;
+        GameStore.state.playerType = PlayerType.PLAYER;
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let children = actual.props.children;
+        expect(children.length).to.equal(7);
+        expect(children[0].type).to.equal(CardTypeSwitcher);
+        expect(children[1].type).to.equal(JassCarpet);
+        expect(children[2].type).to.equal(Points);
+        expect(children[3].type).to.equal(PlayerCards);
+        expect(children[4]).to.equal(undefined);
+        expect(children[5]).to.equal(undefined);
+        expect(children[6]).to.equal(undefined);
+    });
+
+    it('should render children when spectator', () => {
+        GameStore.state.status = GameState.REQUESTING_CARD;
+        GameStore.state.playerType = PlayerType.SPECTATOR;
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let children = actual.props.children;
+        expect(children.length).to.equal(7);
+        expect(children[0].type).to.equal(CardTypeSwitcher);
+        expect(children[1].type).to.equal(JassCarpet);
+        expect(children[2].type).to.equal(Points);
+        expect(children[3]).to.equal(undefined);
+        expect(children[4]).to.equal(undefined);
+        expect(children[5].type).to.equal(SpectatorControls);
+        expect(children[6]).to.equal(undefined);
+    });
+
+    it('should pass correct properties to JassCarpet', () => {
+        GameStore.state.cardType = CardType.GERMAN;
+        GameStore.state.players = ['player1'];
+        GameStore.state.playerSeating = ['playerSeating'];
+        GameStore.state.tableCards = ['card'];
+        GameStore.state.startingPlayerIndex = 1;
+        GameStore.state.nextStartingPlayerIndex = 2;
+        GameStore.state.mode = 'mode';
+        GameStore.state.color = 'color';
+        GameStore.state.roundPlayerIndex = 0;
+
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let jassCarpet = actual.props.children[1];
+        expect(jassCarpet.props.cardType).to.equal(GameStore.state.cardType);
+        expect(jassCarpet.props.players).to.eql(GameStore.state.players);
+        expect(jassCarpet.props.playerSeating).to.eql(GameStore.state.playerSeating);
+        expect(jassCarpet.props.cards).to.eql(GameStore.state.tableCards);
+        expect(jassCarpet.props.startingPlayerIndex).to.equal(GameStore.state.startingPlayerIndex);
+        expect(jassCarpet.props.nextStartingPlayerIndex).to.equal(GameStore.state.nextStartingPlayerIndex);
+        expect(jassCarpet.props.mode).to.equal(GameStore.state.mode);
+        expect(jassCarpet.props.color).to.equal(GameStore.state.color);
+        expect(jassCarpet.props.roundPlayerIndex).to.equal(GameStore.state.roundPlayerIndex);
+    });
+
+    it('should pass correct properties to Points', () => {
+        GameStore.state.teams = [
+            {
+                name: 'Team 1'
+            },
+            {
+                name: 'Team 2'
+            }
+        ];
+
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let points = actual.props.children[2];
+        expect(points.props.teams).to.equal(GameStore.state.teams);
+    });
+
+    it('should pass correct properties to PlayerCards', () => {
+        GameStore.state.playerType = PlayerType.PLAYER;
+        GameStore.state.playerCards = [Card.create(9,CardColor.CLUBS), Card.create(10,CardColor.CLUBS)];
+        GameStore.state.cardType = CardType.FRENCH;
+        GameStore.state.status = GameState.REQUESTING_CARD;
+        GameStore.state.tableCards = [Card.create(7,CardColor.CLUBS), Card.create(8,CardColor.CLUBS)];
+        GameStore.state.mode = 'mode';
+        GameStore.state.color = 'color';
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let playerCards = actual.props.children[3];
+        expect(playerCards.props.cards).to.eql(GameStore.state.playerCards);
+        expect(playerCards.props.cardType).to.equal(GameStore.state.cardType);
+        expect(playerCards.props.state).to.equal(GameStore.state.status);
+        expect(playerCards.props.tableCards).to.equal(GameStore.state.tableCards);
+        expect(playerCards.props.mode).to.equal(GameStore.state.mode);
+        expect(playerCards.props.color).to.equal(GameStore.state.color);
+    });
+
+    it('should pass correct properties to RequestTrumpf', () => {
+        GameStore.state.isGeschoben = true;
+        GameStore.state.cardType = CardType.FRENCH;
+        GameStore.state.status = GameState.REQUESTING_TRUMPF;
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let requestTrumpf = actual.props.children[4];
+        expect(requestTrumpf.props.isGeschoben).to.equal(GameStore.state.isGeschoben);
+        expect(requestTrumpf.props.cardType).to.equal(GameStore.state.cardType);
+    });
+
+    it('should show winnerNotification when Game Finished', () => {
+        GameStore.state.status = GameState.FINISHED;
+
+        shallowRenderer.render(React.createElement(JassTable));
+        let actual = shallowRenderer.getRenderOutput();
+
+        let winnerNotification = actual.props.children[6];
+        expect(winnerNotification.type).to.equal(WinnerNotification);
+        expect(winnerNotification.props.teams).to.equal(GameStore.state.teams);
+    });
+});
