@@ -46,14 +46,12 @@ public class JassBoardTest {
 
     @Test
     public void refineMovesWithJassKnowledgeWhenNotFiltering() throws Exception {
-        JassBoard jassBoard = new JassBoard(allCards, diamondsGame, true);
         Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
         assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame), possibleCards);
     }
 
     @Test
     public void refineMovesWithJassKnowledgeNeverRemovesAllCards() throws Exception {
-        JassBoard jassBoard = new JassBoard(allCards, diamondsGame, true);
         Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
         assertEquals(JassHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame), possibleCards);
     }
@@ -62,29 +60,29 @@ public class JassBoardTest {
     public void getMoves() throws Exception {
         for (int i = 0; i < 100; i++) {
             JassBoard jassBoard = new JassBoard(cards1, diamondsGame, true);
-            assertTrue(jassBoard.getMoves(CallLocation.playout).size() > 0);
-            assertTrue(jassBoard.getMoves(CallLocation.treePolicy).size() > 0);
+            assertFalse(jassBoard.getMoves(CallLocation.playout).isEmpty());
+            assertFalse(jassBoard.getMoves(CallLocation.treePolicy).isEmpty());
         }
     }
 
     @Test
     public void getMovesObeAbe() throws Exception {
         for (int i = 0; i < 100; i++) {
-            JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, false);
+            JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, true);
             // should not get filtered
-            assertEquals(jassBoard.getMoves(CallLocation.playout).size(), 9);
-            assertEquals(jassBoard.getMoves(CallLocation.treePolicy).size(), 9);
+            assertEquals(9, jassBoard.getMoves(CallLocation.playout).size());
+            assertEquals(9, jassBoard.getMoves(CallLocation.treePolicy).size());
         }
     }
 
     @Test
     public void getMovesNeverReturnsEmptyArrayList() throws Exception {
         for (int i = 0; i < 100; i++) {
-            JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, false);
+            JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, true);
             // should not get filtered
-            JassBoard jassBoard2 = new JassBoard(JassHelper.testPickRandomSubSet(allCards, 9), obeAbeGame, false);
-            assertTrue(jassBoard2.getMoves(CallLocation.playout).size() > 0);
-            assertTrue(jassBoard2.getMoves(CallLocation.treePolicy).size() > 0);
+            JassBoard jassBoard2 = new JassBoard(JassHelper.testPickRandomSubSet(allCards, 9), obeAbeGame, true);
+            assertFalse(jassBoard2.getMoves(CallLocation.playout).isEmpty());
+            assertFalse(jassBoard2.getMoves(CallLocation.treePolicy).isEmpty());
         }
     }
 
