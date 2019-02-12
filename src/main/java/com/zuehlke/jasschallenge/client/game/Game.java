@@ -13,7 +13,6 @@ import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStar
 public class Game implements Serializable {
 	public static final int LAST_ROUND_NUMBER = 8;
 	private final Mode mode;
-	private final PlayingOrder order;
 	private Round currentRound;
 	private final Result result;
 	private final boolean shifted;
@@ -22,8 +21,6 @@ public class Game implements Serializable {
 
 	private Game(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
 		this.mode = mode;
-		this.order = order;
-
 		this.currentRound = Round.createRound(mode, 0, order);
 		this.result = new Result(teams.get(0), teams.get(1));
 		this.shifted = shifted;
@@ -37,7 +34,6 @@ public class Game implements Serializable {
 	public Game(Game game) {
 		synchronized (game) {
 			this.mode = game.getCurrentRoundMode(); // TODO maybe we have to copy mode too somehow
-			this.order = new PlayingOrder(game.getOrder());
 			this.currentRound = new Round(game.getCurrentRound());
 			this.result = new Result(game.getResult());
 			this.shifted = game.isShifted();
@@ -110,13 +106,13 @@ public class Game implements Serializable {
 	}
 
 	private Round createNextRound() {
-		final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(order.getPlayerInOrder(), currentRound.getWinner());
+		final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(getOrder().getPlayerInOrder(), currentRound.getWinner());
 		final int nextRoundNumber = currentRound.getRoundNumber() + 1;
 		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
 	}
 
 	public Player getPartnerOfPlayer(Player player) {
-		for (Player other: order.getPlayerInOrder()) {
+		for (Player other: getOrder().getPlayerInOrder()) {
 			if (other.isPartner(player))
 				return other;
 		}
@@ -132,7 +128,7 @@ public class Game implements Serializable {
 	}
 
 	public PlayingOrder getOrder() {
-		return order;
+		return currentRound.getPlayingOrder();
 	}
 
 	@Override
@@ -144,7 +140,6 @@ public class Game implements Serializable {
 
 		if (shifted != game.shifted) return false;
 		if (!mode.equals(game.mode)) return false;
-		if (!order.equals(game.order)) return false;
 		if (!currentRound.equals(game.currentRound)) return false;
 		if (!result.equals(game.result)) return false;
 		return previousRounds.equals(game.previousRounds);
@@ -153,7 +148,6 @@ public class Game implements Serializable {
 	@Override
 	public int hashCode() {
 		int result1 = mode.hashCode();
-		result1 = 31 * result1 + order.hashCode();
 		result1 = 31 * result1 + currentRound.hashCode();
 		result1 = 31 * result1 + result.hashCode();
 		result1 = 31 * result1 + (shifted ? 1 : 0);
