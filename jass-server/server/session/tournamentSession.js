@@ -6,7 +6,7 @@ import * as SingleGameSession from './singleGameSession';
 import * as _ from 'lodash';
 import nameGenerator from 'docker-namesgenerator';
 
-const clientRequestTimeoutInMillis = 500;
+const clientRequestTimeoutInMillis = 1000;
 
 function getPairingsPerRound(players) {
     return _.flatMap(players, (player, index) => {
