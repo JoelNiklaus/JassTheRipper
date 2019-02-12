@@ -1188,7 +1188,7 @@ public class JassHelper {
 					System.err.println("Could not remove picked cards from remaining cards");
 				assert !remainingCards.containsAll(cards);
 			} else
-				cards = Helper.copy(availableCards);
+				cards = EnumSet.copyOf(availableCards);
 
 			player.setCards(cards);
 		}
@@ -1225,7 +1225,7 @@ public class JassHelper {
 	 * @return
 	 */
 	public static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
-		Set<Card> cards = Collections.synchronizedSet(EnumSet.allOf(Card.class));
+		Set<Card> cards = EnumSet.allOf(Card.class);
 		assert cards.size() == 36;
 		cards.removeAll(availableCards);
 		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();

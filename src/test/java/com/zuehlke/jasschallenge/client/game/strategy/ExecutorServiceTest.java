@@ -33,8 +33,7 @@ public class ExecutorServiceTest {
 
 		startTime = System.nanoTime();
 		threadpool.shutdown();
-		if(threadpool.isTerminated())
+		if (threadpool.isTerminated())
 			System.out.println(System.nanoTime() - startTime);
 	}
-
 }

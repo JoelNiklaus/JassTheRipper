@@ -33,7 +33,7 @@ public class JassBoard implements Board, Serializable {
 	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) throws Exception {
 		long startTime = System.currentTimeMillis();
 
-		this.availableCards = Helper.copy(availableCards);
+		this.availableCards = EnumSet.copyOf(availableCards);
 
 		this.game = new Game(game);
 		// INFO: The version with copy constructors is around factor 10 more efficient than the other versions
@@ -75,7 +75,7 @@ public class JassBoard implements Board, Serializable {
 
 		ArrayList<Move> moves = new ArrayList<>();
 		final Player player = game.getCurrentPlayer();
-		Set<Card> possibleCards = JassHelper.getPossibleCards(Helper.copy(player.getCards()), game);
+		Set<Card> possibleCards = JassHelper.getPossibleCards(EnumSet.copyOf(player.getCards()), game);
 
 		assert (possibleCards.size() > 0);
 
