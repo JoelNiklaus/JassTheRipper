@@ -47,8 +47,8 @@ public class Application {
 
 
 		//startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
-		//startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
-		startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
+		startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
+		//startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
 		//startGame(websocketUrl, jassTheRipperRandomCard, SessionType.TOURNAMENT);
 
 	}
