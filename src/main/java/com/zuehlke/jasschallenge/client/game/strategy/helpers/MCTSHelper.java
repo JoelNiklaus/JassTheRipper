@@ -74,7 +74,7 @@ public class MCTSHelper {
 
 			HashMap<Card, Integer> numberOfSelections = new HashMap<>();
 			for (int i = 0; i < numberOfMCTSRuns; i++) {
-				Card card = predictCard(availableCards, game, mcts, timePerRun);
+				Card card = predictCard(availableCards, game, mcts, System.currentTimeMillis() + timePerRun);
 				int number = 1;
 				if (numberOfSelections.containsKey(card)) {
 					number += numberOfSelections.get(card);
