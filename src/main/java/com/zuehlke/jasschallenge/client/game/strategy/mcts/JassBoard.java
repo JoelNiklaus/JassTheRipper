@@ -36,6 +36,7 @@ public class JassBoard implements Board, Serializable {
 		this.availableCards = Helper.copy(availableCards);
 
 		this.game = new Game(game);
+		// INFO: The version with copy constructors is around factor 10 more efficient than the other versions
 		//this.game = (Game) DeepCopy.copy(game);
 		//this.game = (Game) new Cloner().deepClone(game);
 		//this.game = ObjectCloner.deepCopySerialization(game);

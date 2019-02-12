@@ -868,7 +868,7 @@ public class JassHelper {
 			max = rateUndeufe(availableCards);
 		}
 		System.out.println("ChooseTrumpf succeeded!");
-		if (max < JassTheRipperJassStrategy.MAX_SCHIFT_RATING_VAL && !isGschobe)
+		if (max < JassTheRipperJassStrategy.MAX_SHIFT_RATING_VAL && !isGschobe)
 			return Mode.shift();
 		return prospectiveMode;
 	}

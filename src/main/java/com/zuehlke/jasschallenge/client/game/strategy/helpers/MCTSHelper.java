@@ -4,6 +4,7 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -33,10 +34,8 @@ public class MCTSHelper {
 		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
 		if (possibleCards.size() == 1) {
-			for (Card card : possibleCards) {
-				System.out.println("Based on expert Jass Knowledge there is only one sensible card available now.");
-				return card;
-			}
+			System.out.println("Based on expert Jass Knowledge there is only one sensible card available now.");
+			return (Card) possibleCards.toArray()[0];
 		}
 
 		MCTS mcts = new MCTS();
@@ -100,7 +99,7 @@ public class MCTSHelper {
 	 * @return
 	 */
 	private static Card predictCard(Set<Card> availableCards, Game game, MCTS mcts, long endingTime) throws Exception {
-		JassBoard jassBoard = new JassBoard(availableCards, game, true);
+		Board jassBoard = new JassBoard(availableCards, game, true);
 		Move move = mcts.runMCTS_UCT(jassBoard, endingTime, false);
 		return ((CardMove) move).getPlayedCard();
 	}

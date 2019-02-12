@@ -54,7 +54,7 @@ public class Round implements Serializable {
 	}
 
 	public Card getCardOfPlayer(Player player) {
-		for (Move move: moves) {
+		for (Move move : moves) {
 			if (move.getPlayer().equals(player))
 				return move.getPlayedCard();
 		}

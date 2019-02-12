@@ -43,20 +43,23 @@ public class MCTS {
 		long startTime = System.currentTimeMillis();
 
 		if (!rootParallelisation) {
-			System.out.println("not parallelised :(");
+			System.out.println("Not parallelised :(");
 			Node rootNode = new Node(startingBoard);
 			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
 			bestMoveFound = finalMoveSelection(rootNode);
 
 		} else {
-			System.out.println("parallelised with " + threads + " threads :)");
+			System.out.println("Parallelised with " + threads + " threads :)");
+			System.out.println(endingTime - startTime + "ms thinking time left.");
 			for (int i = 0; i < threads; i++)
 				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, endingTime)));
 
 			try {
 
-				while (!checkDone(futures))
+				while (!checkDone(futures)) {
+					//System.err.println("Futures not ready yet. Simulation is still running. Waiting now...");
 					Thread.sleep(10);
+				}
 
 				for (FutureTask<Node> future : futures)
 					assert future.isDone();
@@ -134,6 +137,7 @@ public class MCTS {
 			}
 			numberOfSelections.put(move, number);
 		}
+		System.out.println(numberOfSelections);
 		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().parallelStream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
 		if (entryOptional.isPresent())
 			votedMove = entryOptional.get().getKey();
@@ -381,7 +385,7 @@ public class MCTS {
 
 				brd.makeMove(move);
 			} else {
-				// WHY DOES IT PROCESS THE NOT DUPLICATED BOARD HERE
+				// WHY DOES IT PROCESS THE NOT DUPLICATED BOARD HERE?
 				playoutpolicy.process(board);
 			}
 		}
@@ -422,7 +426,7 @@ public class MCTS {
 	 * @return
 	 */
 	public ArrayList<Node> findChildren(Node node, Board board, double optimisticBias, double pessimisticBias,
-										double explorationConstant) {
+	                                    double explorationConstant) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		ArrayList<Node> bestNodes = new ArrayList<>();
 		for (Node s : node.getChildren()) {

@@ -11,6 +11,8 @@ import org.mockito.Matchers;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,18 +23,18 @@ import static org.mockito.Mockito.when;
 /**
  * Created by joelniklaus on 06.05.17.
  */
-public class CodeTryingTest {
+public class ExecutorServiceTest {
 
 	@Test
-	public void testAnything() {
-		System.out.println(Card.CLUB_JACK);
-		System.out.println(Card.CLUB_SEVEN);
-		System.out.println(Card.HEART_TEN);
+	public void testExecutorServiceStartAndShutdownTime() {
+		long startTime = System.nanoTime();
+		ExecutorService threadpool = Executors.newFixedThreadPool(50);
+		System.out.println(System.nanoTime() - startTime);
 
-		System.out.println(Mode.from(Trumpf.TRUMPF, Color.CLUBS));
-		System.out.println(Mode.bottomUp());
-		System.out.println(Mode.topDown());
-		System.out.println(Mode.shift().toString());
+		startTime = System.nanoTime();
+		threadpool.shutdown();
+		if(threadpool.isTerminated())
+			System.out.println(System.nanoTime() - startTime);
 	}
 
 }

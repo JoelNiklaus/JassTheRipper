@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  */
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
 
+	// TODO make Strategy the owner of the threadpool so that it only has to be started once and not for every time we select a card! can save around 5ms on each card choosing
 
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
@@ -35,7 +36,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	private static final boolean PARALLELISATION_ENABLED = true;
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
-	// If we make to many then the thread overhead is too much. On the other hand not enough cannot garantuee a good prediction
+	// If we make to many then the thread overhead is too much. On the other hand not enough cannot guarantee a good prediction
 	public static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors();
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
@@ -43,7 +44,7 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	private static final int MAX_THINKING_TIME = 250;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
-	public static final int MAX_SCHIFT_RATING_VAL = 75;
+	public static final int MAX_SHIFT_RATING_VAL = 75;
 
 
 	// TODO Wo sollten die Exceptions gecatcht werden???

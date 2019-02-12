@@ -3,6 +3,7 @@ package com.zuehlke.jasschallenge;
 import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 
@@ -27,13 +28,13 @@ class ApplicationBotTryout {
 	private static final String LOCAL_URL = "ws://localhost:3000";
 
 	//CHALLENGE2017: Set your bot name
-	private final static String BOT_NAME = "MybotName";
+	private final static String BOT_NAME = "JassTheRipper";
 
 	//CHALLENGE2017: Set your strategoy
-	private final static JassStrategy MY_STRATEGY = new RandomJassStrategy();
+	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy();
 
 	//CHALLENGE2017: Set the number of opponent teams with random bots
-	private final static int NUMBER_OF_RANDOM_TEAMS = 4;
+	private final static int NUMBER_OF_RANDOM_TEAMS = 1;
 
 	public static void main(String[] args) throws Exception {
 

@@ -23,7 +23,7 @@ public class ChooseTrumpfTest {
 
     private GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
     private JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy();
-    private int shiftValue = jassStrategy.MAX_SCHIFT_RATING_VAL;
+    private int shiftValue = jassStrategy.MAX_SHIFT_RATING_VAL;
 
     private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
     private Set<Card> cards2 = EnumSet.of(Card.HEART_ACE, Card.HEART_EIGHT, Card.HEART_JACK, Card.CLUB_SIX, Card.CLUB_SEVEN, Card.DIAMOND_QUEEN, Card.SPADE_TEN, Card.DIAMOND_NINE, Card.DIAMOND_JACK);
