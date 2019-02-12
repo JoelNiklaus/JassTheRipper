@@ -20,12 +20,10 @@ public class Team implements Serializable {
 	 * @param team
 	 */
 	public Team(Team team) {
-		synchronized (team) {
-			this.teamName = team.getTeamName();
-			this.players = new ArrayList<>();
-			for (Player player : team.getPlayers())
-				this.players.add(new Player(player));
-		}
+		this.teamName = team.getTeamName();
+		this.players = new ArrayList<>();
+		for (Player player : team.getPlayers())
+			this.players.add(new Player(player));
 	}
 
 	public String getTeamName() {

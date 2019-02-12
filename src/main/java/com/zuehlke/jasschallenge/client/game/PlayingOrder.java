@@ -25,19 +25,18 @@ public class PlayingOrder implements Serializable {
 	}
 
 	// TODO maybe order is confused
+
 	/**
 	 * Copy constructor for deep copy
 	 *
 	 * @param playingOrder
 	 */
 	public PlayingOrder(PlayingOrder playingOrder) {
-		synchronized (playingOrder) {
-			this.playersInInitialPlayingOrder = new ArrayList<>();
-			for (Player player : playingOrder.getPlayersInInitialPlayingOrder())
-				this.playersInInitialPlayingOrder.add(new Player(player));
-			this.startingPlayerInt = playingOrder.getStartingPlayerInt();
-			this.currentPlayerInt = playingOrder.getCurrentPlayerInt();
-		}
+		this.playersInInitialPlayingOrder = new ArrayList<>();
+		for (Player player : playingOrder.getPlayersInInitialPlayingOrder())
+			this.playersInInitialPlayingOrder.add(new Player(player));
+		this.startingPlayerInt = playingOrder.getStartingPlayerInt();
+		this.currentPlayerInt = playingOrder.getCurrentPlayerInt();
 	}
 
 	public List<Player> getPlayersInInitialPlayingOrder() {

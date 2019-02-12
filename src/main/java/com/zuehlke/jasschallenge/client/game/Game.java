@@ -32,15 +32,13 @@ public class Game implements Serializable {
 	 * @param game
 	 */
 	public Game(Game game) {
-		synchronized (game) {
-			this.mode = game.getCurrentRoundMode(); // TODO maybe we have to copy mode too somehow
-			this.currentRound = new Round(game.getCurrentRound());
-			this.result = new Result(game.getResult());
-			this.shifted = game.isShifted();
-			this.previousRounds = new ArrayList<>();
-			for (Round previousRound : game.getPreviousRounds())
-				this.previousRounds.add(new Round(previousRound));
-		}
+		this.mode = game.getCurrentRoundMode(); // TODO maybe we have to copy mode too somehow
+		this.currentRound = new Round(game.getCurrentRound());
+		this.result = new Result(game.getResult());
+		this.shifted = game.isShifted();
+		this.previousRounds = new ArrayList<>();
+		for (Round previousRound : game.getPreviousRounds())
+			this.previousRounds.add(new Round(previousRound));
 	}
 
 	public static Game startGame(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
@@ -112,7 +110,7 @@ public class Game implements Serializable {
 	}
 
 	public Player getPartnerOfPlayer(Player player) {
-		for (Player other: getOrder().getPlayerInOrder()) {
+		for (Player other : getOrder().getPlayerInOrder()) {
 			if (other.isPartner(player))
 				return other;
 		}

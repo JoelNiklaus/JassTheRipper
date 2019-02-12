@@ -43,13 +43,11 @@ public class Player implements Serializable {
 	 * @param player
 	 */
 	public Player(Player player) {
-		synchronized (player) {
-			this.id = player.getId();
-			this.name = player.getName();
-			this.seatId = player.getSeatId();
-			this.cards = EnumSet.copyOf(player.getCards());
-			this.currentJassStrategy = player.getCurrentJassStrategy();
-		}
+		this.id = player.getId();
+		this.name = player.getName();
+		this.seatId = player.getSeatId();
+		this.cards = EnumSet.copyOf(player.getCards());
+		this.currentJassStrategy = player.getCurrentJassStrategy();
 	}
 
 	public boolean isPartner(Player other) {

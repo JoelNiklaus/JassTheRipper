@@ -19,10 +19,8 @@ public class Move implements Serializable {
 	 * @param move
 	 */
 	public Move(Move move) {
-		synchronized (move) {
-			this.player = new Player(move.getPlayer());
-			this.playedCard = move.getPlayedCard();
-		}
+		this.player = new Player(move.getPlayer());
+		this.playedCard = move.getPlayedCard();
 	}
 
 	public Player getPlayer() {

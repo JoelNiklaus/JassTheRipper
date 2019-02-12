@@ -17,10 +17,8 @@ public class Result implements Serializable {
 	 * @param result
 	 */
 	public Result(Result result) {
-		synchronized (result) {
-			this.teamAScore = new TeamScore(result.getTeamAScore());
-			this.teamBScore = new TeamScore(result.getTeamBScore());
-		}
+		this.teamAScore = new TeamScore(result.getTeamAScore());
+		this.teamBScore = new TeamScore(result.getTeamBScore());
 	}
 
 	public TeamScore getTeamAScore() {

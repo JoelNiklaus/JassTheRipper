@@ -34,13 +34,12 @@ public class Round implements Serializable {
 	 * @param round
 	 */
 	public Round(Round round) {
-		synchronized (round) {
-			this.mode = round.getMode(); // TODO maybe copy mode too
-			this.roundNumber = round.getRoundNumber();
-			this.playingOrder = new PlayingOrder(round.getPlayingOrder());
-			for (Move move : round.getMoves())
-				this.moves.add(new Move(move));
-		}
+		this.mode = round.getMode();
+		this.roundNumber = round.getRoundNumber();
+		this.playingOrder = new PlayingOrder(round.getPlayingOrder());
+		for (Move move : round.getMoves())
+			this.moves.add(new Move(move));
+
 	}
 
 	public void makeMove(Move move) {
