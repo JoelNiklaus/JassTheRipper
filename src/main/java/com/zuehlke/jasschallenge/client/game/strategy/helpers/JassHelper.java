@@ -241,6 +241,7 @@ public class JassHelper {
 		}
 		*/
 
+		/*
 		// wenn partner schon gespielt hat
 		if (hasPartnerAlreadyPlayed(round)) {
 			Card cardOfPartner = getCardOfPartner(round);
@@ -248,9 +249,11 @@ public class JassHelper {
 			if (round.getWinningCard().equals(cardOfPartner)) {
 				// wenn ich noch angeben kann
 				if (isAngebenPossible(possibleCards, cardOfPartner)) {
+				*/
 					/**
 					 * SCHMIEREN
 					 */
+					/*
 					Set<Card> schmierCards = getSchmierCards(possibleCards, cardOfPartner, mode);
 					// wenn letzter spieler einfach schmieren
 					if (lastPlayer(round))
@@ -265,6 +268,7 @@ public class JassHelper {
 				}
 				// wenn ich nicht mehr angeben kann
 				else {
+				*/
 					/**
 					 * VERWERFEN (Nachricht senden)
 					 */
@@ -292,9 +296,11 @@ public class JassHelper {
 						}
 					}
 					*/
+					/*
 				}
 			}
 		}
+		*/
 
 		return possibleCards;
 	}
