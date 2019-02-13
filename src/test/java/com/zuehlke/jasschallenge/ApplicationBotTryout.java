@@ -36,18 +36,29 @@ class ApplicationBotTryout {
 	//CHALLENGE2017: Set the number of opponent teams with random bots
 	private final static int NUMBER_OF_RANDOM_TEAMS = 1;
 
+	private final static boolean TEST_HUMAN = true;
+
 	public static void main(String[] args) throws Exception {
 
-		ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_OF_RANDOM_TEAMS * 2 + 2);
+		int numThreads = NUMBER_OF_RANDOM_TEAMS * 2 + 2;
+		if (TEST_HUMAN)
+			numThreads = 3;
+		ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
 		List<Future<RemoteGame>> futures = new LinkedList<>();
-		for (int i = 0; i < NUMBER_OF_RANDOM_TEAMS; i++) {
-			int teamId = i;
-			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), SessionType.TOURNAMENT)));
-			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), SessionType.TOURNAMENT)));
+		if (!TEST_HUMAN) {
+			for (int i = 0; i < NUMBER_OF_RANDOM_TEAMS; i++) {
+				int teamId = i;
+				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), SessionType.TOURNAMENT)));
+				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), SessionType.TOURNAMENT)));
+			}
 		}
 		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
 		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
+
+		if (TEST_HUMAN) {
+			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
+		}
 
 		futures.forEach(ApplicationBotTryout::awaitFuture);
 		executorService.shutdown();

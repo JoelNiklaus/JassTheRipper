@@ -25,6 +25,32 @@ import java.util.stream.Collectors;
  * Schmieren: If my partner wins the round play a valuable card to gain many points.
  */
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
+/*
+NOTES FROM PLAY AGAINST JASS THE RIPPER 13/02/2018:
+Negativ:
+Austrumpfen suboptimal (250ms bedenkzeit)
+lässt mich lange gewähren obwohl er trümpfe hat (250ms bedenkzeit)
+abstechen passiv (250ms bedenkzeit)
+Gegner spielt auf mein könig, obwohl er noch die 7 hatte (2500ms) -> regel hinzufügen
+
+
+Neutral:
+Spielt undeufe reihe von 6-9 in spezieller reihenfolge (6 zuletzt)
+Partner hat bei undeufe 6 zurückgehalten als gegner 7 gespielt hat
+
+Positiv:
+behält trumpf für letzten stich
+hat einen sehr guten trumpf gut erkannt
+Schmieren funktioniert
+Mit 2500ms bedenkzeit austrumpfen besser
+partner hat angezogen beim ausspielen
+gegner antizipiert bauer des partners bei austrumpfen meines partners indem er ein ass schmiert (2. stich!)
+Mehr simulationen scheinen hilfreich zu sein (spielt viel aggressiver)
+Partner probiert auf match zu jassen
+Gegner gehen auf die grossen punkte am schluss des spiels bei undeufe
+Gegner spielt auf match (sticht brettli stich mit brettli ab, so dass ich als letzter spieler den stich nicht gratis holen kann)
+*/
+
 
 	// TODO make Strategy the owner of the threadpool so that it only has to be started once and not for every time we select a card! can save around 5ms on each card choosing
 
@@ -35,13 +61,14 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 	// IMPORTANT: If does not work properly, try setting this to false
 	private static final boolean PARALLELISATION_ENABLED = true;
 
-	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
+	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute a good move
 	// If we make to many then the thread overhead is too much. On the other hand not enough cannot guarantee a good prediction
-	public static final int NUMBER_OF_THREADS = Runtime.getRuntime().availableProcessors();
+	// 4 times the available processors seems too much (copy of game state takes too long)
+	public static final int NUMBER_OF_THREADS = 2 * Runtime.getRuntime().availableProcessors();
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 250;
+	private static final int MAX_THINKING_TIME = 2500;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	public static final int MAX_SHIFT_RATING_VAL = 75;
