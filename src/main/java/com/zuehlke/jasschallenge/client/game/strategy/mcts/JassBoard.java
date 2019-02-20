@@ -45,7 +45,7 @@ public class JassBoard implements Board, Serializable {
 		if (newRandomCards)
 			JassHelper.distributeCardsForPlayers(this.availableCards, this.game);
 
-		Helper.printMethodTime(startTime);
+		//Helper.printMethodTime(startTime);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 
 import java.awt.*;
 import java.util.*;
@@ -78,7 +79,7 @@ public class MCTS {
 					if (node.isValid()) { // so, if there was at least one run
 						Move move = finalMoveSelection(node);
 						moves.add(move);
-						System.out.println(move);
+						//System.out.println(move);
 					}
 				}
 
@@ -101,7 +102,7 @@ public class MCTS {
 		long endTime = System.currentTimeMillis();
 
 		if (this.trackTime) {
-			System.out.println("Making choice for player: " + bestMoveFound);
+			//System.out.println("Making choice for player: " + bestMoveFound);
 			System.out.println("Thinking time for move: " + (endTime - startTime) + "ms");
 		}
 
@@ -137,7 +138,8 @@ public class MCTS {
 			}
 			numberOfSelections.put(move, number);
 		}
-		System.out.println(numberOfSelections);
+		// Print statistics so we can get insights into the decision process of the algorithm
+		numberOfSelections.forEach((move, integer) -> System.out.println(((CardMove) move).getPlayedCard() + " selected " + integer + " times."));
 		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().parallelStream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
 		if (entryOptional.isPresent())
 			votedMove = entryOptional.get().getKey();

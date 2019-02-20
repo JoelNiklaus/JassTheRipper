@@ -46,18 +46,20 @@ class ApplicationBotTryout {
 		ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
 		List<Future<RemoteGame>> futures = new LinkedList<>();
+		SessionType sessionType = SessionType.SINGLE_GAME;
+
 		if (!TEST_HUMAN) {
 			for (int i = 0; i < NUMBER_OF_RANDOM_TEAMS; i++) {
 				int teamId = i;
-				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), SessionType.TOURNAMENT)));
-				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), SessionType.TOURNAMENT)));
+				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), sessionType)));
+				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), sessionType)));
 			}
 		}
-		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
-		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
+		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
+		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
 
 		if (TEST_HUMAN) {
-			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
+			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
 		}
 
 		futures.forEach(ApplicationBotTryout::awaitFuture);
