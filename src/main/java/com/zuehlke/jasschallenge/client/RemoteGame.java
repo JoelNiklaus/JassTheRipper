@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class RemoteGame implements Game {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoteGame.class);
-    private static final int CLOSE_TIMEOUT_MIN = 5;
+    private static final int CLOSE_TIMEOUT_MIN = 50; // INFO: This is very important! The bot will terminate itself after that time. So do not set too low!
     private final Player player;
     private final String targetUrl;
     private final SessionType sessionType;
