@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
  * Schmieren: If my partner wins the round play a valuable card to gain many points.
  */
 public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
+
+//	TODO refinejass knowledge schauen austrumpfen
 /*
 NOTES FROM PLAY AGAINST JASS THE RIPPER 13/02/2018:
 Negativ:
@@ -32,6 +34,10 @@ Austrumpfen suboptimal (250ms bedenkzeit)
 lässt mich lange gewähren obwohl er trümpfe hat (250ms bedenkzeit)
 abstechen passiv (250ms bedenkzeit)
 Gegner spielt auf mein könig, obwohl er noch die 7 hatte (2500ms) -> regel hinzufügen
+Gegner trumpft aus obwohl nur noch sein Partner trümpfe hat!!!(2500ms)
+Gegner sticht 10er nicht ab als letzter spieler obwohl er noch 3 trümpfe hat!!!(2500ms)
+Partner sticht als zweitletzter spieler gegnerisches ass mit trumpf 10 ab und wird danach überstochen!! (2500ms)
+Partner schmiert dem Gegner, obwohl er noch ein Brettli hat! (2500ms)
 
 
 Neutral:
@@ -49,10 +55,24 @@ Mehr simulationen scheinen hilfreich zu sein (spielt viel aggressiver)
 Partner probiert auf match zu jassen
 Gegner gehen auf die grossen punkte am schluss des spiels bei undeufe
 Gegner spielt auf match (sticht brettli stich mit brettli ab, so dass ich als letzter spieler den stich nicht gratis holen kann)
+Partner hat mit mir Schellen Match erfolgreich durchgezogen
 */
 
+/*
+POSSIBLE ENHANCEMENTS FROM MCTS SURVEY:
+Tune parameters: exploration constant
+Weighing simulation results
+architecture similar to alphazero with neural net
+*/
+
+	// TODO check random seed in jass server for card distribution
+
+	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
 
 	// TODO make Strategy the owner of the threadpool so that it only has to be started once and not for every time we select a card! can save around 5ms on each card choosing
+
+
+	// TODO Experiments like in Bridge: predealt hands (seed). Compare performance.
 
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
