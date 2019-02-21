@@ -74,6 +74,8 @@ architecture similar to alphazero with neural net
 
 	// TODO Experiments like in Bridge: predealt hands (seed). Compare performance.
 
+	// TODO Bot Registry anschauen!
+
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
 
@@ -88,7 +90,7 @@ architecture similar to alphazero with neural net
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 2500;
+	private static final int MAX_THINKING_TIME = 200;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	public static final int MAX_SHIFT_RATING_VAL = 75;
