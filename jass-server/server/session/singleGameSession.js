@@ -2,11 +2,11 @@ import * as ClientApi from '../communication/clientApi';
 import * as Game from '../game/game';
 import * as Player from '../game/player/player';
 import * as Team from '../game/player/team';
-import { SessionType } from '../../shared/session/sessionType';
+import {SessionType} from '../../shared/session/sessionType';
 import SessionHandler from './sessionHandler';
-import { MessageType } from '../../shared/messages/messageType';
-import { startRandomBot } from '../bot/botStarter';
-import { Logger } from '../logger';
+import {MessageType} from '../../shared/messages/messageType';
+import {startRandomBot} from '../bot/botStarter';
+import {Logger} from '../logger';
 import EnvironmentUtil from '../registry/environmentUtil';
 import * as JsonResultProxy from '../communication/jsonResultProxy';
 
@@ -37,8 +37,7 @@ function getFirstAvailableTeamIndex(session) {
     const firstFreePlayerIndex = session.players.findIndex((player, index) => player.seatId !== index);
     if (firstFreePlayerIndex !== -1) {
         return firstFreePlayerIndex % 2;
-    }
-    else {
+    } else {
         return session.players.length % 2;
     }
 }
@@ -95,7 +94,7 @@ function insertPlayer(session, player) {
 }
 
 function registerPlayerAsClient(session, webSocket, player) {
-    session.clientApi.addClient(webSocket).catch(({ code: code, message: message }) => {
+    session.clientApi.addClient(webSocket).catch(({code: code, message: message}) => {
         session.handlePlayerLeft(player, code, message);
     });
 }
@@ -161,7 +160,7 @@ const Session = {
         return this.startingPlayer++ % 4;
     },
 
-    start() {
+    start(seed = 0) {
         if (!this.isComplete()) {
             throw 'Not enough players to start game!';
         }
@@ -184,7 +183,7 @@ const Session = {
                 resolve(winningTeam);
             };
 
-            this.gameCycle()
+            this.gameCycle(seed)
                 .then((winningTeam) => {
                     this.finishGame(winningTeam);
 
@@ -211,9 +210,9 @@ const Session = {
         });
     },
 
-    gameCycle(nextStartingPlayer = this.getNextStartingPlayer()) {
+    gameCycle(seed = 0, nextStartingPlayer = this.getNextStartingPlayer()) {
         let players = this.players.slice();
-        let game = Game.create(players, this.maxPoints, this.players[nextStartingPlayer], this.clientApi);
+        let game = Game.create(players, this.maxPoints, this.players[nextStartingPlayer], this.clientApi, seed);
 
         return game.start().then(() => {
             let pointsTeamA = this.teams[0].points;
@@ -227,7 +226,8 @@ const Session = {
                 return this.teams[1];
             }
 
-            return this.gameCycle(this.getNextStartingPlayer());
+            // Increase seed with every round, so that we get different cards each round
+            return this.gameCycle(seed + 1, this.getNextStartingPlayer());
         });
     },
 

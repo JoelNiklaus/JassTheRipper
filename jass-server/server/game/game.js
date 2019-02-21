@@ -1,6 +1,6 @@
 import * as Deck from './deck/deck';
 import * as Cycle from './cycle/cycle';
-import { GameMode } from './../../shared/game/gameMode';
+import {GameMode} from './../../shared/game/gameMode';
 
 function handleChooseTrumpf(game, gameType) {
     game.gameType = gameType;
@@ -65,9 +65,9 @@ let Game = {
     }
 };
 
-export function create(players, maxPoints, startPlayer, clientApi) {
+export function create(players, maxPoints, startPlayer, clientApi, seed = 0) {
     let game = Object.create(Game);
-    game.deck = Deck.create();
+    game.deck = Deck.create(seed);
     players.forEach(player => {
         game.deck.deal(player, 9);
     });

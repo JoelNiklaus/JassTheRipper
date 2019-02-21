@@ -29,7 +29,8 @@
     "test:watch": "run-p test:backend:watch test:frontend:watch",
     "prestart": "npm run build",
     "start": "node build/server/app.js",
-    "start:tournament": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=5 TOURNAMENT_COUNTING=true npm start",
+    "start:tournament": "cross-env TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=2 TOURNAMENT_COUNTING=true npm start",
+    "start:tournament:debug": "cross-env DEBUG=true TOURNAMENT_LOGGING=true TOURNAMENT_ROUNDS=5 TOURNAMENT_COUNTING=true npm start -- --debug --debug-brk=5858",
     "start:watch": "nodemon -e js,jsx,less --watch server --watch shared --watch client --exec \"npm run start\"",
     "bot:start": "npm run build:js:bot && node build/bot/Bot.js",
     "debug": "cross-env DEBUG=true npm run start:watch -- --debug --debug-brk=5858"
@@ -79,6 +80,7 @@
     "rimraf": "2.6.1",
     "sinon": "2.3.5",
     "validate.js": "0.11.1",
-    "ws": "2.3.1"
+    "ws": "2.3.1",
+    "seededshuffle": "^0.2.0"
   }
 }
