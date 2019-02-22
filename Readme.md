@@ -1,6 +1,15 @@
-# jass-challenge-client-java ![Build Status](https://travis-ci.org/webplatformz/challenge-client-java.svg?branch=master)
+# JassTheRipper [![Build Status](https://travis-ci.com/JoelNiklaus/JassTheRipper.svg?token=TyJh5WgmQurKDQkSXyDX&branch=master)](https://travis-ci.com/JoelNiklaus/JassTheRipper)
 
 This is a Java client (bot) for the [Jass challenge server](https://github.com/webplatformz/challenge).
+It is a fork of the [challenge java client](https://github.com/webplatformz/challenge-client-java).
+
+We use Monte Carlo Tree Search (MCTS) with determinization and domain knowledge to beat the best machine and humand Jass players in the Schieber variant.
+
+
+Run this app either with Docker of gradle.
+
+
+
 This client allows you to easily develop a bot for the Jass challenge.
 
 ###Wiki (Server):
