@@ -6,7 +6,17 @@ It is a fork of the [challenge java client](https://github.com/webplatformz/chal
 We use Monte Carlo Tree Search (MCTS) with determinization and domain knowledge to beat the best machine and humand Jass players in the Schieber variant.
 
 
-Run this app either with Docker of gradle.
+Run this app either with docker:
+```bash
+docker build -t jass-the-ripper . # make sure you are in the root directory of this project
+
+docker run -it --rm -p 80:80 jass-the-ripper # specify the ports if needed (also update the dockerfile)
+```
+or gradle:
+```bash
+./gradlew run -Pmyargs=ws://127.0.0.1:3000 --no-daemon # change the websocket host and port if needed
+```
+
 
 
 
