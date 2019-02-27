@@ -86,11 +86,14 @@ architecture similar to alphazero with neural net
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute a good move
 	// If we make to many then the thread overhead is too much. On the other hand not enough cannot guarantee a good prediction
 	// 4 times the available processors seems too much (copy of game state takes too long)
-	public static final int NUMBER_OF_THREADS = 2 * Runtime.getRuntime().availableProcessors();
+	// If the Machine only has one core, we still need more than 2 determinizations, therefore fixed number.
+	// Prime number so that we do not get draws!
+	// Possible options: 2 * Runtime.getRuntime().availableProcessors(), 7, 13
+	public static final int NUMBER_OF_THREADS = 13;
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 200;
+	private static final int MAX_THINKING_TIME = 2500;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	public static final int MAX_SHIFT_RATING_VAL = 75;
