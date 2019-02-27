@@ -25,6 +25,7 @@ public class Application {
 	private static final JassTheRipperJassStrategy STRATEGY = new JassTheRipperJassStrategy();
 
 	private static final String LOCAL_URL = "ws://127.0.0.1:3000";
+	private static final String SERVER_URL = "ws://jass.joeli.to";
 
 	public static void main(String[] args) throws Exception {
 		// Competition
@@ -33,21 +34,21 @@ public class Application {
 		System.out.println("Connecting... Server socket URL: " + websocketUrl);
 
 		Player player = new Player(BOT_NAME, STRATEGY);
-		startGame(websocketUrl, player, SessionType.TOURNAMENT);
+		startGame(websocketUrl, player, SessionType.SINGLE_GAME);
 
 
 		// Testing
-		Player jassTheRipper = new Player("JassTheRipper", new JassTheRipperJassStrategy());
-		Player jassTheRipperRandomTrumpf = new Player("JassTheRipperRandomTrumpf", new JassTheRipperRandomTrumpfJassStrategy());
-		Player jassTheRipperRandomCard = new Player("JassTheRipperRandomCard", new JassTheRipperRandomCardJassStrategy());
-		Player randomJasser = new Player("RandomJasser", new RandomJassStrategy());
+		//Player jassTheRipper = new Player("JassTheRipper", new JassTheRipperJassStrategy());
+		//Player jassTheRipperRandomTrumpf = new Player("JassTheRipperRandomTrumpf", new JassTheRipperRandomTrumpfJassStrategy());
+		//Player jassTheRipperRandomCard = new Player("JassTheRipperRandomCard", new JassTheRipperRandomCardJassStrategy());
+		//Player randomJasser = new Player("RandomJasser", new RandomJassStrategy());
 
 		// Change here to run different bot
 		//startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
 
 
 		//startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
-		startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
+		//startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
 		//startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
 		//startGame(websocketUrl, jassTheRipperRandomCard, SessionType.TOURNAMENT);
 
