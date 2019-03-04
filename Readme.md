@@ -14,7 +14,7 @@ docker run -it --rm -p 80:80 jass-the-ripper # specify the ports if needed (also
 ```
 or gradle:
 ```bash
-./gradlew run -Pmyargs=ws://127.0.0.1:3000 --no-daemon # change the websocket host and port if needed
+./gradlew run -Pmyargs=ws://127.0.0.1:3000,1 --no-daemon # change the websocket host and port if needed. The value after the comma is the chosenTeamIndex of the bot to be started
 ```
 
 

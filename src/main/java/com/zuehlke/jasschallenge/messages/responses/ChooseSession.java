@@ -12,7 +12,11 @@ public class ChooseSession implements Response {
     }
 
     public ChooseSession(SessionChoice sessionChoice, String sessionName, SessionType tournament) {
-        data = new ChooseSessionData(sessionChoice, sessionName, tournament);
+        data = new ChooseSessionData(sessionChoice, sessionName, tournament, 1);
+    }
+
+    public ChooseSession(SessionChoice sessionChoice, String sessionName, SessionType tournament, Integer chosenTeamIndex) {
+        data = new ChooseSessionData(sessionChoice, sessionName, tournament, chosenTeamIndex);
     }
 
     public ChooseSessionData getData() {

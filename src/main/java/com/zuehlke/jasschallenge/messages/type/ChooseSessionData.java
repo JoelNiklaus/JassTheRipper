@@ -4,11 +4,14 @@ public class ChooseSessionData {
     private final SessionChoice sessionChoice;
     private final String sessionName;
     private final SessionType sessionType;
+    private final Boolean asSpectator = false;
+    private final Integer chosenTeamIndex;
 
-    public ChooseSessionData(SessionChoice sessionChoice, String sessionName, SessionType sessionType) {
+    public ChooseSessionData(SessionChoice sessionChoice, String sessionName, SessionType sessionType, Integer chosenTeamIndex) {
         this.sessionChoice = sessionChoice;
         this.sessionName = sessionName;
         this.sessionType = sessionType;
+        this.chosenTeamIndex = chosenTeamIndex;
     }
 
     public SessionChoice getSessionChoice() {
@@ -21,6 +24,14 @@ public class ChooseSessionData {
 
     public SessionType getSessionType() {
         return sessionType;
+    }
+
+    public Boolean isAsSpectator() {
+        return asSpectator;
+    }
+
+    public Integer getChosenTeamIndex() {
+        return chosenTeamIndex;
     }
 
     @Override

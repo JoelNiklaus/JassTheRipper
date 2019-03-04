@@ -19,18 +19,24 @@ public class RemoteGame implements Game {
     private final Player player;
     private final String targetUrl;
     private final SessionType sessionType;
+    private final Integer chosenTeamIndex;
 
     public RemoteGame(String targetUrl, Player player, SessionType sessionType) {
+        this(targetUrl, player, sessionType, 1);
+    }
+
+    public RemoteGame(String targetUrl, Player player, SessionType sessionType, int chosenTeamIndex) {
         this.targetUrl = targetUrl;
         this.player = player;
         this.sessionType = sessionType;
+        this.chosenTeamIndex = chosenTeamIndex;
     }
 
     @Override
     public void start() throws Exception {
         final WebSocketClient client = new WebSocketClient();
         try {
-            RemoteGameSocket socket = new RemoteGameSocket(new GameHandler(player, sessionType));
+            RemoteGameSocket socket = new RemoteGameSocket(new GameHandler(player, sessionType, chosenTeamIndex));
             client.start();
 
             URI uri = new URI(targetUrl);
