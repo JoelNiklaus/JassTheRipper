@@ -65,28 +65,16 @@ Weighing simulation results
 architecture similar to alphazero with neural net
 */
 
-
-
-/*
-Voices from the experiments:
-Seems fake. Opponents are better than partner
-Partnerbot hat gegner ein ass geschmiert obwohl er ein brettli hätte spielen können
-
- */
-
-	// IDEA: only one stateless jasstheripper computation container which provides an api to be called
+	// TODO check random seed in jass server for card distribution
 
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
 
 	// TODO make Strategy the owner of the threadpool so that it only has to be started once and not for every time we select a card! can save around 5ms on each card choosing
 
-	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards
 
-	// TODO Focus on trumpf selection because card play is very good already! RL überlegen
+	// TODO Experiments like in Bridge: predealt hands (seed). Compare performance.
 
-	// TODO Greenkeeper
-
-	// TODO Todos in gitlab issues importieren
+	// TODO Bot Registry anschauen!
 
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
@@ -99,7 +87,7 @@ Partnerbot hat gegner ein ass geschmiert obwohl er ein brettli hätte spielen k�
 	// If we make to many then the thread overhead is too much. On the other hand not enough cannot guarantee a good prediction
 	// 4 times the available processors seems too much (copy of game state takes too long)
 	// If the Machine only has one core, we still need more than 2 determinizations, therefore fixed number.
-	// Prime number so that ties are rare!
+	// Prime number so that we do not get draws!
 	// Possible options: 2 * Runtime.getRuntime().availableProcessors(), 7, 13
 	public static final int NUMBER_OF_THREADS = 13;
 
@@ -164,8 +152,6 @@ Partnerbot hat gegner ein ass geschmiert obwohl er ein brettli hätte spielen k�
 			if (possibleCards.size() == 1)
 				for (Card card : possibleCards) {
 					System.out.println("Only one possible card to play: " + card + "\n\n");
-					// INFO: Even if there is only one card: wait for MAX_THINKING_TIME because ottherwise, opponents may detect pattern and conclude that the bot only has one card left
-					Thread.sleep(MAX_THINKING_TIME);
 					return card;
 				}
 
