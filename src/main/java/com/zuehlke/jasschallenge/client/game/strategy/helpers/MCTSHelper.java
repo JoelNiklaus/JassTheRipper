@@ -9,6 +9,8 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +21,9 @@ import java.util.Set;
  * Created by joelniklaus on 05.05.17.
  */
 public class MCTSHelper {
+
+	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+
 
 	/**
 	 * Sets the MCTS parameters, runs it and predicts a Card
@@ -34,11 +39,13 @@ public class MCTSHelper {
 		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
 		if (possibleCards.size() == 1) {
-			System.out.println("Based on expert Jass Knowledge there is only one sensible card available now.");
+			logger.info("Based on expert Jass Knowledge there is only one sensible card available now.");
 			return (Card) possibleCards.toArray()[0];
 		}
 
 		MCTS mcts = new MCTS();
+
+		// TODO tune parameters
 		mcts.setExplorationConstant(1.4);
 		mcts.setOptimisticBias(0);
 		mcts.setPessimisticBias(0);

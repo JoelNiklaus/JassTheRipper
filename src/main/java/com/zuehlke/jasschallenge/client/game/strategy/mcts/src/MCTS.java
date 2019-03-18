@@ -1,7 +1,10 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.*;
@@ -29,6 +32,8 @@ public class MCTS {
 	private ExecutorService threadpool;
 	private ArrayList<FutureTask<Node>> futures;
 
+	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+
 	/**
 	 * Run a UCT-MCTS simulation for a a certain amount of time.
 	 *
@@ -39,19 +44,19 @@ public class MCTS {
 	 */
 	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) throws Exception {
 		scoreBounds = bounds;
-		Move bestMoveFound = null;
+		Move bestMoveFound;
 
 		long startTime = System.currentTimeMillis();
 
 		if (!rootParallelisation) {
-			System.out.println("Not parallelised :(");
+			logger.info("Not parallelised :(");
 			Node rootNode = new Node(startingBoard);
 			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
 			bestMoveFound = finalMoveSelection(rootNode);
 
 		} else {
-			System.out.println("Parallelised with " + threads + " threads :)");
-			System.out.println(endingTime - startTime + "ms thinking time left.");
+			logger.info("Parallelised with {} threads :)", threads);
+			logger.info("{}ms thinking time left.", endingTime - startTime);
 			for (int i = 0; i < threads; i++)
 				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, endingTime)));
 
@@ -79,7 +84,7 @@ public class MCTS {
 					if (node.isValid()) { // so, if there was at least one run
 						Move move = finalMoveSelection(node);
 						moves.add(move);
-						//System.out.println(move);
+						//logger.info(move);
 					}
 				}
 
@@ -102,8 +107,8 @@ public class MCTS {
 		long endTime = System.currentTimeMillis();
 
 		if (this.trackTime) {
-			//System.out.println("Making choice for player: " + bestMoveFound);
-			System.out.println("Thinking time for move: " + (endTime - startTime) + "ms");
+			//logger.info("Making choice for player: " + bestMoveFound);
+			logger.info("Thinking time for move: " + (endTime - startTime) + "ms");
 		}
 
 		return bestMoveFound;
@@ -124,7 +129,7 @@ public class MCTS {
 		if (runCounter == 0) {
 			rootNode.invalidate();
 		}
-		System.out.println("Run " + runCounter + " times for same random cards");
+		logger.info("Run {} times for same random cards", runCounter);
 	}
 
 	private Move vote(ArrayList<Move> moves) {
@@ -139,7 +144,7 @@ public class MCTS {
 			numberOfSelections.put(move, number);
 		}
 		// Print statistics so we can get insights into the decision process of the algorithm
-		numberOfSelections.forEach((move, integer) -> System.out.println(((CardMove) move).getPlayedCard() + " selected " + integer + " times."));
+		numberOfSelections.forEach((move, integer) -> logger.info("{} selected {} times.", ((CardMove) move).getPlayedCard(), integer));
 		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().parallelStream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
 		if (entryOptional.isPresent())
 			votedMove = entryOptional.get().getKey();
@@ -190,17 +195,14 @@ public class MCTS {
 	 * @param currentBoard Board state to work from.
 	 */
 	private void select(Board currentBoard, Node currentNode) throws Exception {
-		// Begin tree policy. Traverse down the tree and expand. Return
-		// the new node or the deepest node it could reach. Return too
-		// a board matching the returned node.
-		BoardNodePair data = treePolicy(currentBoard, currentNode);
+		BoardNodePair boardNodePair = treePolicy(currentBoard, currentNode);
 
 
 		// Run a random playout until the end of the game.
-		double[] score = playout(data.getBoard());
+		double[] score = playout(boardNodePair.getBoard());
 
 		// Backpropagate results of playout.
-		Node node = data.getNode();
+		Node node = boardNodePair.getNode();
 		node.backPropagateScore(score);
 		if (scoreBounds) {
 			node.backPropagateBounds(score);
@@ -208,7 +210,9 @@ public class MCTS {
 	}
 
 	/**
-	 *
+	 * Begin tree policy. Traverse down the tree and expand.
+	 * Return the new node or the deepest node it could reach.
+	 * Additionally, return a board matching the returned node.
 	 */
 	private BoardNodePair treePolicy(Board brd, Node node) throws Exception {
 		//long startTime = System.currentTimeMillis();
@@ -216,7 +220,7 @@ public class MCTS {
 		Board board = brd.duplicate();
 
 		while (!board.gameOver()) {
-			if (node.getPlayer() >= 0) { // this is a regular node
+			if (!node.isRandomNode()) { // this is a regular node
 				if (node.getUnvisitedChildren() == null) {
 					node.expandNode(board);
 				}
@@ -230,7 +234,7 @@ public class MCTS {
 					ArrayList<Node> bestNodes = findChildren(node, board, optimisticBias, pessimisticBias,
 							explorationConstant);
 
-					if (bestNodes.size() == 0) {
+					if (bestNodes.isEmpty()) {
 						// We have failed to find a single child to visit
 						// from a non-terminal node, so we conclude that
 						// all children must have been pruned, and that
@@ -316,9 +320,7 @@ public class MCTS {
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, current);
 		}
 
-		Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
-
-		return finalNode;
+		return bestNodes.get(random.nextInt(bestNodes.size()));
 	}
 
 	private double getBestValue(double bestValue, double tempBest, ArrayList<Node> bestNodes, Node node) {
@@ -350,9 +352,7 @@ public class MCTS {
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
 		}
 
-		Node finalNode = bestNodes.get(random.nextInt(bestNodes.size()));
-
-		return finalNode;
+		return bestNodes.get(random.nextInt(bestNodes.size()));
 	}
 
 	/**
@@ -542,7 +542,7 @@ public class MCTS {
 		public Node call() throws Exception {
 			Node root = new Node(board);
 
-			//System.out.println("New random cards dealt");
+			//logger.info("New random cards dealt");
 			runUntilTimeRunsOut(board, root, endingTime);
 
 			return root;

@@ -1,5 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
+import com.google.common.collect.Iterables;
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
@@ -7,6 +8,8 @@ import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -29,15 +32,25 @@ public class JassTheRipperJassStrategy extends RandomJassStrategy implements Jas
 //	TODO refinejass knowledge schauen austrumpfen
 /*
 NOTES FROM PLAY AGAINST JASS THE RIPPER 13/02/2018:
+
+250ms bedenkzeit
+
 Negativ:
-Austrumpfen suboptimal (250ms bedenkzeit)
-lässt mich lange gewähren obwohl er trümpfe hat (250ms bedenkzeit)
-abstechen passiv (250ms bedenkzeit)
-Gegner spielt auf mein könig, obwohl er noch die 7 hatte (2500ms) -> regel hinzufügen
-Gegner trumpft aus obwohl nur noch sein Partner trümpfe hat!!!(2500ms)
-Gegner sticht 10er nicht ab als letzter spieler obwohl er noch 3 trümpfe hat!!!(2500ms)
-Partner sticht als zweitletzter spieler gegnerisches ass mit trumpf 10 ab und wird danach überstochen!! (2500ms)
-Partner schmiert dem Gegner, obwohl er noch ein Brettli hat! (2500ms)
+Austrumpfen suboptimal
+lässt mich lange gewähren obwohl er trümpfe hat
+abstechen passiv
+
+
+
+2500ms bedenkzeit
+
+Negativ:
+Gegner spielt auf mein könig, obwohl er noch die 7 hatte -> regel hinzufügen
+Gegner trumpft aus obwohl nur noch sein Partner trümpfe hat!!!!!!
+Gegner sticht 10er nicht ab als letzter spieler obwohl er noch 3 trümpfe hat!!!
+Partner sticht als zweitletzter spieler gegnerisches ass mit trumpf 10 ab und wird danach überstochen!!
+Partner schmiert dem Gegner, obwohl er noch ein Brettli hat!
+Trumpft mit nell aus in dritter runde obwohl bauer noch im spiel ist!
 
 
 Neutral:
@@ -65,16 +78,24 @@ Weighing simulation results
 architecture similar to alphazero with neural net
 */
 
-	// TODO check random seed in jass server for card distribution
+
+
+/*
+Voices from the experiments:
+Seems fake. Opponents are better than partner
+Partnerbot hat gegner ein ass geschmiert obwohl er ein brettli hätte spielen können
+Gegner hat es 10i vo mir (höchsti charte) als zweitletzte nid gno (9i hetter ge), obwohl er ass und könig gha hett
+gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bzw het müesse ageh)
+
+ */
+
+	// IDEA: only one stateless jasstheripper computation container which provides an api to be called
 
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
 
 	// TODO make Strategy the owner of the threadpool so that it only has to be started once and not for every time we select a card! can save around 5ms on each card choosing
 
-
-	// TODO Experiments like in Bridge: predealt hands (seed). Compare performance.
-
-	// TODO Bot Registry anschauen!
+	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards
 
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
@@ -87,20 +108,31 @@ architecture similar to alphazero with neural net
 	// If we make to many then the thread overhead is too much. On the other hand not enough cannot guarantee a good prediction
 	// 4 times the available processors seems too much (copy of game state takes too long)
 	// If the Machine only has one core, we still need more than 2 determinizations, therefore fixed number.
-	// Prime number so that we do not get draws!
+	// Prime number so that ties are rare!
 	// Possible options: 2 * Runtime.getRuntime().availableProcessors(), 7, 13
-	public static final int NUMBER_OF_THREADS = 13;
+	public static int NUMBER_OF_THREADS = 13;
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
 	// the maximal number of milliseconds per choose card move
-	private static final int MAX_THINKING_TIME = 2500;
+	private static int MAX_THINKING_TIME = 2500;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	public static final int MAX_SHIFT_RATING_VAL = 75;
 
+	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+
 
 	// TODO Wo sollten die Exceptions gecatcht werden???
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
+
+
+	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
+
+
+	public JassTheRipperJassStrategy(int NUMBER_OF_THREADS, int MAX_THINKING_TIME) {
+		this.NUMBER_OF_THREADS = NUMBER_OF_THREADS;
+		this.MAX_THINKING_TIME = MAX_THINKING_TIME;
+	}
 
 	// wähle trumpf mit besten voraussetzungen -> ranking
 	// bei drei sicheren stichen -> obeabe oder undeufe
@@ -117,13 +149,13 @@ architecture similar to alphazero with neural net
 			mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
 
 			final long endTime = System.currentTimeMillis() - startTime;
-			System.out.println("Total time for move: " + endTime + "ms");
-			System.out.println("Chose Trumpf " + mode);
+			logger.info("Total time for move: {}ms", endTime);
+			logger.info("Chose Trumpf {}", mode);
 
 			return mode;
 		} catch (Exception e) {
-			System.out.println("Something unexpectedly went terribly wrong! But could catch exception and choose random trumpf now.");
-			e.printStackTrace();
+			logger.error("Something unexpectedly went terribly wrong! But could catch exception and choose random trumpf now.");
+			logger.debug("{}", e);
 			return JassHelper.getRandomMode(isGschobe);
 		}
 	}
@@ -134,6 +166,7 @@ architecture similar to alphazero with neural net
 		try {
 			final long startTime = System.currentTimeMillis();
 			long time = MAX_THINKING_TIME;
+			time -= 20; // INFO Make sure, that the bot really finishes before the thinking time is up.
 			if (session.isFirstMove()) {
 				time -= 50;
 				// Reset for new round
@@ -147,43 +180,45 @@ architecture similar to alphazero with neural net
 			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 
 			if (possibleCards.isEmpty())
-				System.err.println("We have a serious problem! No possible card to play!");
+				logger.error("We have a serious problem! No possible card to play!");
 
-			if (possibleCards.size() == 1)
-				for (Card card : possibleCards) {
-					System.out.println("Only one possible card to play: " + card + "\n\n");
-					return card;
-				}
+			if (possibleCards.size() == 1) {
+				Card card = Iterables.getOnlyElement(possibleCards);
+				logger.info("Only one possible card to play: {}\n\n", card);
+				// INFO: Even if there is only one card: wait for MAX_THINKING_TIME because otherwise, opponents may detect pattern and conclude that the bot only has one card left
+				Thread.sleep(MAX_THINKING_TIME);
+				return card;
+			}
 
 			Card card = JassHelper.getRandomCard(possibleCards, game);
 
-			System.out.println("Thinking now...");
+			logger.info("Thinking now...");
 			try {
 				final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime, PARALLELISATION_ENABLED);
 				if (possibleCards.contains(card)) {
-					System.out.println("Chose Card based on MCTS, Hurra!");
+					logger.info("Chose Card based on MCTS, Hurra!");
 					card = mctsCard;
 				} else
-					System.out.println("Card chosen not in possible cards. Had to choose random card, damn it!");
+					logger.error("Card chosen not in possible cards. Had to choose random card, damn it!");
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Something went wrong. Had to choose random card, damn it!");
+				logger.debug("{}", e);
+				logger.error("Something went wrong. Had to choose random card, damn it!");
 			}
 
 			final long endTime = System.currentTimeMillis() - startTime;
-			System.out.println("Total time for move: " + endTime + "ms");
-			System.out.println("Played " + card + " out of possible Cards " + possibleCards + " out of available Cards " + availableCards + "\n\n");
+			logger.info("Total time for move: {}ms", endTime);
+			logger.info("Played {} out of possible Cards {} out of available Cards {}\n\n", card, possibleCards, availableCards);
 			assert card != null;
 			assert possibleCards.contains(card);
 			return card;
 		} catch (Exception e) {
-			System.out.println("Something unexpectedly went terribly wrong! But could catch exception and play random card now.");
-			e.printStackTrace();
+			logger.error("Something unexpectedly went terribly wrong! But could catch exception and play random card now.");
+			logger.debug("{}", e);
 			return JassHelper.getRandomCard(availableCards, session.getCurrentGame());
 		}
 	}
 
 	private void printCards(Set<Card> availableCards) {
-		System.out.println("Hi there! I am JassTheRipper and these are my cards: " + availableCards);
+		logger.info("Hi there! I am JassTheRipper and these are my cards: {}", availableCards);
 	}
 }

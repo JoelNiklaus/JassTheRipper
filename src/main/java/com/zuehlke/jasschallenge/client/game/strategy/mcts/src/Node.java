@@ -194,6 +194,10 @@ public class Node {
 		return randomIndex;
 	}
 
+	public boolean isRandomNode() {
+		return player < 0;
+	}
+
 	public double[] getScore() {
 		return score;
 	}

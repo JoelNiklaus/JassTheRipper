@@ -7,6 +7,8 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,6 +21,9 @@ public class JassHelper {
 	public static final int BRETTLI_BOUNDARY = 5; // TEN
 	public static final int EIGHT = 3; // EIGHT
 	public static final int NELL = 4; // NELL
+
+	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+
 
 
 	/**
@@ -873,7 +878,7 @@ public class JassHelper {
 			prospectiveMode = Mode.bottomUp();
 			max = rateUndeufe(availableCards);
 		}
-		System.out.println("ChooseTrumpf succeeded!");
+		logger.info("ChooseTrumpf succeeded!");
 		if (max < JassTheRipperJassStrategy.MAX_SHIFT_RATING_VAL && !isGschobe)
 			return Mode.shift();
 		return prospectiveMode;
@@ -1175,6 +1180,8 @@ public class JassHelper {
 		final PlayingOrder order = round.getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards, game);
 		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
+
+		// TODO make certain cards unavailable (e.g. when one player did not follow suit) or less probable (when a player did not take a valuable trick with a trump) for certain players.
 
 		for (Player player : order.getPlayerInOrder()) {
 			double numberOfCardsToAdd;

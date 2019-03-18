@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.DeepCopy;
 import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.ObjectCloner;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
@@ -9,6 +10,8 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -21,6 +24,9 @@ public class JassBoard implements Board, Serializable {
 
 	private final Set<Card> availableCards;
 	private final Game game;
+
+	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+
 
 
 	/**
@@ -80,11 +86,11 @@ public class JassBoard implements Board, Serializable {
 		assert (possibleCards.size() > 0);
 
 		try {
-			//System.out.println("Possible cards before refining: " + possibleCards);
+			//logger.info("Possible cards before refining: " + possibleCards);
 			possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
-			//System.out.println("Possible cards after refining: " + possibleCards);
+			//logger.info("Possible cards after refining: " + possibleCards);
 		} catch (Exception e) {
-			System.out.println("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
+			logger.info("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
 			e.printStackTrace();
 		}
 
@@ -180,6 +186,6 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public void bPrint() {
-		System.out.println(game.toString());
+		logger.info(game.toString());
 	}
 }

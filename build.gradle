@@ -41,7 +41,7 @@ dependencies {
     //compile group: 'net.sf.dozer', name: 'dozer', version: '5.5.1'
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
-    //compile group: 'com.google.guava', name: 'guava', version: '21.0'
+    compile 'com.google.guava:guava:27.1-jre'
 
 
     testCompile 'junit:junit:4.12'
