@@ -5,6 +5,7 @@ import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 
 import java.util.Arrays;
@@ -32,7 +33,7 @@ class ApplicationBotTryout {
 	private final static String BOT_NAME = "JassTheRipper";
 
 	//CHALLENGE2017: Set your strategy
-	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy();
+	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy(StrengthLevel.STRONG);
 
 	//CHALLENGE2017: Set the number of opponent teams with random bots
 	private final static int NUMBER_OF_RANDOM_TEAMS = 0;

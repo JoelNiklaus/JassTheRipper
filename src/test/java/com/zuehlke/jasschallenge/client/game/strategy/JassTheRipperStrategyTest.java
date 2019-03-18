@@ -31,7 +31,7 @@ public class JassTheRipperStrategyTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy();
+		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
 		strategy.chooseCard(cards1, gameSession);
 		strategy.chooseCard(cards2, gameSession);
 		strategy.chooseCard(cards3, gameSession);
@@ -51,7 +51,7 @@ public class JassTheRipperStrategyTest {
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 
 
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy();
+		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
 		strategy.chooseCard(cards1, gameSession);
 	}
 
@@ -64,7 +64,7 @@ public class JassTheRipperStrategyTest {
 		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
 
 
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy();
+		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards1, gameSession)));
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards2, gameSession)));
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards3, gameSession)));

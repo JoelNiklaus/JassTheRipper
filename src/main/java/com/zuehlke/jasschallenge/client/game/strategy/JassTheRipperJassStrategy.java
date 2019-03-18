@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
-import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -104,17 +102,8 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	// IMPORTANT: If does not work properly, try setting this to false
 	private static final boolean PARALLELISATION_ENABLED = true;
 
-	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute a good move
-	// If we make to many then the thread overhead is too much. On the other hand not enough cannot guarantee a good prediction
-	// 4 times the available processors seems too much (copy of game state takes too long)
-	// If the Machine only has one core, we still need more than 2 determinizations, therefore fixed number.
-	// Prime number so that ties are rare!
-	// Possible options: 2 * Runtime.getRuntime().availableProcessors(), 7, 13
-	public static int NUMBER_OF_THREADS = 13;
 
-	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move
-	// the maximal number of milliseconds per choose card move
-	private static int MAX_THINKING_TIME = 2500;
+	private StrengthLevel strengthLevel = StrengthLevel.STRONG;
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	public static final int MAX_SHIFT_RATING_VAL = 75;
@@ -128,10 +117,12 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
+	public JassTheRipperJassStrategy() {
 
-	public JassTheRipperJassStrategy(int NUMBER_OF_THREADS, int MAX_THINKING_TIME) {
-		this.NUMBER_OF_THREADS = NUMBER_OF_THREADS;
-		this.MAX_THINKING_TIME = MAX_THINKING_TIME;
+	}
+
+	public JassTheRipperJassStrategy(StrengthLevel strengthLevel) {
+		this.strengthLevel = strengthLevel;
 	}
 
 	// wähle trumpf mit besten voraussetzungen -> ranking
@@ -165,7 +156,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		try {
 			final long startTime = System.currentTimeMillis();
-			long time = MAX_THINKING_TIME;
+			long time = strengthLevel.getMaxThinkingTime();
 			time -= 20; // INFO Make sure, that the bot really finishes before the thinking time is up.
 			if (session.isFirstMove()) {
 				time -= 50;
@@ -185,8 +176,8 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			if (possibleCards.size() == 1) {
 				Card card = Iterables.getOnlyElement(possibleCards);
 				logger.info("Only one possible card to play: {}\n\n", card);
-				// INFO: Even if there is only one card: wait for MAX_THINKING_TIME because otherwise, opponents may detect pattern and conclude that the bot only has one card left
-				Thread.sleep(MAX_THINKING_TIME);
+				// INFO: Even if there is only one card: wait for maxThinkingTime because otherwise, opponents may detect pattern and conclude that the bot only has one card left
+				Thread.sleep(strengthLevel.getMaxThinkingTime());
 				return card;
 			}
 
@@ -194,7 +185,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 			logger.info("Thinking now...");
 			try {
-				final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime, PARALLELISATION_ENABLED);
+				final Card mctsCard = MCTSHelper.getCard(availableCards, game, endingTime, PARALLELISATION_ENABLED, strengthLevel.getNumThreads());
 				if (possibleCards.contains(card)) {
 					logger.info("Chose Card based on MCTS, Hurra!");
 					card = mctsCard;

@@ -8,7 +8,6 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import com.zuehlke.jasschallenge.game.cards.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +30,12 @@ public class MCTSHelper {
 	 * @param availableCards
 	 * @param game
 	 * @param endingTime
+	 * @param parallelisation
+	 * @param numThreads
 	 * @return
 	 * @throws Exception
 	 */
-	public static Card getCard(Set<Card> availableCards, Game game, long endingTime, boolean parallelisation) throws Exception {
+	public static Card getCard(Set<Card> availableCards, Game game, long endingTime, boolean parallelisation, int numThreads) throws Exception {
 		// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
 		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
 		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
@@ -56,7 +57,7 @@ public class MCTSHelper {
 
 
 		if (parallelisation)
-			mcts.enableRootParallelisation(JassTheRipperJassStrategy.NUMBER_OF_THREADS);
+			mcts.enableRootParallelisation(numThreads);
 
 		return runPrediction(availableCards, game, mcts, endingTime);
 	}

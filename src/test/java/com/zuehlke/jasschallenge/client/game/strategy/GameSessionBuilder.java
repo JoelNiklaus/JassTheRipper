@@ -13,7 +13,7 @@ import static java.util.Arrays.asList;
 
 public class GameSessionBuilder {
     private Mode startedGameMode = null;
-    private JassStrategy jassStrategy = new JassTheRipperJassStrategy();
+    private JassStrategy jassStrategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
     private List<Player> playersInPlayingOrder = asList(
             new Player("Player 1", jassStrategy),
             new Player("Player 2", jassStrategy),
