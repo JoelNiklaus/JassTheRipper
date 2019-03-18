@@ -30,7 +30,7 @@ public class JassBoard implements Board, Serializable {
 
 
 	/**
-	 * Constructs a new Jassboard. If the flag is set, deals new random cards to the players.
+	 * Constructs a new JassBoard. If the flag is set, deals new random cards to the players.
 	 *
 	 * @param availableCards
 	 * @param game

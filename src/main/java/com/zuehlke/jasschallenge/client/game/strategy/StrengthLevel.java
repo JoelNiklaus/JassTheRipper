@@ -20,6 +20,7 @@ public enum StrengthLevel {
 	// If the Machine only has one core, we still need more than 2 determinizations, therefore fixed number.
 	// Prime number so that ties are rare!
 	// Possible options: 2 * Runtime.getRuntime().availableProcessors(), 7, 13
+	// NOTE that a number higher than 1 means that the MCTS is run parallelised! If does not work properly, try setting it to 1
 	private final int numThreads;
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute good move

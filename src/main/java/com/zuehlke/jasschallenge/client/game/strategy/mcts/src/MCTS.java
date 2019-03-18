@@ -97,10 +97,10 @@ public class MCTS {
 				throw new Exception();
 			}
 
-			threadpool.shutdown();
+			//threadpool.shutdown();
 			futures.clear();
 
-			assert threadpool.isShutdown();
+			//assert threadpool.isShutdown();
 			assert futures.isEmpty();
 		}
 
@@ -515,7 +515,25 @@ public class MCTS {
 		return rootParallelisation;
 	}
 
-	// Check if all threads are done
+	/**
+	 * Shuts down the thread pool. Has to be called as soon as it is not used anymore!
+	 */
+	public void shutDown() {
+		threadpool.shutdown();
+	}
+
+	/**
+	 * Checks if the thread pool has been shut down.
+	 */
+	public boolean isShutDown() {
+		return threadpool.isShutdown();
+	}
+
+	/**
+	 * Check if all threads are done
+	 * @param tasks
+	 * @return
+	 */
 	private boolean checkDone(ArrayList<FutureTask<Node>> tasks) {
 		for (FutureTask<Node> task : tasks) {
 			if (!task.isDone()) {
@@ -526,7 +544,8 @@ public class MCTS {
 		return true;
 	}
 
-	/*
+
+	/**
 	 * This is a task for the threadpool.
 	 */
 	private class MCTSTask implements Callable<Node> {

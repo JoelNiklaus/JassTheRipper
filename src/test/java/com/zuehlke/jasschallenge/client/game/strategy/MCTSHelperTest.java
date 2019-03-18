@@ -9,12 +9,34 @@ import org.junit.Test;
 import java.util.EnumSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Created by joelniklaus on 06.05.17.
  */
-public class MCTSTest {
+public class MCTSHelperTest {
 
 	public static final StrengthLevel STRENGTH_LEVEL = StrengthLevel.FAST;
+
+	@Test
+	public void testExecutorServiceShutsDownCorrectly() throws Exception {
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.bottomUp())
+				.createGameSession();
+
+		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
+
+		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
+		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
+
+		assertFalse(mctsHelper.isShutDown());
+
+		mctsHelper.shutDown();
+
+		assertTrue(mctsHelper.isShutDown());
+
+	}
 
 	@Test
 	public void testMCTSStart() throws Exception {
@@ -24,8 +46,8 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime(), true, STRENGTH_LEVEL.getNumThreads());
-
+		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
+		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 	}
 
 	// TODO spätere runden testen
@@ -43,7 +65,8 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime(), true, STRENGTH_LEVEL.getNumThreads());
+		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
+		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 
 	}
 
@@ -72,7 +95,8 @@ public class MCTSTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime(), true, STRENGTH_LEVEL.getNumThreads());
+		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
+		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 
 	}
 
