@@ -26,19 +26,22 @@ import java.util.concurrent.Future;
 class ApplicationBotTryout {
 
 	private static final String LOCAL_URL = "ws://localhost:3000";
+	private static final String SERVER_URL = "ws://jass.joeli.to/";
 
 	//CHALLENGE2017: Set your bot name
 	private final static String BOT_NAME = "JassTheRipper";
 
-	//CHALLENGE2017: Set your strategoy
+	//CHALLENGE2017: Set your strategy
 	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy();
 
 	//CHALLENGE2017: Set the number of opponent teams with random bots
-	private final static int NUMBER_OF_RANDOM_TEAMS = 1;
-
-	private final static boolean TEST_HUMAN = true;
+	private final static int NUMBER_OF_RANDOM_TEAMS = 0;
 
 	public static void main(String[] args) throws Exception {
+		String url = LOCAL_URL;
+		SessionType sessionType = SessionType.SINGLE_GAME;
+		boolean TEST_HUMAN = false;
+
 
 		int numThreads = NUMBER_OF_RANDOM_TEAMS * 2 + 2;
 		if (TEST_HUMAN)
@@ -46,20 +49,19 @@ class ApplicationBotTryout {
 		ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
 
 		List<Future<RemoteGame>> futures = new LinkedList<>();
-		SessionType sessionType = SessionType.SINGLE_GAME;
 
 		if (!TEST_HUMAN) {
 			for (int i = 0; i < NUMBER_OF_RANDOM_TEAMS; i++) {
 				int teamId = i;
-				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), sessionType)));
-				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), sessionType)));
+				futures.add(executorService.submit(() -> startGame(url, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), sessionType)));
+				futures.add(executorService.submit(() -> startGame(url, new Player("RandomJavaBot" + teamId, new RandomJassStrategy()), sessionType)));
 			}
 		}
-		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
-		futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
+		futures.add(executorService.submit(() -> startGame(url, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
+		futures.add(executorService.submit(() -> startGame(url, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
 
 		if (TEST_HUMAN) {
-			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
+			futures.add(executorService.submit(() -> startGame(url, new Player(BOT_NAME, MY_STRATEGY), sessionType)));
 		}
 
 		futures.forEach(ApplicationBotTryout::awaitFuture);
