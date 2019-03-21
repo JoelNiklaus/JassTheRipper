@@ -25,7 +25,7 @@ public class Application {
 	private static final JassTheRipperJassStrategy STRATEGY = new JassTheRipperJassStrategy();
 
 	private static final String LOCAL_URL = "ws://127.0.0.1:3000";
-	private static final String SERVER_URL = "ws://jass.joeli.to";
+	private static final String SERVER_URL = "wss://jass.joeli.to";
 
 	public static void main(String[] args) throws Exception {
 		// Competition
@@ -68,7 +68,7 @@ public class Application {
 			System.out.println("Arguments: " + Arrays.toString(args));
 			return Integer.parseInt(args[1]);
 		}
-		return null;
+		return 1;
 	}
 
 	private static void startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType, Integer chosenTeamIndex) throws Exception {

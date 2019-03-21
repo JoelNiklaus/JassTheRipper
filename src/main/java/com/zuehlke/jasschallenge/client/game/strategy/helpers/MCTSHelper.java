@@ -1,7 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
@@ -11,7 +11,6 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +21,7 @@ import java.util.Set;
  */
 public class MCTSHelper {
 
-	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+	public static final Logger logger = LoggerFactory.getLogger(MCTSHelper.class);
 
 	private final MCTS mcts = new MCTS();
 
@@ -50,6 +49,7 @@ public class MCTSHelper {
 
 	/**
 	 * Checks whether the threadpool in the mcts object has been shut down.
+	 *
 	 * @return
 	 */
 	public boolean isShutDown() {
@@ -60,69 +60,77 @@ public class MCTSHelper {
 	 * Sets the MCTS parameters, runs it and predicts a Card
 	 *
 	 * @param availableCards
-	 * @param game
+	 * @param gameSession
 	 * @param endingTime
 	 * @return
 	 * @throws Exception
 	 */
-	public Card getCard(Set<Card> availableCards, Game game, long endingTime) throws Exception {
-		// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
-		Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
-		possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
-		if (possibleCards.size() == 1) {
-			logger.info("Based on expert Jass Knowledge there is only one sensible card available now.");
-			return (Card) possibleCards.toArray()[0];
+	public Move getMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
+		if (!isChoosingTrumpf) {
+			// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
+			// But, we do not want to trust this too much but rather rely on the MCTS. It can be included there too.
+			Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
+			possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, gameSession.getCurrentGame());
+			if (possibleCards.size() == 1) {
+				logger.info("Based on expert Jass Knowledge there is only one sensible card available now.");
+				Card card = (Card) possibleCards.toArray()[0];
+				return new CardMove(gameSession.getCurrentPlayer(), card);
+			}
 		}
 
-		return runPrediction(availableCards, game, endingTime);
+		return runPrediction(availableCards, gameSession, isChoosingTrumpf, shifted, endingTime);
 	}
 
 	/**
 	 * Runs the prediction of the card. Runs differently whether or not parallelisation is enabled.
 	 *
 	 * @param availableCards
-	 * @param game
+	 * @param gameSession
 	 * @param endingTime
 	 * @return
 	 */
-	private Card runPrediction(Set<Card> availableCards, Game game, long endingTime) throws Exception {
+	private Move runPrediction(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
+
+
 		if (!mcts.isParallelisationEnabled()) {
 			long maxComputationTime = endingTime - System.currentTimeMillis();
 			int numberOfMCTSRuns = 4;
 
 			long timePerRun = maxComputationTime / numberOfMCTSRuns;
 
-			HashMap<Card, Integer> numberOfSelections = new HashMap<>();
+			HashMap<Move, Integer> numberOfSelections = new HashMap<>();
 			for (int i = 0; i < numberOfMCTSRuns; i++) {
-				Card card = predictCard(availableCards, game, System.currentTimeMillis() + timePerRun);
+				Move move = predictMove(availableCards, gameSession, isChoosingTrumpf, shifted, System.currentTimeMillis() + timePerRun);
 				int number = 1;
-				if (numberOfSelections.containsKey(card)) {
-					number += numberOfSelections.get(card);
+				if (numberOfSelections.containsKey(move)) {
+					number += numberOfSelections.get(move);
 				}
-				numberOfSelections.put(card, number);
+				numberOfSelections.put(move, number);
 			}
-			Card card = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst().get().getKey();
-			return card;
+			Move move = numberOfSelections.entrySet().stream()
+					.sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+					.findFirst().get().getKey();
+			return move;
 		}
 
 
-		return predictCard(availableCards, game, endingTime);
+		return predictMove(availableCards, gameSession, isChoosingTrumpf, shifted, endingTime);
 	}
 
 	/**
 	 * Chooses a card by running the mcts method.
 	 *
 	 * @param availableCards
-	 * @param game
+	 * @param gameSession
 	 * @param endingTime
 	 * @return
 	 */
-	private Card predictCard(Set<Card> availableCards, Game game, long endingTime) throws Exception {
-		Board jassBoard = new JassBoard(availableCards, game, true);
+	private Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
+		Board jassBoard = new JassBoard(availableCards, gameSession, true, isChoosingTrumpf, shifted);
 		Move move = mcts.runMCTS_UCT(jassBoard, endingTime, false);
-		return ((CardMove) move).getPlayedCard();
+		return move;
 	}
 
 }

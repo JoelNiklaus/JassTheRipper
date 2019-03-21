@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
@@ -17,10 +18,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class MCTSHelperTest {
 
-	public static final StrengthLevel STRENGTH_LEVEL = StrengthLevel.FAST;
+	private static final StrengthLevel STRENGTH_LEVEL = StrengthLevel.FAST;
+
 
 	@Test
-	public void testExecutorServiceShutsDownCorrectly() throws Exception {
+	public void testExecutorServiceShutsDownCorrectly() throws MCTSException {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
@@ -28,7 +30,7 @@ public class MCTSHelperTest {
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
 		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
-		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
+		mctsHelper.getMove(cards, gameSession, false, false,System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 
 		assertFalse(mctsHelper.isShutDown());
 
@@ -39,7 +41,7 @@ public class MCTSHelperTest {
 	}
 
 	@Test
-	public void testMCTSStart() throws Exception {
+	public void testMCTSStart() throws MCTSException {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
@@ -47,14 +49,14 @@ public class MCTSHelperTest {
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
 		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
-		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
+		mctsHelper.getMove(cards, gameSession, false, false,System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 	}
 
 	// TODO spätere runden testen
 	// TODO andere trümpfe testen
 
 	@Test
-	public void testMCTSDuringFirstRound() throws Exception {
+	public void testMCTSDuringFirstRound() throws MCTSException {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
@@ -66,12 +68,12 @@ public class MCTSHelperTest {
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
 		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
-		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
+		mctsHelper.getMove(cards, gameSession, false,false, System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 
 	}
 
 	@Test
-	public void testMCTSDuringSecondRound() throws Exception {
+	public void testMCTSDuringSecondRound() throws MCTSException {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
@@ -81,7 +83,7 @@ public class MCTSHelperTest {
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 		order.moveToNextPlayer();
 		Player player = order.getCurrentPlayer();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_EIGHT));
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_SEVEN));
 		order.moveToNextPlayer();
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_KING));
 		order.moveToNextPlayer();
@@ -93,10 +95,10 @@ public class MCTSHelperTest {
 		gameSession.makeMove(new Move(player, Card.HEART_ACE));
 
 
-		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
+		Set<Card> cards = EnumSet.of(Card.CLUB_QUEEN, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE);
 
 		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumThreads());
-		mctsHelper.getCard(cards, gameSession.getCurrentGame(), System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
+		mctsHelper.getMove(cards, gameSession, false, false, System.currentTimeMillis() + STRENGTH_LEVEL.getMaxThinkingTime());
 
 	}
 

@@ -56,4 +56,12 @@ public class Team implements Serializable {
 		result = 31 * result + (players != null ? players.hashCode() : 0);
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "Team{" +
+				"teamName='" + teamName + '\'' +
+				", players=" + players +
+				'}';
+	}
 }

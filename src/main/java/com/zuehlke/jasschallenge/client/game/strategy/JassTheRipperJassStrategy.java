@@ -2,8 +2,12 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.google.common.collect.Iterables;
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
@@ -91,9 +95,9 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
 
-	// TODO make Strategy the owner of the threadpool so that it only has to be started once and not for every time we select a card! can save around 5ms on each card choosing
-
 	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards
+
+	// TODO find a way to visualize the MCTS tree
 
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
@@ -103,14 +107,19 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private StrengthLevel strengthLevel = StrengthLevel.INSANE;
 
+	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED;
+
 	// TODO: Maybe this is too high or too low? => Write tests.
+	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
 	public static final int MAX_SHIFT_RATING_VAL = 75;
 
 	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
 
-	// TODO Wo sollten die Exceptions gecatcht werden???
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
+
+	// TODO add exceptions to code!!!
+	// TODO add tests!
 
 
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
@@ -130,7 +139,18 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 			Mode mode = JassHelper.getRandomMode(isGschobe);
 
-			mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
+			if (trumpfSelectionMethod == TrumpfSelectionMethod.RULE_BASED)
+				mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
+
+			if (trumpfSelectionMethod == TrumpfSelectionMethod.MCTS)
+				try {
+					assert mctsHelper != null;
+					Move move = mctsHelper.getMove(availableCards, session, true, isGschobe, startTime + strengthLevel.getMaxThinkingTime());
+					mode = ((TrumpfMove) move).getChosenTrumpf();
+				} catch (MCTSException e) {
+					logger.debug("{}", e);
+					logger.error("Something went wrong. Had to choose random trumpf, damn it!");
+				}
 
 			final long endTime = System.currentTimeMillis() - startTime;
 			logger.info("Total time for move: {}ms", endTime);
@@ -138,8 +158,8 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 			return mode;
 		} catch (Exception e) {
-			logger.error("Something unexpectedly went terribly wrong! But could catch exception and choose random trumpf now.");
 			logger.debug("{}", e);
+			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random trumpf now.");
 			return JassHelper.getRandomMode(isGschobe);
 		}
 	}
@@ -151,10 +171,9 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		long time = strengthLevel.getMaxThinkingTime();
 		final long endingTime = startTime + time;
 		printCards(availableCards);
-		final Game game = session.getCurrentGame();
 
 		// INFO Make sure, that the bot really finishes before the thinking time is up.
-		Card card = calculateCard(availableCards, game, endingTime - 20);
+		Card card = calculateCard(availableCards, session, endingTime - 20);
 
 		// INFO: Even if there is only one card: wait for maxThinkingTime because opponents might detect patterns otherwise
 		waitUntilTimeIsUp(endingTime);
@@ -174,44 +193,45 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		}
 	}
 
-	private Card calculateCard(Set<Card> availableCards, Game game, long endingTime) {
+	private Card calculateCard(Set<Card> availableCards, GameSession gameSession, long endingTime) {
 		try {
-			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, game);
+			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
 
 			if (possibleCards.isEmpty())
 				logger.error("We have a serious problem! No possible card to play!");
 
 			if (possibleCards.size() == 1) {
 				Card card = Iterables.getOnlyElement(possibleCards);
-				logger.info("Only one possible card to play: {}\n\n", card);
+				logger.info("Only one possible card to play: {}", card);
 				return card;
 			}
 
-			Card card = JassHelper.getRandomCard(possibleCards, game);
+			Card card = JassHelper.getRandomCard(possibleCards, gameSession.getCurrentGame());
 
 			logger.info("Thinking now...");
 			try {
-				final Card mctsCard = mctsHelper.getCard(availableCards, game, endingTime);
+				assert mctsHelper != null;
+				final Card mctsCard = ((CardMove) mctsHelper.getMove(availableCards, gameSession, false, false, endingTime)).getPlayedCard();
 				if (possibleCards.contains(card)) {
 					logger.info("Chose Card based on MCTS, Hurra!");
 					card = mctsCard;
 				} else
 					logger.error("Card chosen not in possible cards. Had to choose random card, damn it!");
-			} catch (Exception e) {
+			} catch (MCTSException e) {
 				logger.debug("{}", e);
 				logger.error("Something went wrong. Had to choose random card, damn it!");
 			}
 
 			//final long endTime = System.currentTimeMillis() - startTime;
 			//logger.info("Total time for move: {}ms", endTime);
-			logger.info("Played {} out of possible Cards {} out of available Cards {}\n\n", card, possibleCards, availableCards);
+			logger.info("Played {} out of possible Cards {} out of available Cards {}", card, possibleCards, availableCards);
 			assert card != null;
 			assert possibleCards.contains(card);
 			return card;
 		} catch (Exception e) {
-			logger.error("Something unexpectedly went terribly wrong! But could catch exception and play random card now.");
+			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random card now.");
 			logger.debug("{}", e);
-			return JassHelper.getRandomCard(availableCards, game);
+			return JassHelper.getRandomCard(availableCards, gameSession.getCurrentGame());
 		}
 	}
 
@@ -225,5 +245,12 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	public void onSessionStarted(GameSession gameSession) {
 		mctsHelper = new MCTSHelper(strengthLevel.getNumThreads());
+	}
+
+	@Override
+	public String toString() {
+		return "JassTheRipperJassStrategy{" +
+				"strengthLevel=" + strengthLevel +
+				'}';
 	}
 }

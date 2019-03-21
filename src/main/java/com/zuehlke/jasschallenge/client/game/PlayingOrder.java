@@ -47,10 +47,6 @@ public class PlayingOrder implements Serializable {
 		return startingPlayerInt;
 	}
 
-	public List<Player> getPlayerInOrder() {
-		return playersInInitialPlayingOrder;
-	}
-
 	public Player getCurrentPlayer() {
 		return playersInInitialPlayingOrder.get(getBoundIndex(currentPlayerInt));
 	}
@@ -63,16 +59,7 @@ public class PlayingOrder implements Serializable {
 		return (this.startingPlayerInt + playerPosition) % playersInInitialPlayingOrder.size();
 	}
 
-	@Override
-	public String toString() {
-		return "PlayingOrder{" +
-				"playersInInitialPlayingOrder=" + playersInInitialPlayingOrder +
-				", startingPlayerInt=" + startingPlayerInt +
-				", currentPlayerInt=" + currentPlayerInt +
-				'}';
-	}
-
-	public int getCurrentPlayerInt() {
+	private int getCurrentPlayerInt() {
 		return currentPlayerInt;
 	}
 
@@ -94,5 +81,14 @@ public class PlayingOrder implements Serializable {
 		result = 31 * result + startingPlayerInt;
 		result = 31 * result + currentPlayerInt;
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "PlayingOrder{" +
+				"playersInInitialPlayingOrder=" + playersInInitialPlayingOrder +
+				", startingPlayerInt=" + startingPlayerInt +
+				", currentPlayerInt=" + currentPlayerInt +
+				'}';
 	}
 }

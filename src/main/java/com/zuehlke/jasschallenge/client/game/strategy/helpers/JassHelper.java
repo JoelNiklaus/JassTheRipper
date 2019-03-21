@@ -22,8 +22,7 @@ public class JassHelper {
 	public static final int EIGHT = 3; // EIGHT
 	public static final int NELL = 4; // NELL
 
-	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
-
+	public static final Logger logger = LoggerFactory.getLogger(JassHelper.class);
 
 
 	/**
@@ -134,7 +133,7 @@ public class JassHelper {
 	 * @return
 	 */
 	private static boolean wasStartingPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayerInOrder().get(0).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(0).equals(player);
 	}
 
 	/**
@@ -145,7 +144,7 @@ public class JassHelper {
 	 * @return
 	 */
 	private static boolean wasSecondPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayerInOrder().get(1).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(1).equals(player);
 	}
 
 	/**
@@ -156,7 +155,7 @@ public class JassHelper {
 	 * @return
 	 */
 	private static boolean wasThirdPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayerInOrder().get(2).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(2).equals(player);
 	}
 
 	/**
@@ -167,7 +166,7 @@ public class JassHelper {
 	 * @return
 	 */
 	private static boolean wasLastPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayerInOrder().get(3).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(3).equals(player);
 	}
 
 	/**
@@ -178,7 +177,7 @@ public class JassHelper {
 	 * @param possibleCards
 	 * @return
 	 */
-	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) throws Exception {
+	public static Set<Card> refineCardsWithJassKnowledge(Set<Card> possibleCards, Game game) {
 		final Round round = game.getCurrentRound();
 		final Player player = game.getCurrentPlayer();
 		final Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
@@ -255,9 +254,9 @@ public class JassHelper {
 				// wenn ich noch angeben kann
 				if (isAngebenPossible(possibleCards, cardOfPartner)) {
 				*/
-					/**
-					 * SCHMIEREN
-					 */
+		/**
+		 * SCHMIEREN
+		 */
 					/*
 					Set<Card> schmierCards = getSchmierCards(possibleCards, cardOfPartner, mode);
 					// wenn letzter spieler einfach schmieren
@@ -274,9 +273,9 @@ public class JassHelper {
 				// wenn ich nicht mehr angeben kann
 				else {
 				*/
-					/**
-					 * VERWERFEN (Nachricht senden)
-					 */
+		/**
+		 * VERWERFEN (Nachricht senden)
+		 */
 					/*
 					if (!isTrumpf(mode)) {
 						// if at least one color is good -> get best color
@@ -288,9 +287,9 @@ public class JassHelper {
 						}
 					}
 					*/
-					/**
-					 * ANZIEHEN LATER (Nachricht senden)
-					 */
+		/**
+		 * ANZIEHEN LATER (Nachricht senden)
+		 */
 					/*
 					else {
 						if (shouldAnziehen(possibleCards, alreadyPlayedCards, true)) {
@@ -315,7 +314,7 @@ public class JassHelper {
 		return lastPlayer(round) && isOpponent(round.getWinner(), player);
 	}
 
-	private static boolean shouldAnziehenStarting(Set<Card> possibleCards, Round round, Set<Card> alreadyPlayedCards, Mode mode) throws Exception {
+	private static boolean shouldAnziehenStarting(Set<Card> possibleCards, Round round, Set<Card> alreadyPlayedCards, Mode mode) {
 		// Wenn erster spieler und ein Trumpf und anziehen macht sinn
 		return startingPlayer(round) && isTrumpf(mode)
 				&& shouldAnziehen(possibleCards, alreadyPlayedCards, true);
@@ -347,14 +346,14 @@ public class JassHelper {
 	}
 
 	/* TODO: Hey Joel, this is the boolean helperMethod you asked for. If you want to change the return logic (e.g.
-	* return true if you can make 3 Stichs) you shouldn't have any problems, I've written down what the return
-    * statements calculated mean in a comment above them.
-    * Below: Same for verworfen, returns true if you can make less than one Stich with your worst color (almost always
-    * the case; if you want it to be if you are very unlikely to make a Stich, make it return worstRating <= 2,
-    * if you want it to be quite unlikely make it return worstRating <= 8
-    * @Note: If you want to have the best and worst Color for 'Anziehen' and 'Verwerfen', there are helperMethods for
-    * that below this method.
-    * */
+	 * return true if you can make 3 Stichs) you shouldn't have any problems, I've written down what the return
+	 * statements calculated mean in a comment above them.
+	 * Below: Same for verworfen, returns true if you can make less than one Stich with your worst color (almost always
+	 * the case; if you want it to be if you are very unlikely to make a Stich, make it return worstRating <= 2,
+	 * if you want it to be quite unlikely make it return worstRating <= 8
+	 * @Note: If you want to have the best and worst Color for 'Anziehen' and 'Verwerfen', there are helperMethods for
+	 * that below this method.
+	 * */
 
 	/**
 	 * Returns true if the player can make ca. > 65% of the remaining Stichs or at minimum 5 Stich or at minimum
@@ -364,9 +363,8 @@ public class JassHelper {
 	 * @param alreadyPlayedCards - the cards which have already been played in the game
 	 * @param obeAbe             - if Obeabe true, if Undeufe false (we only do anziehen if it is trumpf -> therefore obeabe rating is relevant
 	 * @return
-	 * @throws Exception
 	 */
-	private static boolean shouldAnziehen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+	private static boolean shouldAnziehen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) {
 		// sum is (#Stichs the Player can make) * 19
 		int sum = 0;
 		// bestRating is (#Stichs the Player can make with his best color) * 19
@@ -406,9 +404,8 @@ public class JassHelper {
 	 * @param alreadyPlayedCards - the cards which have already been played in the game
 	 * @param obeAbe             - if Obeabe true, if Undeufe false
 	 * @return
-	 * @throws Exception
 	 */
-	private static boolean shouldVerwerfen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+	private static boolean shouldVerwerfen(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) {
 		// sum is (#Stichs the Player can make) * 19
 		int sum = 0;
 		// bestRating is (#Stichs the Player can make with his best color) * 19
@@ -446,9 +443,8 @@ public class JassHelper {
 	 * @param alreadyPlayedCards - the cards which have already been played in the game
 	 * @param obeAbe             - if Obeabe true, if Undeufe false
 	 * @return
-	 * @throws Exception
 	 */
-	private static Color getBestAnziehenColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+	private static Color getBestAnziehenColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) {
 		int bestRating = 0;
 		int rating;
 		Color bestColor = Color.DIAMONDS;
@@ -472,9 +468,8 @@ public class JassHelper {
 	 * @param alreadyPlayedCards - the cards which have already been played in the game
 	 * @param obeAbe             - if Obeabe true, if Undeufe false
 	 * @return
-	 * @throws Exception
 	 */
-	private static Color getBestVerwerfColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) throws Exception {
+	private static Color getBestVerwerfColor(Set<Card> ownCards, Set<Card> alreadyPlayedCards, boolean obeAbe) {
 		int worstRating = 500;
 		int rating;
 		Color worstColor = Color.CLUBS;
@@ -499,9 +494,8 @@ public class JassHelper {
 	 * @param alreadyPlayedCards - cards already played in the round
 	 * @param color              - the color being rated
 	 * @return the rating
-	 * @throws Exception
 	 */
-	public static int rateColorObeAbeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
+	public static int rateColorObeAbeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) {
 		List<Card> playedCardsOfColor = sortCardsOfColorDescending(alreadyPlayedCards, color);
 		// Get the cards in descending order
 		List<Card> sortedCardsOfColor = sortCardsOfColorDescending(ownCards, color);
@@ -544,9 +538,8 @@ public class JassHelper {
 	 * @param alreadyPlayedCards - cards already played in the round
 	 * @param color              - the color being rated
 	 * @return the rating
-	 * @throws Exception
 	 */
-	public static int rateColorUndeUfeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) throws Exception {
+	public static int rateColorUndeUfeRespectingAlreadyPlayedCards(Set<Card> ownCards, Set<Card> alreadyPlayedCards, Color color) {
 		List<Card> playedCardsOfColor = sortCardsOfColorAscending(alreadyPlayedCards, color);
 		// Get the cards in descending order
 		List<Card> sortedCardsOfColor = sortCardsOfColorAscending(ownCards, color);
@@ -855,7 +848,7 @@ public class JassHelper {
 	}
 
 
-	public static Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode, boolean isGschobe) throws Exception {
+	public static Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode, boolean isGschobe) {
 		int max = 0;
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
@@ -884,7 +877,7 @@ public class JassHelper {
 		return prospectiveMode;
 	}
 
-	public static int rateColorForTrumpf(Set<Card> cards, Color color) throws Exception {
+	public static int rateColorForTrumpf(Set<Card> cards, Color color) {
 		Set<Card> cardsOfColor = getCardsOfColor(cards, color);
 		if (cardsOfColor.size() <= 1)
 			return 0;
@@ -958,7 +951,7 @@ public class JassHelper {
 		return rating;
 	}
 
-	private static boolean containsTwoOrMoreAces(Set<Card> cardStream) throws Exception {
+	private static boolean containsTwoOrMoreAces(Set<Card> cardStream) {
 		List<Card> cardsSorted = cardStream.stream().sorted(Comparator.comparing(Card::getRank).reversed()).collect(Collectors.toList());
 		int countAces = 0;
 		while (cardsSorted.get(0).getRank() == 9) {
@@ -968,7 +961,7 @@ public class JassHelper {
 		return countAces >= 2;
 	}
 
-	public static int rateObeabe(Set<Card> cards) throws Exception {
+	public static int rateObeabe(Set<Card> cards) {
 		int sum = 0;
 		for (Color color : Color.values()) {
 			sum += rateObeabeColor(cards, color);
@@ -976,7 +969,7 @@ public class JassHelper {
 		return sum;
 	}
 
-	public static int rateUndeufe(Set<Card> cards) throws Exception {
+	public static int rateUndeufe(Set<Card> cards) {
 		int sum = 0;
 		for (Color color : Color.values()) {
 			sum += rateUndeufeColor(cards, color);
@@ -984,7 +977,7 @@ public class JassHelper {
 		return sum;
 	}
 
-	public static int rateObeabeColor(Set<Card> cards, Color color) throws Exception {
+	public static int rateObeabeColor(Set<Card> cards, Color color) {
 		// Get the cards in descending order
 		List<Card> sortedCardOfColor = sortCardsOfColorDescending(cards, color);
 		if (sortedCardOfColor.isEmpty())
@@ -1090,7 +1083,7 @@ public class JassHelper {
 		return safety;
 	}
 
-	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
+	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) {
 		// Have the next-higher card => probability to stich is the same as with the next higher card
 		if (numberOfCardsInbetween == 0)
 			return 1;
@@ -1099,7 +1092,7 @@ public class JassHelper {
 			return 1 - ((float) 2 / 3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsInbetween));
 	}
 
-	private static float safetyOfStichVerwerfen(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) throws Exception {
+	private static float safetyOfStichVerwerfen(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) {
 		// Have the next-higher card => probability to stich is the same as with the next higher card
 		if (numberOfCardsInbetween == 0)
 			return 1;
@@ -1112,7 +1105,7 @@ public class JassHelper {
 		return safetyFactor;
 	}
 
-	private static float enemenyHasNoMoreCards(int numberOfMyCards, int higherCards, int numberOfCardsBetween) throws Exception {
+	private static float enemenyHasNoMoreCards(int numberOfMyCards, int higherCards, int numberOfCardsBetween) {
 		float estimate = 1;
 		int otherColorCards = 9 - numberOfMyCards - 1;
 		int otherCards = 27 - 1;
@@ -1136,7 +1129,7 @@ public class JassHelper {
 			return 0;
 	}
 
-	public static int rateUndeufeColor(Set<Card> cards, Color color) throws Exception {
+	public static int rateUndeufeColor(Set<Card> cards, Color color) {
 		// Get the cards in ascending order
 		List<Card> sortedCards = sortCardsOfColorAscending(cards, color);
 		if (sortedCards.size() == 0)
@@ -1170,12 +1163,13 @@ public class JassHelper {
 	}
 
 	/**
-	 * add randomized available Cards for the other players based on already played cards
+	 * Add randomized available cards for the other players based on already played cards
 	 *
 	 * @param availableCards
 	 */
-	public static void distributeCardsForPlayers(Set<Card> availableCards, Game game) throws Exception {
-		final int playerId = game.getCurrentPlayer().getSeatId();
+	public static void distributeCardsForPlayers(Set<Card> availableCards, Game game) {
+		final Player currentPlayer = game.getCurrentPlayer();
+		currentPlayer.setCards(EnumSet.copyOf(availableCards));
 		final Round round = game.getCurrentRound();
 		final PlayingOrder order = round.getPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards, game);
@@ -1183,32 +1177,50 @@ public class JassHelper {
 
 		// TODO make certain cards unavailable (e.g. when one player did not follow suit) or less probable (when a player did not take a valuable trick with a trump) for certain players.
 
-		for (Player player : order.getPlayerInOrder()) {
+		for (Player player : order.getPlayersInInitialPlayingOrder()) {
 			double numberOfCardsToAdd;
-			final int tempPlayerId = player.getSeatId();
-			Set<Card> cards;
-			if (tempPlayerId != playerId) { // randomize cards for the other players
-				//if (tempPlayerId > playerId) // if tempPlayer is seated after player add one card more
+			if (!player.equals(currentPlayer)) { // randomize cards for the other players
 				if (round.hasPlayerAlreadyPlayed(player))
 					numberOfCardsToAdd = Math.floor(numberOfCards);
 				else
 					numberOfCardsToAdd = Math.ceil(numberOfCards);
 
-				cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
-
+				Set<Card> cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
+				player.setCards(cards);
 
 				if (!remainingCards.removeAll(cards))
-					System.err.println("Could not remove picked cards from remaining cards");
+					logger.debug("Could not remove picked cards from remaining cards");
 				assert !remainingCards.containsAll(cards);
-			} else
-				cards = EnumSet.copyOf(availableCards);
+			}
 
-			player.setCards(cards);
 		}
 		assert remainingCards.isEmpty();
 	}
 
-	public static Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) throws Exception {
+	/**
+	 * Distribute the unknown cards to the other players at the beginning of the game, when a player is choosing a trumpf.
+	 *
+	 * @param availableCards
+	 * @param gameSession
+	 */
+	public static void distributeCardsForPlayers(Set<Card> availableCards, GameSession gameSession) {
+		Player currentPlayer = gameSession.getCurrentPlayer();
+		currentPlayer.setCards(EnumSet.copyOf(availableCards));
+
+		Set<Card> remainingCards = EnumSet.allOf(Card.class);
+		remainingCards.removeAll(availableCards);
+		assert !remainingCards.isEmpty();
+		for (Player player : gameSession.getPlayersInInitialPlayingOrder())
+			if (!player.equals(currentPlayer)) {
+				Set<Card> cards = pickRandomSubSet(remainingCards, 9);
+				player.setCards(cards);
+				remainingCards.removeAll(cards);
+			}
+		assert remainingCards.isEmpty();
+	}
+
+
+	public static Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		return pickRandomSubSet(cards, numberOfCards);
 	}
 
@@ -1219,7 +1231,7 @@ public class JassHelper {
 	 * @param numberOfCards
 	 * @return
 	 */
-	public static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) throws Exception {
+	private static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		assert (numberOfCards > 0 || numberOfCards <= 9);
 		List<Card> listOfCards = new LinkedList<>(cards);
 		assert numberOfCards <= listOfCards.size();
@@ -1237,7 +1249,7 @@ public class JassHelper {
 	 * @param availableCards
 	 * @return
 	 */
-	public static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
+	private static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
 		Set<Card> cards = EnumSet.allOf(Card.class);
 		assert cards.size() == 36;
 		cards.removeAll(availableCards);
@@ -1247,5 +1259,4 @@ public class JassHelper {
 		cards.removeAll(alreadyPlayedCards);
 		return cards;
 	}
-
 }

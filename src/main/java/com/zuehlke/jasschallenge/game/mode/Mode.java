@@ -39,6 +39,12 @@ public abstract class Mode implements Serializable {
         return modes;
     }
 
+    public static List<Mode> allModes() {
+        List<Mode> modes = standardModes();
+        modes.add(Mode.shift());
+        return modes;
+    }
+
     public abstract int calculateRoundScore(int roundNumber, Set<Card> playedCards);
 
     public abstract Trumpf getTrumpfName();
@@ -78,5 +84,14 @@ public abstract class Mode implements Serializable {
         catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode(getTrumpfName()) + hashCode(getTrumpfColor());
+    }
+
+    private static int hashCode(Object o) {
+        return o != null ? o.hashCode() : 0;
     }
 }

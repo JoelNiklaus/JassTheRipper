@@ -1,16 +1,14 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.helpers.Helper;
+import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * The main class responsible for the Monte Carlo Tree Search Method.
@@ -32,7 +30,7 @@ public class MCTS {
 	private ExecutorService threadpool;
 	private ArrayList<FutureTask<Node>> futures;
 
-	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+	public static final Logger logger = LoggerFactory.getLogger(MCTS.class);
 
 	/**
 	 * Run a UCT-MCTS simulation for a a certain amount of time.
@@ -42,21 +40,20 @@ public class MCTS {
 	 * @param bounds        enable or disable score bounds.
 	 * @return
 	 */
-	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) throws Exception {
+	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) throws MCTSException {
 		scoreBounds = bounds;
 		Move bestMoveFound;
 
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 
 		if (!rootParallelisation) {
 			logger.info("Not parallelised :(");
 			Node rootNode = new Node(startingBoard);
 			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
-			bestMoveFound = finalMoveSelection(rootNode);
-
+			return finalMoveSelection(rootNode);
 		} else {
 			logger.info("Parallelised with {} threads :)", threads);
-			logger.info("{}ms thinking time left.", endingTime - startTime);
+			//logger.info("{}ms thinking time left.", endingTime - startTime);
 			for (int i = 0; i < threads; i++)
 				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, endingTime)));
 
@@ -90,36 +87,36 @@ public class MCTS {
 
 				assert !moves.isEmpty();
 
-				bestMoveFound = vote(moves);
+				return vote(moves);
 
 			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-				throw new Exception();
+				logger.debug("{}", e);
+				throw (new MCTSException("There was a problem in the MCTS. Enable debug logging for more information."));
+			} finally {
+				//threadpool.shutdown();
+				futures.clear();
+
+				//assert threadpool.isShutdown();
+				assert futures.isEmpty();
 			}
-
-			//threadpool.shutdown();
-			futures.clear();
-
-			//assert threadpool.isShutdown();
-			assert futures.isEmpty();
 		}
 
-		long endTime = System.currentTimeMillis();
+		//long endTime = System.currentTimeMillis();
 
+		/*
 		if (this.trackTime) {
 			//logger.info("Making choice for player: " + bestMoveFound);
 			logger.info("Thinking time for move: " + (endTime - startTime) + "ms");
 		}
-
-		return bestMoveFound;
+		*/
 	}
 
-	private void runNTimes(Board startingBoard, Node rootNode, int runs) throws Exception {
+	private void runNTimes(Board startingBoard, Node rootNode, int runs) {
 		for (int i = 0; i < runs; i++)
-			select(startingBoard.duplicate(), rootNode);
+			select(startingBoard.duplicate(false), rootNode);
 	}
 
-	private void runUntilTimeRunsOut(Board startingBoard, Node rootNode, long endingTime) throws Exception {
+	private void runUntilTimeRunsOut(Board startingBoard, Node rootNode, long endingTime) {
 		int runCounter = 0;
 		while ((System.currentTimeMillis() < endingTime)) {
 			// Start new path from root node
@@ -135,7 +132,6 @@ public class MCTS {
 	private Move vote(ArrayList<Move> moves) {
 		HashMap<Move, Integer> numberOfSelections = new HashMap<>();
 		assert !moves.isEmpty();
-		Move votedMove = moves.get(0);
 		for (Move move : moves) {
 			int number = 1;
 			if (numberOfSelections.containsKey(move)) {
@@ -144,12 +140,21 @@ public class MCTS {
 			numberOfSelections.put(move, number);
 		}
 		// Print statistics so we can get insights into the decision process of the algorithm
-		numberOfSelections.forEach((move, integer) -> logger.info("{} selected {} times.", ((CardMove) move).getPlayedCard(), integer));
+		// TODO get rid of instanceof codesmell
+		numberOfSelections.forEach((move, numTimesSelected) -> {
+			String moveDisplay = "";
+			if (move instanceof CardMove)
+				moveDisplay = ((CardMove) move).getPlayedCard().toString();
+			if (move instanceof TrumpfMove)
+				moveDisplay = ((TrumpfMove) move).getChosenTrumpf().toString();
+			logger.info("{} selected {} times.", moveDisplay, numTimesSelected);
+		});
 		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().parallelStream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
-		if (entryOptional.isPresent())
-			votedMove = entryOptional.get().getKey();
 
-		return votedMove;
+		assert entryOptional.isPresent();
+		return entryOptional.get().getKey();
+
+
 
 		/*
 		Collections.sort(moves);
@@ -194,7 +199,7 @@ public class MCTS {
 	 * @param currentNode  Node from which to start selection
 	 * @param currentBoard Board state to work from.
 	 */
-	private void select(Board currentBoard, Node currentNode) throws Exception {
+	private void select(Board currentBoard, Node currentNode) {
 		BoardNodePair boardNodePair = treePolicy(currentBoard, currentNode);
 
 
@@ -214,10 +219,10 @@ public class MCTS {
 	 * Return the new node or the deepest node it could reach.
 	 * Additionally, return a board matching the returned node.
 	 */
-	private BoardNodePair treePolicy(Board brd, Node node) throws Exception {
+	private BoardNodePair treePolicy(Board brd, Node node) {
 		//long startTime = System.currentTimeMillis();
 
-		Board board = brd.duplicate();
+		Board board = brd.duplicate(false);
 
 		while (!board.gameOver()) {
 			if (!node.isRandomNode()) { // this is a regular node
@@ -361,12 +366,12 @@ public class MCTS {
 	 * @param board
 	 * @return
 	 */
-	private double[] playout(Board board) throws Exception {
+	private double[] playout(Board board) {
 		//long startTime = System.currentTimeMillis();
 
-		ArrayList<Move> moves;
+		List<Move> moves;
 		Move move;
-		Board brd = board.duplicate();
+		Board brd = board.duplicate(false);
 
 		// Start playing random moves until the game is over
 		while (!brd.gameOver()) {
@@ -397,7 +402,7 @@ public class MCTS {
 		return brd.getScore();
 	}
 
-	private Move getRandomMove(Board board, ArrayList<Move> moves) throws Exception {
+	private Move getRandomMove(Board board, List<Move> moves) {
 		double[] weights = board.getMoveWeights();
 
 		double totalWeight = 0.0d;
@@ -531,6 +536,7 @@ public class MCTS {
 
 	/**
 	 * Check if all threads are done
+	 *
 	 * @param tasks
 	 * @return
 	 */
@@ -552,13 +558,13 @@ public class MCTS {
 		private Board board;
 		private long endingTime;
 
-		private MCTSTask(Board board, long endingTime) throws Exception {
+		private MCTSTask(Board board, long endingTime) {
 			this.endingTime = endingTime;
-			this.board = board.duplicateWithNewRandomCards();
+			this.board = board.duplicate(true);
 		}
 
 		@Override
-		public Node call() throws Exception {
+		public Node call() {
 			Node root = new Node(board);
 
 			//logger.info("New random cards dealt");

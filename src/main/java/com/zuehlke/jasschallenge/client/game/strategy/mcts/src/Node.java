@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class Node {
@@ -39,11 +40,11 @@ public class Node {
 	 * @param m
 	 * @param prnt
 	 */
-	public Node(Board b, Move m, Node prnt) throws Exception {
+	public Node(Board b, Move m, Node prnt) {
 		children = new ArrayList<>();
 		parent = prnt;
 		move = m;
-		Board tempBoard = b.duplicate();
+		Board tempBoard = b.duplicate(false);
 		tempBoard.makeMove(m);
 		player = tempBoard.getCurrentPlayer();
 		score = new double[b.getQuantityOfPlayers()];
@@ -85,8 +86,8 @@ public class Node {
 	 *
 	 * @param currentBoard
 	 */
-	public void expandNode(Board currentBoard) throws Exception {
-		ArrayList<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
+	public void expandNode(Board currentBoard) {
+		List<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
 		unvisitedChildren = new ArrayList<>();
 		for (Move legalMove : legalMoves) {
 			Node tempState = new Node(currentBoard, legalMove, this);

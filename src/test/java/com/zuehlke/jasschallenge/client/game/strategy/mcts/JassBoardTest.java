@@ -13,6 +13,7 @@ import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -24,10 +25,7 @@ import static org.junit.Assert.*;
  */
 public class JassBoardTest {
 
-    private Set<Card> allCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX,
-            Card.DIAMOND_ACE, Card.DIAMOND_KING, Card.DIAMOND_QUEEN, Card.DIAMOND_JACK, Card.DIAMOND_TEN, Card.DIAMOND_NINE, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.DIAMOND_SIX,
-            Card.SPADE_ACE, Card.SPADE_KING, Card.SPADE_QUEEN, Card.SPADE_JACK, Card.SPADE_TEN, Card.SPADE_NINE, Card.SPADE_EIGHT, Card.SPADE_SEVEN, Card.SPADE_SIX,
-            Card.HEART_ACE, Card.HEART_KING, Card.HEART_QUEEN, Card.HEART_JACK, Card.HEART_TEN, Card.HEART_NINE, Card.HEART_EIGHT, Card.HEART_SEVEN, Card.HEART_SIX);
+    private Set<Card> allCards = EnumSet.copyOf(Arrays.asList(Card.values()));
     private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
     private Player player0 = new Player("0", "player0", 0);
     private Player player1 = new Player("1", "player1", 1);
@@ -41,7 +39,7 @@ public class JassBoardTest {
 
     @Before
     public void setUp() {
-        assertEquals(allCards.size(), 36);
+        assertEquals(36, allCards.size());
     }
 
     @Test

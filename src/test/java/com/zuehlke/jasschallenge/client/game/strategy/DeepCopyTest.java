@@ -54,31 +54,29 @@ public class DeepCopyTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		Game game = gameSession.getCurrentGame();
-
 		try {
 			long startTime = System.nanoTime();
-			SerializationUtils.clone(game);
+			SerializationUtils.clone(gameSession);
 			long elapsedTime = System.nanoTime() - startTime;
 			System.out.println("SerializationUtils " + elapsedTime + "ns");
 
 			startTime = System.nanoTime();
-			ObjectCloner.deepCopySerialization(game);
+			ObjectCloner.deepCopySerialization(gameSession);
 			elapsedTime = System.nanoTime() - startTime;
 			System.out.println("ObjectCloner " + elapsedTime + "ns");
 
 			startTime = System.nanoTime();
-			new Cloner().deepClone(game);
+			new Cloner().deepClone(gameSession);
 			elapsedTime = System.nanoTime() - startTime;
 			System.out.println("Reflection " + elapsedTime + "ns");
 
 			startTime = System.nanoTime();
-			DeepCopy.copy(game);
+			DeepCopy.copy(gameSession);
 			elapsedTime = System.nanoTime() - startTime;
 			System.out.println("Serialization " + elapsedTime + "ns");
 
 			startTime = System.nanoTime();
-			new Game(game);
+			new GameSession(gameSession);
 			elapsedTime = System.nanoTime() - startTime;
 			System.out.println("CopyConstructor " + elapsedTime + "ns");
 		} catch (Exception e) {
@@ -87,37 +85,79 @@ public class DeepCopyTest {
 	}
 
 	@Test
-	public void testMostRobustCopyMechanism() {
-		Game game = gameSession.getCurrentGame();
+	public void testWhereTimeIsSpentCopying() {
+		final GameSession gameSessionStarted = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.bottomUp())
+				.createGameSession();
 
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.createGameSession();
+
+		try {
+			long startTime = System.nanoTime();
+			new GameSession(gameSession);
+			long elapsedTime = System.nanoTime() - startTime;
+			System.out.println("GameSession " + elapsedTime + "ns");
+
+			startTime = System.nanoTime();
+			new Game(gameSessionStarted.getCurrentGame());
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("Game " + elapsedTime + "ns");
+
+			startTime = System.nanoTime();
+			new Player(gameSessionStarted.getCurrentGame().getCurrentPlayer());
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("Player " + elapsedTime + "ns");
+
+			startTime = System.nanoTime();
+			new Round(gameSessionStarted.getCurrentGame().getCurrentRound());
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("Round " + elapsedTime + "ns");
+
+			startTime = System.nanoTime();
+			new PlayingOrder(gameSessionStarted.getCurrentGame().getOrder());
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("PlayingOrder " + elapsedTime + "ns");
+
+			startTime = System.nanoTime();
+			new Result(gameSessionStarted.getCurrentGame().getResult());
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("Result " + elapsedTime + "ns");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testMostRobustCopyMechanism() {
 		for (int i = 0; i < NUMBER_OF_RUNS; i++) {
 			try {
 				long startTime = System.nanoTime();
-				SerializationUtils.clone(game);
+				SerializationUtils.clone(gameSession);
 				long elapsedTime = System.nanoTime() - startTime;
 				if (elapsedTime > MAX_TIME)
 					System.out.println("SerializationUtils " + elapsedTime + "ns");
 
 				startTime = System.nanoTime();
-				ObjectCloner.deepCopySerialization(game);
+				ObjectCloner.deepCopySerialization(gameSession);
 				elapsedTime = System.nanoTime() - startTime;
 				if (elapsedTime > MAX_TIME)
 					System.out.println("ObjectCloner " + elapsedTime + "ns");
 
 				startTime = System.nanoTime();
-				new Cloner().deepClone(game);
+				new Cloner().deepClone(gameSession);
 				elapsedTime = System.nanoTime() - startTime;
 				if (elapsedTime > MAX_TIME)
 					System.out.println("Reflection " + elapsedTime + "ns");
 
 				startTime = System.nanoTime();
-				DeepCopy.copy(game);
+				DeepCopy.copy(gameSession);
 				elapsedTime = System.nanoTime() - startTime;
 				if (elapsedTime > MAX_TIME)
 					System.out.println("Serialization " + elapsedTime + "ns");
 
 				startTime = System.nanoTime();
-				new Game(game);
+				new GameSession(gameSession);
 				elapsedTime = System.nanoTime() - startTime;
 				if (elapsedTime > MAX_TIME)
 					System.out.println("CopyConstructor " + elapsedTime + "ns");
@@ -125,6 +165,41 @@ public class DeepCopyTest {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Test
+	public void testCopyGameSession() {
+		GameSession originalGameSession = new GameSession(gameSession);
+
+		assertEquals(originalGameSession, gameSession);
+		assertNotSame(originalGameSession, gameSession);
+
+		// check player
+		originalGameSession.getCurrentGame().getCurrentPlayer().setId("oldId");
+		gameSession.getCurrentGame().getCurrentPlayer().setId("newId");
+		assertEquals("oldId", originalGameSession.getCurrentGame().getCurrentPlayer().getId());
+		assertEquals("newId", gameSession.getCurrentGame().getCurrentPlayer().getId());
+		assertNotEquals(originalGameSession.getCurrentGame().getCurrentPlayer(), gameSession.getCurrentGame().getCurrentPlayer());
+
+		assertEquals(9, originalGameSession.getCurrentGame().getCurrentPlayer().getCards().size());
+		assertEquals(9, gameSession.getCurrentGame().getCurrentPlayer().getCards().size());
+
+		// check round
+		Move move = new Move(new Player("1", "test", 1), Card.CLUB_ACE);
+		gameSession.getCurrentGame().getCurrentRound().getMoves().add(move);
+		assertTrue(gameSession.getCurrentGame().getCurrentRound().getMoves().contains(move));
+		assertFalse(originalGameSession.getCurrentGame().getCurrentRound().getMoves().contains(move));
+
+		// check playing order
+		for (Player player : originalGameSession.getCurrentGame().getOrder().getPlayersInInitialPlayingOrder()) {
+			assertEquals(9, player.getCards().size());
+		}
+		for (Player player : gameSession.getCurrentGame().getOrder().getPlayersInInitialPlayingOrder()) {
+			assertEquals(9, player.getCards().size());
+		}
+		gameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().remove(Card.CLUB_ACE);
+		assertTrue(originalGameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().contains(Card.CLUB_ACE));
+		assertFalse(gameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().contains(Card.CLUB_ACE));
 	}
 
 	@Test
@@ -152,10 +227,10 @@ public class DeepCopyTest {
 		assertFalse(originalGame.getCurrentRound().getMoves().contains(move));
 
 		// check playing order
-		for(Player player : originalGame.getOrder().getPlayerInOrder()){
+		for (Player player : originalGame.getOrder().getPlayersInInitialPlayingOrder()) {
 			assertEquals(9, player.getCards().size());
 		}
-		for(Player player : game.getOrder().getPlayerInOrder()){
+		for (Player player : game.getOrder().getPlayersInInitialPlayingOrder()) {
 			assertEquals(9, player.getCards().size());
 		}
 		game.getOrder().getCurrentPlayer().getCards().remove(Card.CLUB_ACE);

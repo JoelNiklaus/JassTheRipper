@@ -56,7 +56,6 @@ class TopDownMode extends Mode implements Serializable {
 
 	@Override
 	public String toString() {
-
 		return valueOf(getTrumpfName());
 	}
 }

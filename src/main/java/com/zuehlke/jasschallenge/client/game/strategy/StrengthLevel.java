@@ -12,6 +12,8 @@ public enum StrengthLevel {
 	EXTREME(11, 2000),
 	INSANE(13, 2500),
 	SUPERMAN(17, 5000),
+	IRONMAN(17, 10000),
+	TRUMPF(50, 10000),
 	;
 
 	// IMPORTANT: This value has to be tweaked in order not to exceed Timeout but still compute a good move

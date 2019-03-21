@@ -32,7 +32,7 @@ public class Game implements Serializable {
 	 * @param game
 	 */
 	public Game(Game game) {
-		this.mode = game.getCurrentRoundMode(); // TODO maybe we have to copy mode too somehow
+		this.mode = game.getCurrentRoundMode();
 		this.currentRound = new Round(game.getCurrentRound());
 		this.result = new Result(game.getResult());
 		this.shifted = game.isShifted();
@@ -104,13 +104,13 @@ public class Game implements Serializable {
 	}
 
 	private Round createNextRound() {
-		final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(getOrder().getPlayerInOrder(), currentRound.getWinner());
+		final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(getOrder().getPlayersInInitialPlayingOrder(), currentRound.getWinner());
 		final int nextRoundNumber = currentRound.getRoundNumber() + 1;
 		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
 	}
 
 	public Player getPartnerOfPlayer(Player player) {
-		for (Player other : getOrder().getPlayerInOrder()) {
+		for (Player other : getOrder().getPlayersInInitialPlayingOrder()) {
 			if (other.isPartner(player))
 				return other;
 		}
@@ -151,5 +151,16 @@ public class Game implements Serializable {
 		result1 = 31 * result1 + (shifted ? 1 : 0);
 		result1 = 31 * result1 + previousRounds.hashCode();
 		return result1;
+	}
+
+	@Override
+	public String toString() {
+		return "Game{" +
+				"mode=" + mode +
+				", currentRound=" + currentRound +
+				", result=" + result +
+				", shifted=" + shifted +
+				", previousRounds=" + previousRounds +
+				'}';
 	}
 }

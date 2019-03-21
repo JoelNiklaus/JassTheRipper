@@ -106,6 +106,14 @@ public class Result implements Serializable {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		return "Result{" +
+				"teamAScore=" + teamAScore +
+				", teamBScore=" + teamBScore +
+				'}';
+	}
+
 	private static class TeamScore implements Serializable {
 		private final Team team;
 		private int score;
@@ -121,10 +129,8 @@ public class Result implements Serializable {
 		 * @param teamScore
 		 */
 		public TeamScore(TeamScore teamScore) {
-			synchronized (teamScore) {
-				this.team = new Team(teamScore.getTeam());
-				this.score = teamScore.getScore();
-			}
+			this.team = new Team(teamScore.getTeam());
+			this.score = teamScore.getScore();
 		}
 
 		void addScore(int score) {
@@ -155,6 +161,14 @@ public class Result implements Serializable {
 			int result = team != null ? team.hashCode() : 0;
 			result = 31 * result + score;
 			return result;
+		}
+
+		@Override
+		public String toString() {
+			return "TeamScore{" +
+					"team=" + team +
+					", score=" + score +
+					'}';
 		}
 	}
 }
