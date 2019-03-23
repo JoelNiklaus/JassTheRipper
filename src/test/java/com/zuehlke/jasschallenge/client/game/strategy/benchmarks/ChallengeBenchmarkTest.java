@@ -1,5 +1,8 @@
 package com.zuehlke.jasschallenge.client.game.strategy.benchmarks;
 
+import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import org.json.JSONException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,14 +15,20 @@ import static org.junit.Assert.assertTrue;
  */
 public class ChallengeBenchmarkTest {
 
-	private static final boolean RUN_BENCHMARK = false;
+	private static final boolean RUN_BENCHMARK = true;
+
+	private final static String BOT_NAME = "JassTheRipper";
+
+	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy(StrengthLevel.FAST_TEST);
 
 	@BeforeClass
 	public static void setUp() {
 		if (RUN_BENCHMARK) {
+			int tournamentRounds = 1;
+			int maxPoints = 2500;
 			int seed = 42;
-			System.out.println("Running Benchmark with random seed " + seed);
-			BenchmarkRunner.runBenchmark(seed);
+			System.out.println("Running benchmark with " + tournamentRounds + "tournament round(s) to " + maxPoints + " points with random seed " + seed);
+			BenchmarkRunner.runBenchmark(MY_STRATEGY, BOT_NAME, tournamentRounds, maxPoints, seed);
 		}
 	}
 
@@ -30,58 +39,12 @@ public class ChallengeBenchmarkTest {
 	}
 
 	@Test
-	public void testWinsAgainstChallengeBy100Points() throws JSONException {
+	public void testWinsAgainstChallengeByMargin() throws JSONException {
 		int difference = BenchmarkRunner.evaluateResult();
 		assertTrue(difference > 100);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy200Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
 		assertTrue(difference > 200);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy300Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
 		assertTrue(difference > 300);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy400Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
 		assertTrue(difference > 400);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy500Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
 		assertTrue(difference > 500);
 	}
-
-	@Test
-	public void testWinsAgainstChallengeBy600Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
-		assertTrue(difference > 600);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy700Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
-		assertTrue(difference > 700);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy800Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
-		assertTrue(difference > 800);
-	}
-
-	@Test
-	public void testWinsAgainstChallengeBy900Points() throws JSONException {
-		int difference = BenchmarkRunner.evaluateResult();
-		assertTrue(difference > 900);
-	}
-
-
 }

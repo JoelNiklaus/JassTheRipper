@@ -5,8 +5,6 @@ import com.google.common.io.Files;
 import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,21 +26,30 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * To run these benchmarks, make sure to have the <a href="https://github.com/JoelNiklaus/jass-server) ">jass-server</a>
+ * installed in a sibling directory of the root directory of this JassTheRipper Installation!
+ * (rootdir/JassTheRipper and rootdir/jass-server)
+ * This Benchmark uses sudo commands. Make sure you add this line to the file opened with sudo visudo
+ * <pre>
+ *      user                    python executable
+ *  --> joelito ALL = NOPASSWD: /usr/local/bin/python3
+ * </pre>
+ */
 public class BenchmarkRunner {
 
 	private static final String LOCAL_URL = "ws://localhost:3000";
 
-	private final static String BOT_NAME = "JassTheRipper";
-
-	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy(StrengthLevel.FAST_TEST);
+	private static final String RESULT_DIRECTORY = "benchmarks";
 
 	/**
-	 * Evaluates the result of the last modified file in the experiments directory of the jass server.
+	 * Evaluates the result of the last modified file in the benchmarks directory of the jass server.
+	 *
 	 * @return
 	 * @throws JSONException
 	 */
 	public static int evaluateResult() throws JSONException {
-		String experimentsDirecory = "../jass-server/experiments/";
+		String experimentsDirecory = "../jass-server/" + RESULT_DIRECTORY;
 		File lastModifiedFile = lastFileModified(experimentsDirecory);
 
 		String experimentResult = null;
@@ -80,7 +87,7 @@ public class BenchmarkRunner {
 	/**
 	 * Runs a tournament against two challenge bots and logs the results in a folder inside the jass server to be analyzed.
 	 */
-	public static void runBenchmark(int seed) {
+	public static void runBenchmark(JassStrategy jassStrategy, String botName, int tournamentRounds, int maxPoints, int seed) {
 		final ArrayList<Process> processes = new ArrayList<>();
 
 		int numThreads = 2;
@@ -88,7 +95,13 @@ public class BenchmarkRunner {
 
 		try {
 			// jass-server must be in the same parent directory as the JassTheRipperProject
-			startShellProcess(processes, "../jass-server", "env DECK_SHUFFLE_SEED=" + seed + " npm run start:tournament:1");
+
+			String command = "env TOURNAMENT_LOGGING_DIR=" + RESULT_DIRECTORY
+					+ " TOURNAMENT_ROUNDS=" + tournamentRounds
+					+ " MAX_POINTS=" + maxPoints
+					+ " DECK_SHUFFLE_SEED=" + seed
+					+ " npm run start:tournament";
+			startShellProcess(processes, "../jass-server", command);
 
 			// INFO: if the bots fail to connect, it may be because the server has not yet started. Increase the time sleeping
 			waitForStartup("Wait for jass server to start...", 7500);
@@ -100,7 +113,7 @@ public class BenchmarkRunner {
 			List<Future<RemoteGame>> futures = new LinkedList<>();
 
 			for (int i = 0; i < numThreads; i++) {
-				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(BOT_NAME, MY_STRATEGY), SessionType.TOURNAMENT)));
+				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(botName, jassStrategy), SessionType.TOURNAMENT)));
 			}
 			waitForStartup("Wait for the JassTheRipper bots to start...", 1000);
 
@@ -116,12 +129,21 @@ public class BenchmarkRunner {
 
 		} finally {
 			executorService.shutdown();
-			for (Process process : processes) {
-				try {
-					killProcess(process);
-				} catch (InterruptedException | NoSuchFieldException | IllegalAccessException | IOException e) {
-					e.printStackTrace();
+			System.out.println("JassTheRipper bots successfully terminated.");
+
+			try {
+				killProcess(processes.get(0), 15);
+				System.out.println("Jass Server successfully terminated.");
+
+				// Challenge bots will terminate automatically when the Jass Server is shutdown
+				// But if they do not:
+				if (!processes.isEmpty()) {
+					// Try to kill them
+					killProcess(processes.get(1), 9);
+					System.out.println("Challenge Bots successfully terminated.");
 				}
+			} catch (InterruptedException | IllegalStateException | IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -151,8 +173,8 @@ public class BenchmarkRunner {
 	 * @return
 	 */
 	private static File lastFileModified(String dir) {
-		File fl = new File(dir);
-		File[] files = fl.listFiles(file -> file.isFile());
+		File dirFile = new File(dir);
+		File[] files = dirFile.listFiles(File::isFile);
 		long lastMod = Long.MIN_VALUE;
 		File choice = null;
 		for (File file : files) {
@@ -194,11 +216,7 @@ public class BenchmarkRunner {
 
 	private static void startShellProcess(ArrayList<Process> processes, String directory, String command) {
 		Thread thread = new Thread(() -> {
-			ProcessBuilder builder = new ProcessBuilder();
-			builder.inheritIO();
-			builder.directory(new File(directory));
-			builder.command(command.split(" "));
-
+			ProcessBuilder builder = buildShellCommand(directory, command);
 			try {
 				processes.add(builder.start());
 			} catch (IOException e) {
@@ -208,15 +226,25 @@ public class BenchmarkRunner {
 		thread.start();
 	}
 
-	private static void killProcess(Process process) throws InterruptedException, IOException, IllegalAccessException, NoSuchFieldException {
-		int exitCode = new ProcessBuilder("sudo", "kill", "-9", getPidOfProcess(process) + "").start().waitFor();
+	private static ProcessBuilder buildShellCommand(String directory, String command) {
+		ProcessBuilder builder = new ProcessBuilder();
+		builder.inheritIO();
+		builder.directory(new File(directory));
+		builder.command(command.split(" "));
+		return builder;
+	}
+
+	private static void killProcess(Process process, int signal) throws InterruptedException, IOException, IllegalStateException {
+		ProcessBuilder builder = buildShellCommand("/", "kill " + signal + " " + getPidOfProcess(process));
+		int exitCode = builder.start().waitFor();
 		if (exitCode != 0) {
-			throw new IllegalStateException("<kill -9> failed, exit code: " + exitCode);
+			throw new IllegalStateException("<kill " + signal + "> failed, exit code: " + exitCode);
 		}
 	}
 
 	/**
 	 * Retrieves the pid of a running process with reflection.
+	 *
 	 * @param process
 	 * @return
 	 */
