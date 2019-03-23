@@ -24,7 +24,7 @@ public class MCTS {
 	private boolean trackTime; // display thinking time used
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.robustChild;
 	private HeuristicFunction heuristic;
-	private PlayoutSelection playoutpolicy;
+	private PlayoutSelection playoutPolicy;
 
 	private int threads;
 	private ExecutorService threadpool;
@@ -369,7 +369,7 @@ public class MCTS {
 
 		// Start playing random moves until the game is over
 		while (!board.gameOver()) {
-			if (playoutpolicy == null) {
+			if (playoutPolicy == null) {
 				moves = board.getMoves(CallLocation.treePolicy);
 				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally
@@ -384,7 +384,7 @@ public class MCTS {
 
 				board.makeMove(move);
 			} else {
-				playoutpolicy.process(board); // NOTE: Originally it used the not duplicated oldBoard here.
+				playoutPolicy.process(board); // NOTE: Originally it used the not duplicated oldBoard here.
 			}
 		}
 		return board.getScore();
@@ -441,7 +441,7 @@ public class MCTS {
 						+ pessimisticBias * s.getPess()[node.getPlayer()];
 
 				if (heuristic != null) {
-					tempBest += heuristic.h(board);
+					tempBest += heuristic.heuristic(board);
 				}
 
 				bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
@@ -471,7 +471,7 @@ public class MCTS {
 	}
 
 	public void setPlayoutSelection(PlayoutSelection playoutSelection) {
-		playoutpolicy = playoutSelection;
+		playoutPolicy = playoutSelection;
 	}
 
 	/**

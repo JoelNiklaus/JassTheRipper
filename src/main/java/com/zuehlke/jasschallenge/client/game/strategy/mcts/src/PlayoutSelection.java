@@ -10,5 +10,5 @@ package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
  * @author KGS
  */
 public interface PlayoutSelection {
-	public void process(Board board);
+	void process(Board board);
 }

@@ -55,10 +55,9 @@ public class JassHelper {
 	}
 
 
-	// TODO schauen dass der schluss es nicht verfälscht -> es sollte die runde mit kleinster round number zuerst anschauen
-
 	/**
 	 * VERWERFEN (Nachricht empfangen)
+	 * TODO schauen dass der schluss es nicht verfälscht -> es sollte die runde mit kleinster round number zuerst anschauen
 	 */
 	// if my partner played verwerfen in one of the previous rounds, do not play this color
 	public static Color detectVerwerfen(Game game) {
@@ -77,7 +76,7 @@ public class JassHelper {
 				Card cardOfPartner = round.getCardOfPlayer(partner);
 				assert cardOfPartner != null;
 
-				if (!cardOfPartner.getColor().equals(myCard) && isBrettli(cardOfPartner, mode))
+				if (!cardOfPartner.getColor().equals(myCard.getColor()) && isBrettli(cardOfPartner, mode))
 					return cardOfPartner.getColor();
 			}
 		}
@@ -94,14 +93,11 @@ public class JassHelper {
 	private static boolean isBrettli(Card card, Mode mode) {
 		int rank = card.getRank();
 		if (isBottomUp(mode)) {
-			if (rank > BRETTLI_BOUNDARY)
-				return true;
-			return false;
+			return rank > BRETTLI_BOUNDARY;
 		}
 		if (rank < BRETTLI_BOUNDARY) {
 			if (isTopDown(mode)) {
-				if (rank != EIGHT)
-					return true;
+				return rank != EIGHT;
 			} else if (!hasTrumpfColor(card, mode))
 				return true;
 		}
@@ -171,7 +167,7 @@ public class JassHelper {
 
 	/**
 	 * TODO Maybe this can be used as a heuristic function in the MCTS!
-	 *
+	 * <p>
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
 	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
 	 * and therefore the simulation gets the most realistic outcome.
@@ -660,14 +656,14 @@ public class JassHelper {
 	 * @return
 	 */
 	public static Set<Card> getPossibleCards(Set<Card> availableCards, Game game) {
-		assert (availableCards.size() > 0);
+		assert !availableCards.isEmpty();
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card
 		Set<Card> validCards = availableCards.parallelStream().
 				filter(card -> mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).
 				collect(Collectors.toSet());
-		if (validCards.size() > 0)
+		if (!validCards.isEmpty())
 			return validCards;
 		else
 			return availableCards;
@@ -820,10 +816,10 @@ public class JassHelper {
 				.collect(Collectors.toSet());
 	}
 
-	// TODO could be made more sophisticated
 
 	/**
 	 * Gets all the cards which can be used to schmieren out of the possible cards
+	 * TODO could be made more sophisticated
 	 *
 	 * @param possibleCards
 	 * @param cardOfPartner
@@ -996,7 +992,7 @@ public class JassHelper {
 		float rating = safety * 20;
 		// remove the last card tested
 		sortedCardOfColor.remove(lastCard);
-		while (sortedCardOfColor.size() > 0) {
+		while (!sortedCardOfColor.isEmpty()) {
 			// The next card to be tested
 			Card nextCard = sortedCardOfColor.get(0);
 			// Estimate how safe you Stich with that card
@@ -1134,7 +1130,7 @@ public class JassHelper {
 	public static int rateUndeufeColor(Set<Card> cards, Color color) {
 		// Get the cards in ascending order
 		List<Card> sortedCards = sortCardsOfColorAscending(cards, color);
-		if (sortedCards.size() == 0)
+		if (sortedCards.isEmpty())
 			return 0;
 		// Number of cards I have that are lower than the nextCard
 		int lowerCards = 0;
@@ -1164,7 +1160,7 @@ public class JassHelper {
 		return (int) Math.ceil(rating);
 	}
 
-	public static float factorial(int n) {
+	private static float factorial(int n) {
 		if (n == 1 || n == 0)
 			return 1;
 		else if (n < 0)
