@@ -78,7 +78,7 @@ public class JassBoardTest {
         for (int i = 0; i < 100; i++) {
             JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, true);
             // should not get filtered
-            JassBoard jassBoard2 = new JassBoard(JassHelper.testPickRandomSubSet(allCards, 9), obeAbeGame, true);
+            JassBoard jassBoard2 = new JassBoard(JassBoard.pickRandomSubSet(allCards, 9), obeAbeGame, true);
             assertFalse(jassBoard2.getMoves(CallLocation.playout).isEmpty());
             assertFalse(jassBoard2.getMoves(CallLocation.treePolicy).isEmpty());
         }

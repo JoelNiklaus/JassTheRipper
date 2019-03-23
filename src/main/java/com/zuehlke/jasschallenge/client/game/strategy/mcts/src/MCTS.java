@@ -219,10 +219,8 @@ public class MCTS {
 	 * Return the new node or the deepest node it could reach.
 	 * Additionally, return a board matching the returned node.
 	 */
-	private BoardNodePair treePolicy(Board brd, Node node) {
-		//long startTime = System.currentTimeMillis();
-
-		Board board = brd.duplicate(false);
+	private BoardNodePair treePolicy(Board oldBoard, Node node) {
+		Board board = oldBoard.duplicate(false);
 
 		while (!board.gameOver()) {
 			if (!node.isRandomNode()) { // this is a regular node
@@ -236,7 +234,7 @@ public class MCTS {
 					board.makeMove(temp.getMove());
 					return new BoardNodePair(board, temp);
 				} else {
-					ArrayList<Node> bestNodes = findChildren(node, board, optimisticBias, pessimisticBias,
+					List<Node> bestNodes = findChildren(node, board, optimisticBias, pessimisticBias,
 							explorationConstant);
 
 					if (bestNodes.isEmpty()) {
@@ -273,13 +271,11 @@ public class MCTS {
 				// ignore selection heuristics and pick one node at
 				// random based on the weight vector.
 
-				Node selectedNode = node.getChildren().get(node.randomSelect(board));
+				Node selectedNode = node.getChildren().get(getRandomChildNodeIndex(board));
 				node = selectedNode;
 				board.makeMove(selectedNode.getMove());
 			}
 		}
-
-		//Helper.printMethodTime(startTime);
 
 		return new BoardNodePair(board, node);
 	}
@@ -363,46 +359,48 @@ public class MCTS {
 	/**
 	 * Playout function for MCTS
 	 *
-	 * @param board
+	 * @param oldBoard
 	 * @return
 	 */
-	private double[] playout(Board board) {
-		//long startTime = System.currentTimeMillis();
-
+	private double[] playout(Board oldBoard) {
 		List<Move> moves;
 		Move move;
-		Board brd = board.duplicate(false);
+		Board board = oldBoard.duplicate(false);
 
 		// Start playing random moves until the game is over
-		while (!brd.gameOver()) {
+		while (!board.gameOver()) {
 			if (playoutpolicy == null) {
-				moves = brd.getMoves(CallLocation.treePolicy);
-				if (brd.getCurrentPlayer() >= 0) {
+				moves = board.getMoves(CallLocation.treePolicy);
+				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally
 					move = moves.get(random.nextInt(moves.size()));
 				} else {
-
 					// This situation only occurs when a move
 					// is entirely random, for example a die
 					// roll. We must consider the random weights
 					// of the moves.
-
-					move = getRandomMove(brd, moves);
+					move = getRandomMove(board, moves);
 				}
 
-				brd.makeMove(move);
+				board.makeMove(move);
 			} else {
-				// WHY DOES IT PROCESS THE NOT DUPLICATED BOARD HERE?
-				playoutpolicy.process(board);
+				playoutpolicy.process(board); // NOTE: Originally it used the not duplicated oldBoard here.
 			}
 		}
-
-		//Helper.printMethodTime(startTime);
-
-		return brd.getScore();
+		return board.getScore();
 	}
 
 	private Move getRandomMove(Board board, List<Move> moves) {
+		return moves.get(getRandomChildNodeIndex(board));
+	}
+
+	/**
+	 * Select a child node at random and return its index.
+	 *
+	 * @param board
+	 * @return
+	 */
+	private static int getRandomChildNodeIndex(Board board) {
 		double[] weights = board.getMoveWeights();
 
 		double totalWeight = 0.0d;
@@ -419,21 +417,19 @@ public class MCTS {
 				break;
 			}
 		}
-
-		return moves.get(randomIndex);
+		return randomIndex;
 	}
 
 	/**
-	 * Produce a list of viable nodes to visit. The actual selection is done in
-	 * runMCTS
+	 * Produce a list of viable nodes to visit. The actual selection is done in runMCTS
 	 *
 	 * @param optimisticBias
 	 * @param pessimisticBias
 	 * @param explorationConstant
 	 * @return
 	 */
-	public ArrayList<Node> findChildren(Node node, Board board, double optimisticBias, double pessimisticBias,
-	                                    double explorationConstant) {
+	private List<Node> findChildren(Node node, Board board, double optimisticBias, double pessimisticBias,
+	                                double explorationConstant) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		ArrayList<Node> bestNodes = new ArrayList<>();
 		for (Node s : node.getChildren()) {
@@ -505,6 +501,7 @@ public class MCTS {
 	/**
 	 * Switch on multi threading. The argument indicates
 	 * how many threads you want in the thread pool.
+	 * IMPORTANT: A threadpool is started here. Make sure that you terminate it using the {@link #shutDown()} method in the end (might be outside this class)!
 	 *
 	 * @param threads
 	 */

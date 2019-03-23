@@ -37,7 +37,7 @@ public class JassBoard implements Board, Serializable {
 	 * @param game
 	 * @param newRandomCards
 	 */
-	public JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) {
+	JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) {
 		this.availableCards = EnumSet.copyOf(availableCards);
 
 		this.gameSession = null;
@@ -49,7 +49,7 @@ public class JassBoard implements Board, Serializable {
 		//this.game = SerializationUtils.clone(game);
 
 		if (newRandomCards)
-			JassHelper.distributeCardsForPlayers(this.availableCards, this.game);
+			distributeCardsForPlayers(this.availableCards, this.game);
 
 	}
 
@@ -62,13 +62,106 @@ public class JassBoard implements Board, Serializable {
 			this.gameSession = new GameSession(gameSession);
 			this.game = this.gameSession.getCurrentGame();
 			if (newRandomCards)
-				JassHelper.distributeCardsForPlayers(this.availableCards, this.gameSession);
+				distributeCardsForPlayers(this.availableCards, this.gameSession);
 		} else {
 			this.gameSession = null;
 			this.game = new Game(gameSession.getCurrentGame());
 			if (newRandomCards)
-				JassHelper.distributeCardsForPlayers(this.availableCards, this.game);
+				distributeCardsForPlayers(this.availableCards, this.game);
 		}
+	}
+
+	/**
+	 * Distribute the unknown cards to the other players at the beginning of the game, when a player is choosing a trumpf.
+	 *
+	 * @param availableCards
+	 * @param gameSession
+	 */
+	private static void distributeCardsForPlayers(Set<Card> availableCards, GameSession gameSession) {
+		Player currentPlayer = gameSession.getCurrentPlayer();
+		currentPlayer.setCards(EnumSet.copyOf(availableCards));
+
+		Set<Card> remainingCards = EnumSet.allOf(Card.class);
+		remainingCards.removeAll(availableCards);
+		assert !remainingCards.isEmpty();
+		for (Player player : gameSession.getPlayersInInitialPlayingOrder())
+			if (!player.equals(currentPlayer)) {
+				Set<Card> cards = pickRandomSubSet(remainingCards, 9);
+				player.setCards(cards);
+				remainingCards.removeAll(cards);
+			}
+		assert remainingCards.isEmpty();
+	}
+
+	/**
+	 * Add randomized available cards for the other players based on already played cards
+	 *
+	 * @param availableCards
+	 */
+	private static void distributeCardsForPlayers(Set<Card> availableCards, Game game) {
+		final Player currentPlayer = game.getCurrentPlayer();
+		currentPlayer.setCards(EnumSet.copyOf(availableCards));
+		final Round round = game.getCurrentRound();
+		final PlayingOrder order = round.getPlayingOrder();
+		Set<Card> remainingCards = getRemainingCards(availableCards, game);
+		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
+
+		// TODO make certain cards unavailable (e.g. when one player did not follow suit) or less probable (when a player did not take a valuable trick with a trump) for certain players.
+
+		for (Player player : order.getPlayersInInitialPlayingOrder()) {
+			double numberOfCardsToAdd;
+			if (!player.equals(currentPlayer)) { // randomize cards for the other players
+				if (round.hasPlayerAlreadyPlayed(player))
+					numberOfCardsToAdd = Math.floor(numberOfCards);
+				else
+					numberOfCardsToAdd = Math.ceil(numberOfCards);
+
+				Set<Card> cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
+				player.setCards(cards);
+
+				if (!remainingCards.removeAll(cards))
+					JassHelper.logger.debug("Could not remove picked cards from remaining cards");
+				assert !remainingCards.containsAll(cards);
+			}
+
+		}
+		assert remainingCards.isEmpty();
+	}
+
+	/**
+	 * Picks a random sub set out of the given cards with the given size.
+	 *
+	 * @param cards
+	 * @param numberOfCards
+	 * @return
+	 */
+	static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
+		assert (numberOfCards > 0 || numberOfCards <= 9);
+		List<Card> listOfCards = new LinkedList<>(cards);
+		assert numberOfCards <= listOfCards.size();
+		Collections.shuffle(listOfCards);
+		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
+		Set<Card> randomSubSet = new HashSet<>(randomSublist);
+		assert (cards.containsAll(randomSubSet));
+		return randomSubSet;
+	}
+
+	/**
+	 * Get the cards remaining to be split up on the other players.
+	 * All cards - already played cards - available cards
+	 *
+	 * @param availableCards
+	 * @return
+	 */
+	private static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
+		Set<Card> cards = EnumSet.allOf(Card.class);
+		assert cards.size() == 36;
+		cards.removeAll(availableCards);
+		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
+		Round round = game.getCurrentRound();
+		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
+		cards.removeAll(alreadyPlayedCards);
+		return cards;
 	}
 
 
@@ -158,14 +251,12 @@ public class JassBoard implements Board, Serializable {
 				assert gameSession.getCurrentGame() != null;
 				this.game = gameSession.getCurrentGame();
 				try {
-					JassHelper.distributeCardsForPlayers(this.availableCards, this.game);
+					distributeCardsForPlayers(this.availableCards, this.game);
 				} catch (Exception e) {
 					logger.debug("{}", e);
 				}
 			}
 		} else {
-			//final long startTime = System.currentTimeMillis();
-
 			Player player = game.getCurrentPlayer();
 
 			assert move instanceof CardMove;
@@ -197,8 +288,6 @@ public class JassBoard implements Board, Serializable {
 				}
 				*/
 			}
-
-			//Helper.printMethodTime(startTime);
 		}
 	}
 
@@ -229,7 +318,6 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public double[] getScore() {
-		//final long startTime = System.currentTimeMillis();
 		assert game != null;
 
 		double[] score = new double[getQuantityOfPlayers()];
@@ -237,8 +325,6 @@ public class JassBoard implements Board, Serializable {
 		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
 		for (Player player : order.getPlayersInInitialPlayingOrder())
 			score[player.getSeatId()] = result.getTeamScore(player);
-
-		//Helper.printMethodTime(startTime);
 
 		return score;
 	}
@@ -251,10 +337,5 @@ public class JassBoard implements Board, Serializable {
 	public double[] getMoveWeights() {
 		// TODO give high weights for good choices and low weights for bad choices. So in random choosing of moves good moves are favoured.
 		return new double[game.getCurrentPlayer().getCards().size()];
-	}
-
-	@Override
-	public void bPrint() {
-		logger.info("{}", game);
 	}
 }

@@ -21,36 +21,36 @@ public class Node {
 	/**
 	 * This creates the root node
 	 *
-	 * @param b
+	 * @param board
 	 */
-	public Node(Board b) {
+	public Node(Board board) {
 		children = new ArrayList<>();
-		player = b.getCurrentPlayer();
-		score = new double[b.getQuantityOfPlayers()];
-		pess = new double[b.getQuantityOfPlayers()];
-		opti = new double[b.getQuantityOfPlayers()];
-		for (int i = 0; i < b.getQuantityOfPlayers(); i++)
+		player = board.getCurrentPlayer();
+		score = new double[board.getQuantityOfPlayers()];
+		pess = new double[board.getQuantityOfPlayers()];
+		opti = new double[board.getQuantityOfPlayers()];
+		for (int i = 0; i < board.getQuantityOfPlayers(); i++)
 			opti[i] = 1;
 	}
 
 	/**
 	 * This creates non-root nodes
 	 *
-	 * @param b
-	 * @param m
-	 * @param prnt
+	 * @param board
+	 * @param move
+	 * @param parent
 	 */
-	public Node(Board b, Move m, Node prnt) {
+	public Node(Board board, Move move, Node parent) {
 		children = new ArrayList<>();
-		parent = prnt;
-		move = m;
-		Board tempBoard = b.duplicate(false);
-		tempBoard.makeMove(m);
+		this.parent = parent;
+		this.move = move;
+		Board tempBoard = board.duplicate(false);
+		tempBoard.makeMove(move);
 		player = tempBoard.getCurrentPlayer();
-		score = new double[b.getQuantityOfPlayers()];
-		pess = new double[b.getQuantityOfPlayers()];
-		opti = new double[b.getQuantityOfPlayers()];
-		for (int i = 0; i < b.getQuantityOfPlayers(); i++)
+		score = new double[board.getQuantityOfPlayers()];
+		pess = new double[board.getQuantityOfPlayers()];
+		opti = new double[board.getQuantityOfPlayers()];
+		for (int i = 0; i < board.getQuantityOfPlayers(); i++)
 			opti[i] = 1;
 	}
 
@@ -62,22 +62,21 @@ public class Node {
 	 * @return
 	 */
 	public double upperConfidenceBound(double c) {
-		return score[parent.player] / games + c
-				* Math.sqrt(Math.log(parent.games + 1) / games);
+		return score[parent.player] / games + c * Math.sqrt(Math.log(parent.games + 1) / games);
 	}
 
 	/**
 	 * Update the tree with the new score.
 	 *
-	 * @param scr
+	 * @param score
 	 */
-	public void backPropagateScore(double[] scr) {
+	public void backPropagateScore(double[] score) {
 		this.games++;
-		for (int i = 0; i < scr.length; i++)
-			this.score[i] += scr[i];
+		for (int i = 0; i < score.length; i++)
+			this.score[i] += score[i];
 
 		if (parent != null)
-			parent.backPropagateScore(scr);
+			parent.backPropagateScore(score);
 	}
 
 	/**
@@ -166,33 +165,6 @@ public class Node {
 
 		if (parent != null)
 			parent.pruneBranches();
-	}
-
-	/**
-	 * Select a child node at random and return it.
-	 *
-	 * @param board
-	 * @return
-	 */
-	public int randomSelect(Board board) {
-		double[] weights = board.getMoveWeights();
-
-		double totalWeight = 0.0d;
-		for (double weight : weights) {
-			totalWeight += weight;
-		}
-
-		int randomIndex = -1;
-		double random = Math.random() * totalWeight;
-		for (int i = 0; i < weights.length; ++i) {
-			random -= weights[i];
-			if (random <= 0.0d) {
-				randomIndex = i;
-				break;
-			}
-		}
-
-		return randomIndex;
 	}
 
 	public boolean isRandomNode() {

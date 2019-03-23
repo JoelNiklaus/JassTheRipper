@@ -38,7 +38,7 @@ public class ChooseTrumpfTest {
 
 
 	@Test
-	public void chooseTrumpfDiamondWithGreatDiamondCards() {
+	public void testChooseTrumpfDiamondWithGreatDiamondCards() {
 		Set<Card> cards = veryGoodDiamondTrumpf;
 		int diamonds = JassHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
 		int hearts = JassHelper.rateColorForTrumpf(cards, Color.HEARTS);
@@ -267,7 +267,7 @@ public class ChooseTrumpfTest {
 	}
 
 	@Test
-	public void getCardRank() {
+	public void testGetCardRank() {
 		// Test that the Ace has Rank 9
 		assertEquals(9, Card.CLUB_ACE.getRank());
 	}

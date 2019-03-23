@@ -27,11 +27,11 @@ public interface Board {
 	List<Move> getMoves(CallLocation location);
 
 	/**
-	 * Apply the move m to the current state of the board.
+	 * Apply the move move to the current state of the board.
 	 *
-	 * @param m
+	 * @param move
 	 */
-	void makeMove(Move m);
+	void makeMove(Move move);
 
 	/**
 	 * Returns true if the game is over.
@@ -74,6 +74,4 @@ public interface Board {
 	 * @return array of weights
 	 */
 	double[] getMoveWeights();
-
-	void bPrint();
 }

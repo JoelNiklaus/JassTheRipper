@@ -170,6 +170,8 @@ public class JassHelper {
 	}
 
 	/**
+	 * TODO Maybe this can be used as a heuristic function in the MCTS!
+	 *
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
 	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
 	 * and therefore the simulation gets the most realistic outcome.
@@ -1112,7 +1114,7 @@ public class JassHelper {
 		// Only rough estimate of the probability, that a player of the other team has enough cards to discard (i.e. I
 		// have an Ace and King, but he has 6 and 7 so can discard those invaluable cards
 		estimate *= (float) (otherColorCards) / otherCards;
-		estimate *= Helper.factorial(otherColorCards - 1);
+		estimate *= factorial(otherColorCards - 1);
 		for (int i = 0; i < higherCards; i++) {
 			otherColorCards--;
 			estimate *= (float) (otherColorCards) / otherCards;
@@ -1162,101 +1164,12 @@ public class JassHelper {
 		return (int) Math.ceil(rating);
 	}
 
-	/**
-	 * Add randomized available cards for the other players based on already played cards
-	 *
-	 * @param availableCards
-	 */
-	public static void distributeCardsForPlayers(Set<Card> availableCards, Game game) {
-		final Player currentPlayer = game.getCurrentPlayer();
-		currentPlayer.setCards(EnumSet.copyOf(availableCards));
-		final Round round = game.getCurrentRound();
-		final PlayingOrder order = round.getPlayingOrder();
-		Set<Card> remainingCards = getRemainingCards(availableCards, game);
-		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
-
-		// TODO make certain cards unavailable (e.g. when one player did not follow suit) or less probable (when a player did not take a valuable trick with a trump) for certain players.
-
-		for (Player player : order.getPlayersInInitialPlayingOrder()) {
-			double numberOfCardsToAdd;
-			if (!player.equals(currentPlayer)) { // randomize cards for the other players
-				if (round.hasPlayerAlreadyPlayed(player))
-					numberOfCardsToAdd = Math.floor(numberOfCards);
-				else
-					numberOfCardsToAdd = Math.ceil(numberOfCards);
-
-				Set<Card> cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
-				player.setCards(cards);
-
-				if (!remainingCards.removeAll(cards))
-					logger.debug("Could not remove picked cards from remaining cards");
-				assert !remainingCards.containsAll(cards);
-			}
-
-		}
-		assert remainingCards.isEmpty();
-	}
-
-	/**
-	 * Distribute the unknown cards to the other players at the beginning of the game, when a player is choosing a trumpf.
-	 *
-	 * @param availableCards
-	 * @param gameSession
-	 */
-	public static void distributeCardsForPlayers(Set<Card> availableCards, GameSession gameSession) {
-		Player currentPlayer = gameSession.getCurrentPlayer();
-		currentPlayer.setCards(EnumSet.copyOf(availableCards));
-
-		Set<Card> remainingCards = EnumSet.allOf(Card.class);
-		remainingCards.removeAll(availableCards);
-		assert !remainingCards.isEmpty();
-		for (Player player : gameSession.getPlayersInInitialPlayingOrder())
-			if (!player.equals(currentPlayer)) {
-				Set<Card> cards = pickRandomSubSet(remainingCards, 9);
-				player.setCards(cards);
-				remainingCards.removeAll(cards);
-			}
-		assert remainingCards.isEmpty();
-	}
-
-
-	public static Set<Card> testPickRandomSubSet(Set<Card> cards, int numberOfCards) {
-		return pickRandomSubSet(cards, numberOfCards);
-	}
-
-	/**
-	 * Picks a random sub set out of the given cards with the given size.
-	 *
-	 * @param cards
-	 * @param numberOfCards
-	 * @return
-	 */
-	private static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
-		assert (numberOfCards > 0 || numberOfCards <= 9);
-		List<Card> listOfCards = new LinkedList<>(cards);
-		assert numberOfCards <= listOfCards.size();
-		Collections.shuffle(listOfCards);
-		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
-		Set<Card> randomSubSet = new HashSet<>(randomSublist);
-		assert (cards.containsAll(randomSubSet));
-		return randomSubSet;
-	}
-
-	/**
-	 * Get the cards remaining to be split up on the other players.
-	 * All cards - already played cards - available cards
-	 *
-	 * @param availableCards
-	 * @return
-	 */
-	private static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
-		Set<Card> cards = EnumSet.allOf(Card.class);
-		assert cards.size() == 36;
-		cards.removeAll(availableCards);
-		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
-		Round round = game.getCurrentRound();
-		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
-		cards.removeAll(alreadyPlayedCards);
-		return cards;
+	public static float factorial(int n) {
+		if (n == 1 || n == 0)
+			return 1;
+		else if (n < 0)
+			return 0;
+		else
+			return n * factorial(n - 1);
 	}
 }
