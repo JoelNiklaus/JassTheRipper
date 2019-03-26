@@ -69,8 +69,8 @@ public class MCTSHelper {
 		if (!isChoosingTrumpf) {
 			// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
 			// But, we do not want to trust this too much but rather rely on the MCTS. It can be included there too.
-			Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
-			possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, gameSession.getCurrentGame());
+			Set<Card> possibleCards = CardSelectionHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
+			possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, gameSession.getCurrentGame());
 			if (possibleCards.size() == 1) {
 				logger.info("Based on expert Jass Knowledge there is only one sensible card available now.");
 				Card card = (Card) possibleCards.toArray()[0];

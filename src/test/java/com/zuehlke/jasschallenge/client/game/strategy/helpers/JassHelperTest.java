@@ -1,7 +1,5 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
@@ -10,7 +8,6 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 /**
@@ -18,136 +15,60 @@ import static org.junit.Assert.*;
  */
 public class JassHelperTest {
 
-	private Player firstPlayer = new Player("0", "firstPlayer", 0);
-	private Player secondPlayer = new Player("1", "secondPlayer", 1);
-	private Player thirdPlayer = new Player("2", "thirdPlayer", 2);
-	private Player lastPlayer = new Player("3", "lastPlayer", 3);
-	private PlayingOrder order = PlayingOrder.createOrder(asList(firstPlayer, secondPlayer, thirdPlayer, lastPlayer));
+	private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
 
 
-
-	/* Test refineCardsWithJassKnowledge
-	 * Test Stechen
-	 * */
 	@Test
-	public void testRefineCardsWithJassKnowledgeStechen() throws Exception {
-		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.topDown())
-				.createGameSession();
-		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_TEN));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_JACK));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_QUEEN));
+	public void testCalculateInitialSafetyRespectingPlayedCards() {
+		List<Card> sortedClubs = JassHelper.sortCardsOfColorDescending(EnumSet.of(Card.CLUB_TEN, Card.CLUB_NINE, Card.SPADE_QUEEN), Color.CLUBS);
+		List<Card> playedClubs = JassHelper.sortCardsOfColorDescending(EnumSet.of(Card.CLUB_KING, Card.CLUB_QUEEN, Card.SPADE_QUEEN), Color.CLUBS);
+		List<Card> sortedSpades = JassHelper.sortCardsOfColorDescending(cards1, Color.SPADES);
+		List<Card> playedSpades = JassHelper.sortCardsOfColorDescending(EnumSet.of(Card.SPADE_ACE, Card.SPADE_NINE, Card.CLUB_QUEEN), Color.SPADES);
+		assertEquals(JassHelper.calculateInitialSafetyObeabeRespectingPlayedCards(sortedSpades, playedSpades), 1.0, 0.05);
+		assertEquals(JassHelper.calculateInitialSafetyObeabeRespectingPlayedCards(sortedClubs, playedClubs), 1f / 9, 0.05);
+		List<Card> sortedClubsUndeUfe = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_EIGHT, Card.CLUB_NINE, Card.SPADE_QUEEN), Color.CLUBS);
+		List<Card> playedClubsUndeUfe = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_QUEEN, Card.SPADE_QUEEN), Color.CLUBS);
+		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe, playedClubsUndeUfe), 1f / 3, 0.05);
+		List<Card> sortedClubsUndeUfe1 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_TEN, Card.CLUB_NINE, Card.SPADE_QUEEN), Color.CLUBS);
+		List<Card> playedClubsUndeUfe1 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_SIX, Card.CLUB_QUEEN, Card.SPADE_KING), Color.CLUBS);
+		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe1, playedClubsUndeUfe1), 1f / 9, 0.05);
+		List<Card> sortedClubsUndeUfe2 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_TEN, Card.CLUB_EIGHT, Card.SPADE_QUEEN), Color.CLUBS);
+		List<Card> playedClubsUndeUfe2 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_QUEEN, Card.SPADE_KING), Color.CLUBS);
+		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe2, playedClubsUndeUfe2), 1f / 9, 0.05);
+		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe2, playedClubsUndeUfe2), TrumpfSelectionHelper.calculateInitialSafetyUndeUfe(sortedClubsUndeUfe2), 0.05);
 
-		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_KING);
-		Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, game);
-		Set<Card> expectedCards = EnumSet.of(Card.CLUB_KING);
-		assertEquals(expectedCards, refinedCards);
 	}
 
 	@Test
-	public void testRefineCardsStechenWithoutTrumpfIfPossible() throws Exception {
-		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
-				.createGameSession();
-		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_TEN));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_JACK));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_QUEEN));
-
-		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_KING, Card.DIAMOND_JACK);
-		Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, game);
-		Set<Card> expectedCards = EnumSet.of(Card.CLUB_KING);
-		assertEquals(expectedCards, refinedCards);
+	public void testRateUndeUfeWithAllClubsRemaining() {
+		Set<Card> playerCards = EnumSet.of(Card.CLUB_TEN, Card.CLUB_NINE, Card.SPADE_QUEEN, Card.CLUB_KING, Card.CLUB_JACK);
+		Set<Card> playerCardsOfColorClubs = JassHelper.getCardsOfColor(playerCards, Color.CLUBS);
+		Set<Card> playedCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_QUEEN, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
+		// 180 is maximum amount of points
+		assertEquals(20 * playerCardsOfColorClubs.size(), JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.CLUBS), 1);
+		assertEquals(20 * playerCardsOfColorClubs.size(), JassHelper.rateColorObeAbeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.CLUBS), 1);
+		assertEquals(0, JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.DIAMONDS), 1);
+		assertEquals(0, JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.SPADES), 1);
+		assertEquals(0, JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.HEARTS), 1);
+		assertEquals(0, JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.DIAMONDS), 1);
+		assertEquals(0, JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.SPADES), 1);
+		assertEquals(0, JassHelper.rateColorUndeUfeRespectingAlreadyPlayedCards(playerCards, playedCards, Color.HEARTS), 1);
 	}
 
 	@Test
-	public void testRefineCardsStechenWithTrumpfIfNotPossibleOtherwiseAndScoreHigherThan10() throws Exception {
-		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
-				.createGameSession();
-		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_TEN));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_JACK));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_QUEEN));
+	public void testNumberOfCardsBetween() {
+		Set<Card> playedCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_QUEEN, Card.CLUB_TEN, Card.CLUB_SEVEN);
+		List<Card> playedClubsDesc = JassHelper.sortCardsOfColorDescending(playedCards, Color.CLUBS);
+		List<Card> playedClubsAsc = JassHelper.sortCardsOfColorAscending(playedCards, Color.CLUBS);
+		assertEquals(0, JassHelper.calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(Card.CLUB_JACK, Card.CLUB_NINE, playedClubsDesc));
+		assertEquals(0, JassHelper.calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(Card.CLUB_NINE, Card.CLUB_JACK, playedClubsAsc));
 
-		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_JACK, Card.DIAMOND_NINE);
-		Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, game);
-		Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_JACK, Card.DIAMOND_NINE);
-		assertEquals(expectedCards, refinedCards);
-		assertTrue(game.getCurrentRound().calculateScore() > 10);
+		assertEquals(1, JassHelper.calculateNumberOfCardsInbetweenObeAbeRespectingPlayedCards(Card.CLUB_JACK, Card.CLUB_EIGHT, playedClubsDesc));
+		assertEquals(2, JassHelper.calculateNumberOfCardsInbetweenUndeUfeRespectingPlayedCards(Card.CLUB_SIX, Card.CLUB_JACK, playedClubsAsc));
 	}
 
 	@Test
-	public void testRefineCardsNotStechenWithTrumpfIfNotPossibleOtherwiseAndScoreLowerThan10() throws Exception {
-		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
-				.createGameSession();
-		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_JACK));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_QUEEN));
-
-		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN);
-		Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, game);
-		assertEquals(cards, refinedCards);
-		assertTrue(game.getCurrentRound().calculateScore() < 10);
-	}
-
-    /* Test refineCardsWithJassKnowledge
-	 * Test Austrumpfen
-     * */
-
-	@Test
-	public void testAlsoAustrumpfenWhenNotHavingHighTrumpfs() throws Exception {
-		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
-				.createGameSession();
-		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-
-
-		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.DIAMOND_EIGHT);
-		Player player = firstPlayer;
-		player.setCards(cards);
-		Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.DIAMOND_EIGHT);
-		Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, game);
-		assertEquals(expectedCards, refinedCards);
-	}
-
-	@Test
-	public void testNotAustrumpfenHavingHighTrumpfs() throws Exception {
-		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
-				.createGameSession();
-		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-
-		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
-		Player player = firstPlayer;
-		player.setCards(cards);
-		Set<Card> refinedCards = JassHelper.refineCardsWithJassKnowledge(cards, game);
-		Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
-		assertEquals(expectedCards, refinedCards);
-	}
-
-
-    /*
-     * Test other Methods
-     * */
-
-	@Test
-	public void testGetTrumps() throws Exception {
+	public void testGetTrumps() {
 		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
 		Mode trump = Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
 		Set<Card> trumps = JassHelper.getTrumps(cards, trump);
@@ -155,5 +76,9 @@ public class JassHelperTest {
 		assertEquals(expectedTrumps, trumps);
 	}
 
-
+	@Test
+	public void testGetCardRank() {
+		// Test that the Ace has Rank 9
+		assertEquals(9, Card.CLUB_ACE.getRank());
+	}
 }

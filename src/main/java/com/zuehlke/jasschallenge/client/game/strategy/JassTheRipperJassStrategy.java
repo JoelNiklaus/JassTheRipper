@@ -3,8 +3,9 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 import com.google.common.collect.Iterables;
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
-import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
@@ -109,11 +110,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED;
 
-	// TODO: Maybe this is too high or too low? => Write tests.
-	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
-	public static final int MAX_SHIFT_RATING_VAL = 75;
-
-	public final static Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
+	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
 
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
@@ -137,10 +134,10 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			final long startTime = System.currentTimeMillis();
 			printCards(availableCards);
 
-			Mode mode = JassHelper.getRandomMode(isGschobe);
+			Mode mode = TrumpfSelectionHelper.getRandomMode(isGschobe);
 
 			if (trumpfSelectionMethod == TrumpfSelectionMethod.RULE_BASED)
-				mode = JassHelper.predictTrumpf(availableCards, mode, isGschobe);
+				mode = TrumpfSelectionHelper.predictTrumpf(availableCards, mode, isGschobe);
 
 			if (trumpfSelectionMethod == TrumpfSelectionMethod.MCTS)
 				try {
@@ -160,7 +157,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		} catch (Exception e) {
 			logger.debug("{}", e);
 			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random trumpf now.");
-			return JassHelper.getRandomMode(isGschobe);
+			return TrumpfSelectionHelper.getRandomMode(isGschobe);
 		}
 	}
 
@@ -195,7 +192,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private Card calculateCard(Set<Card> availableCards, GameSession gameSession, long endingTime) {
 		try {
-			final Set<Card> possibleCards = JassHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
+			final Set<Card> possibleCards = CardSelectionHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
 
 			if (possibleCards.isEmpty())
 				logger.error("We have a serious problem! No possible card to play!");
@@ -206,7 +203,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 				return card;
 			}
 
-			Card card = JassHelper.getRandomCard(possibleCards, gameSession.getCurrentGame());
+			Card card = CardSelectionHelper.getRandomCard(possibleCards, gameSession.getCurrentGame());
 
 			logger.info("Thinking now...");
 			try {
@@ -231,7 +228,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		} catch (Exception e) {
 			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random card now.");
 			logger.debug("{}", e);
-			return JassHelper.getRandomCard(availableCards, gameSession.getCurrentGame());
+			return CardSelectionHelper.getRandomCard(availableCards, gameSession.getCurrentGame());
 		}
 	}
 

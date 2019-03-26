@@ -1,6 +1,8 @@
-package com.zuehlke.jasschallenge.client.game.strategy;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder;
+import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -23,7 +25,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testExecutorServiceShutsDownCorrectly() throws MCTSException {
-		final GameSession gameSession = GameSessionBuilder.newSession()
+		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
@@ -42,7 +44,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testMCTSStart() throws MCTSException {
-		final GameSession gameSession = GameSessionBuilder.newSession()
+		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
@@ -57,7 +59,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testMCTSDuringFirstRound() throws MCTSException {
-		final GameSession gameSession = GameSessionBuilder.newSession()
+		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 

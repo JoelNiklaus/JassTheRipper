@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
@@ -30,8 +31,34 @@ public class JassBoard implements Board, Serializable {
 
 
 	/**
-	 * Constructs a new JassBoard. If the flag is set, deals new random cards to the players.
-	 * Only used for testing.
+	 * Constructs a new JassBoard based on a game session. The game session is needed for choosing a trumpf.
+	 *
+	 * @param availableCards
+	 * @param gameSession
+	 * @param newRandomCards
+	 * @param isChoosingTrumpf
+	 * @param shifted
+	 */
+	public JassBoard(Set<Card> availableCards, GameSession gameSession, boolean newRandomCards, boolean isChoosingTrumpf, boolean shifted) {
+		this.availableCards = EnumSet.copyOf(availableCards);
+		this.isChoosingTrumpf = isChoosingTrumpf;
+		this.shifted = shifted;
+
+		if (isChoosingTrumpf) {
+			this.gameSession = new GameSession(gameSession);
+			this.game = this.gameSession.getCurrentGame();
+			if (newRandomCards)
+				distributeCardsForPlayers(this.availableCards, this.gameSession);
+		} else {
+			this.gameSession = null;
+			this.game = new Game(gameSession.getCurrentGame());
+			if (newRandomCards)
+				distributeCardsForPlayers(this.availableCards, this.game);
+		}
+	}
+
+	/**
+	 * Constructs a new JassBoard based on a game. If the flag is set, deals new random cards to the players.
 	 *
 	 * @param availableCards
 	 * @param game
@@ -51,24 +78,6 @@ public class JassBoard implements Board, Serializable {
 		if (newRandomCards)
 			distributeCardsForPlayers(this.availableCards, this.game);
 
-	}
-
-	public JassBoard(Set<Card> availableCards, GameSession gameSession, boolean newRandomCards, boolean isChoosingTrumpf, boolean shifted) {
-		this.availableCards = EnumSet.copyOf(availableCards);
-		this.isChoosingTrumpf = isChoosingTrumpf;
-		this.shifted = shifted;
-
-		if (isChoosingTrumpf) {
-			this.gameSession = new GameSession(gameSession);
-			this.game = this.gameSession.getCurrentGame();
-			if (newRandomCards)
-				distributeCardsForPlayers(this.availableCards, this.gameSession);
-		} else {
-			this.gameSession = null;
-			this.game = new Game(gameSession.getCurrentGame());
-			if (newRandomCards)
-				distributeCardsForPlayers(this.availableCards, this.game);
-		}
 	}
 
 	/**
@@ -202,13 +211,13 @@ public class JassBoard implements Board, Serializable {
 			final Player player = game.getCurrentPlayer();
 
 
-			Set<Card> possibleCards = JassHelper.getPossibleCards(EnumSet.copyOf(player.getCards()), game);
+			Set<Card> possibleCards = CardSelectionHelper.getPossibleCards(EnumSet.copyOf(player.getCards()), game);
 
 			assert (possibleCards.size() > 0);
 
 			try {
 				//logger.info("Possible cards before refining: " + possibleCards);
-				possibleCards = JassHelper.refineCardsWithJassKnowledge(possibleCards, game);
+				possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
 				//logger.info("Possible cards after refining: " + possibleCards);
 			} catch (Exception e) {
 				logger.debug("{}", e);
