@@ -87,11 +87,14 @@ public class BenchmarkRunner {
 	/**
 	 * Runs a tournament against two challenge bots and logs the results in a folder inside the jass server to be analyzed.
 	 */
-	public static void runBenchmark(JassStrategy jassStrategy, String botName, int tournamentRounds, int maxPoints, int seed) {
+	public static void runBenchmark(JassStrategy jassStrategy, String botName, int tournamentRounds, int maxPoints, int seed, boolean challengeBotFirst) {
 		final ArrayList<Process> processes = new ArrayList<>();
 
 		int numThreads = 2;
 		ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+		List<Future<RemoteGame>> futures = new LinkedList<>();
+
+		WebDriver driver = null;
 
 		try {
 			// jass-server must be in the same parent directory as the JassTheRipperProject
@@ -106,20 +109,18 @@ public class BenchmarkRunner {
 			// INFO: if the bots fail to connect, it may be because the server has not yet started. Increase the time sleeping
 			waitForStartup("Wait for jass server to start...", 7500);
 
-			WebDriver driver = new ChromeDriver();
+			driver = new ChromeDriver();
 			driver.get("localhost:3000");
 			setUpTournament(driver);
 
-			List<Future<RemoteGame>> futures = new LinkedList<>();
-
-			for (int i = 0; i < numThreads; i++) {
-				futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(botName, jassStrategy), SessionType.TOURNAMENT)));
+			// NOTE: Because we have a random seed, we have to play each team in each position once to ensure a fair overall benchmark
+			if (challengeBotFirst) {
+				startChallengeBots(processes);
+				startJassTheRipperBots(jassStrategy, botName, numThreads, executorService, futures);
+			} else {
+				startJassTheRipperBots(jassStrategy, botName, numThreads, executorService, futures);
+				startChallengeBots(processes);
 			}
-			waitForStartup("Wait for the JassTheRipper bots to start...", 1000);
-
-			// bachelor-thesis-project must be in the same parent directory as the JassTheRipperProject
-			startShellProcess(processes, "../bachelor-thesis-project/src/remote_play", "sudo python3 play_as_challenge_bot.py");
-			waitForStartup("Wait for the Challenge bots to start...", 1000);
 
 			// INFO: if the tournament cannot start, it may be because the bots have not yet started. Increase the time sleeping
 			startTournament(driver);
@@ -145,7 +146,27 @@ public class BenchmarkRunner {
 			} catch (InterruptedException | IllegalStateException | IOException e) {
 				e.printStackTrace();
 			}
+
+			if (driver != null) {
+				driver.quit();
+			}
 		}
+	}
+
+	/**
+	 * Note that bachelor-thesis-project must be in the same parent directory as the JassTheRipperProject
+	 * @param processes
+	 */
+	private static void startChallengeBots(ArrayList<Process> processes) {
+		startShellProcess(processes, "../bachelor-thesis-project/src/remote_play", "sudo python3 play_as_challenge_bot.py");
+		waitForStartup("Wait for the Challenge bots to start...", 1000);
+	}
+
+	private static void startJassTheRipperBots(JassStrategy jassStrategy, String botName, int numThreads, ExecutorService executorService, List<Future<RemoteGame>> futures) {
+		for (int i = 0; i < numThreads; i++) {
+			futures.add(executorService.submit(() -> startGame(LOCAL_URL, new Player(botName, jassStrategy), SessionType.TOURNAMENT)));
+		}
+		waitForStartup("Wait for the JassTheRipper bots to start...", 1000);
 	}
 
 
