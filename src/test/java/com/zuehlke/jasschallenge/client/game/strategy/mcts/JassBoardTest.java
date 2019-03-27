@@ -1,9 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
-import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.PlayingOrder;
-import com.zuehlke.jasschallenge.client.game.Team;
+import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.game.Trumpf;
@@ -13,9 +10,7 @@ import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
@@ -82,6 +77,50 @@ public class JassBoardTest {
 			assertFalse(jassBoard2.getMoves(CallLocation.playout).isEmpty());
 			assertFalse(jassBoard2.getMoves(CallLocation.treePolicy).isEmpty());
 		}
+	}
+
+	@Test
+	public void testGetImPossibleCardsForPlayerNormalNotFollowSuit() {
+		obeAbeGame.makeMove(new Move(player0, Card.CLUB_SIX));
+		obeAbeGame.makeMove(new Move(player1, Card.CLUB_SEVEN));
+		obeAbeGame.makeMove(new Move(player2, Card.HEART_EIGHT)); // player 2 did not follow suit
+		obeAbeGame.makeMove(new Move(player3, Card.CLUB_KING));
+		obeAbeGame.startNextRound();
+
+		Set<Card> impossibleCardsForPlayer = JassBoard.getImpossibleCardsForPlayer(obeAbeGame, player2);
+		assertEquals(9, impossibleCardsForPlayer.size());
+
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_SIX));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_SEVEN));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_EIGHT));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_NINE));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_TEN));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_JACK));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_QUEEN));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_KING));
+		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_ACE));
+	}
+
+	@Test
+	public void testGetImPossibleCardsForPlayerTrumpfNotFollowSuit() {
+		diamondsGame.makeMove(new Move(player0, Card.DIAMOND_EIGHT));
+		diamondsGame.makeMove(new Move(player1, Card.DIAMOND_NINE));
+		diamondsGame.makeMove(new Move(player2, Card.HEART_EIGHT)); // player 2 did not follow suit
+		diamondsGame.makeMove(new Move(player3, Card.DIAMOND_QUEEN));
+		diamondsGame.startNextRound();
+
+		Set<Card> impossibleCardsForPlayer = JassBoard.getImpossibleCardsForPlayer(diamondsGame, player2);
+		assertEquals(8, impossibleCardsForPlayer.size());
+
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_SIX));
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_SEVEN));
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_EIGHT));
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_NINE));
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_TEN));
+		assertFalse(impossibleCardsForPlayer.contains(Card.DIAMOND_JACK)); // special rule for jack
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_QUEEN));
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_KING));
+		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_ACE));
 	}
 
 }

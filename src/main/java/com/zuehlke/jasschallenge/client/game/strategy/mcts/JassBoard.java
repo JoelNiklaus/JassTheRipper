@@ -7,12 +7,15 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.CardValue;
+import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -111,21 +114,30 @@ public class JassBoard implements Board, Serializable {
 		final Player currentPlayer = game.getCurrentPlayer();
 		currentPlayer.setCards(EnumSet.copyOf(availableCards));
 		final Round round = game.getCurrentRound();
-		final PlayingOrder order = round.getPlayingOrder();
+		final List<Player> players = round.getPlayingOrder().getPlayersInInitialPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards, game);
 		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
 
-		// TODO make certain cards unavailable (e.g. when one player did not follow suit) or less probable (when a player did not take a valuable trick with a trump) for certain players.
 
-		for (Player player : order.getPlayersInInitialPlayingOrder()) {
-			double numberOfCardsToAdd;
+		for (Player player : players) {
+			int numberOfCardsToAdd;
 			if (!player.equals(currentPlayer)) { // randomize cards for the other players
 				if (round.hasPlayerAlreadyPlayed(player))
-					numberOfCardsToAdd = Math.floor(numberOfCards);
+					numberOfCardsToAdd = (int) Math.floor(numberOfCards);
 				else
-					numberOfCardsToAdd = Math.ceil(numberOfCards);
+					numberOfCardsToAdd = (int) Math.ceil(numberOfCards);
 
-				Set<Card> cards = pickRandomSubSet(remainingCards, (int) numberOfCardsToAdd);
+				// Make certain cards unavailable (when one player did not follow suit)
+				Set<Card> possibleCardsForPlayer = EnumSet.copyOf(remainingCards);
+				Set<Card> impossibleCardsForPlayer = getImpossibleCardsForPlayer(game, player);
+				// TODO Like this it may not be able to estimate the last player's cards well. Try to find better solution.
+				if (remainingCards.size() - impossibleCardsForPlayer.size() >= numberOfCardsToAdd)
+					possibleCardsForPlayer.removeAll(impossibleCardsForPlayer);
+
+				// TODO make this more sophisticated with probability distribution and sampling.
+				//  Like this we can add cards we are quite certain are held by a specific player.
+
+				Set<Card> cards = pickRandomSubSet(possibleCardsForPlayer, numberOfCardsToAdd);
 				player.setCards(cards);
 
 				if (!remainingCards.removeAll(cards))
@@ -150,7 +162,7 @@ public class JassBoard implements Board, Serializable {
 		assert numberOfCards <= listOfCards.size();
 		Collections.shuffle(listOfCards);
 		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
-		Set<Card> randomSubSet = new HashSet<>(randomSublist);
+		Set<Card> randomSubSet = EnumSet.copyOf(randomSublist);
 		assert (cards.containsAll(randomSubSet));
 		return randomSubSet;
 	}
@@ -173,6 +185,39 @@ public class JassBoard implements Board, Serializable {
 		return cards;
 	}
 
+	/**
+	 * Composes a set of cards which are impossible for a given player to be held at a given point in a game
+	 * If player did not follow suit earlier in the game, add all cards of this suit to this set.
+	 *
+	 * @param game
+	 * @param player
+	 * @return
+	 */
+	public static Set<Card> getImpossibleCardsForPlayer(Game game, Player player) {
+		Set<Card> impossibleCards = EnumSet.noneOf(Card.class);
+		game.getPreviousRounds().forEach(round -> {
+			Color playerCardColor = round.getCardOfPlayer(player).getColor();
+			Color trumpfColor = game.getMode().getTrumpfColor();
+			Color leadingColor = round.getMoves().get(0).getPlayedCard().getColor();
+			boolean playerPlayedTrumpf = playerCardColor.equals(trumpfColor);
+			boolean playerFollowedSuit = playerCardColor.equals(leadingColor);
+			if (!player.wasStartingPlayer(round) && !playerFollowedSuit && !playerPlayedTrumpf) {
+				Set<Card> impossibleCardsToAdd = EnumSet.allOf(Card.class).stream()
+						.filter(card -> !cardIsPossible(trumpfColor, leadingColor, card))
+						.collect(Collectors.toSet());
+				impossibleCards.addAll(impossibleCardsToAdd);
+			}
+		});
+		return impossibleCards;
+	}
+
+	private static boolean cardIsPossible(Color trumpfColor, Color leadingColor, Card card) {
+		if (card.getColor().equals(leadingColor)) {
+			boolean cardIsTrumpfJack = card.getColor().equals(trumpfColor) && card.getValue().equals(CardValue.JACK);
+			return leadingColor.equals(trumpfColor) && cardIsTrumpfJack;
+		}
+		return true;
+	}
 
 	/**
 	 * Reconstruct Game but add known random cards for players.
