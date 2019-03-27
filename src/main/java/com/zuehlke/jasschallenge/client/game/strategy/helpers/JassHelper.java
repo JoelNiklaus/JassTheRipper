@@ -69,11 +69,11 @@ public class JassHelper {
 	private static Set<Card> getBrettli(Set<Card> possibleCards, Mode mode, Color color) {
 		Set<Card> cards = getCardsOfColor(possibleCards, color);
 		if (isBottomUp(mode))
-			cards = cards.parallelStream().filter(card -> card.getRank() > BRETTLI_BOUNDARY).collect(Collectors.toSet());
+			cards = cards.stream().filter(card -> card.getRank() > BRETTLI_BOUNDARY).collect(Collectors.toSet());
 		else {
-			cards = cards.parallelStream().filter(card -> card.getRank() < BRETTLI_BOUNDARY).collect(Collectors.toSet());
+			cards = cards.stream().filter(card -> card.getRank() < BRETTLI_BOUNDARY).collect(Collectors.toSet());
 			if (isTopDown(mode))
-				cards = cards.parallelStream().filter(card -> card.getRank() != EIGHT).collect(Collectors.toSet());
+				cards = cards.stream().filter(card -> card.getRank() != EIGHT).collect(Collectors.toSet());
 		}
 		return cards;
 	}
@@ -245,7 +245,7 @@ public class JassHelper {
 	 * @return
 	 */
 	public static Set<Card> getCardsOfColor(Set<Card> cards, Color color) {
-		return cards.parallelStream().
+		return cards.stream().
 				filter(card -> card.getColor().equals(color)).
 				collect(Collectors.toSet());
 	}
@@ -290,8 +290,7 @@ public class JassHelper {
 	 * @return
 	 */
 	public static Set<Card> getTrumps(Set<Card> cards, Mode mode) {
-		// TODO find out difference between parallelStream and stream
-		return cards.parallelStream()
+		return cards.stream()
 				.filter(card -> hasTrumpfColor(card, mode))
 				.collect(Collectors.toSet());
 	}
@@ -304,7 +303,7 @@ public class JassHelper {
 	 * @return
 	 */
 	public static Set<Card> getNotTrumps(Set<Card> cards, Mode mode) {
-		return cards.parallelStream()
+		return cards.stream()
 				.filter(card -> !hasTrumpfColor(card, mode))
 				.collect(Collectors.toSet());
 	}

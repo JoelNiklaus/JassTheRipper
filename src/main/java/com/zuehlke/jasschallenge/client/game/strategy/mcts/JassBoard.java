@@ -211,7 +211,7 @@ public class JassBoard implements Board, Serializable {
 			final Player player = game.getCurrentPlayer();
 
 
-			Set<Card> possibleCards = CardSelectionHelper.getPossibleCards(EnumSet.copyOf(player.getCards()), game);
+			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 
 			assert (possibleCards.size() > 0);
 

@@ -192,7 +192,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private Card calculateCard(Set<Card> availableCards, GameSession gameSession, long endingTime) {
 		try {
-			final Set<Card> possibleCards = CardSelectionHelper.getPossibleCards(availableCards, gameSession.getCurrentGame());
+			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, gameSession.getCurrentGame());
 
 			if (possibleCards.isEmpty())
 				logger.error("We have a serious problem! No possible card to play!");

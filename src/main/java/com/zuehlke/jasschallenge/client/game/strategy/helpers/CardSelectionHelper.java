@@ -29,7 +29,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	public static Card getRandomCard(Set<Card> availableCards, Game game) {
-		return getPossibleCards(availableCards, game).parallelStream()
+		return getCardsPossibleToPlay(availableCards, game).stream()
 				.findAny()
 				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
 	}
@@ -422,12 +422,12 @@ public class CardSelectionHelper {
 	 * @param game
 	 * @return
 	 */
-	public static Set<Card> getPossibleCards(Set<Card> availableCards, Game game) {
+	public static Set<Card> getCardsPossibleToPlay(Set<Card> availableCards, Game game) {
 		assert !availableCards.isEmpty();
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card
-		Set<Card> validCards = availableCards.parallelStream().
+		Set<Card> validCards = availableCards.stream().
 				filter(card -> mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).
 				collect(Collectors.toSet());
 		if (!validCards.isEmpty())

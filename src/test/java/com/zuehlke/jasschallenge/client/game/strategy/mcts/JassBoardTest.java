@@ -43,19 +43,19 @@ public class JassBoardTest {
 	}
 
 	@Test
-	public void refineMovesWithJassKnowledgeWhenNotFiltering() {
+	public void testRefineMovesWithJassKnowledgeWhenNotFiltering() {
 		Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
 		assertEquals(CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame), possibleCards);
 	}
 
 	@Test
-	public void refineMovesWithJassKnowledgeNeverRemovesAllCards() {
+	public void testRefineMovesWithJassKnowledgeNeverRemovesAllCards() {
 		Set<Card> possibleCards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
 		assertEquals(CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, diamondsGame), possibleCards);
 	}
 
 	@Test
-	public void getMoves() {
+	public void testGetMoves() {
 		for (int i = 0; i < 100; i++) {
 			JassBoard jassBoard = new JassBoard(cards1, diamondsGame, true);
 			assertFalse(jassBoard.getMoves(CallLocation.playout).isEmpty());
@@ -64,7 +64,7 @@ public class JassBoardTest {
 	}
 
 	@Test
-	public void getMovesObeAbe() {
+	public void testGetMovesObeAbe() {
 		for (int i = 0; i < 100; i++) {
 			JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, true);
 			// should not get filtered
@@ -74,7 +74,7 @@ public class JassBoardTest {
 	}
 
 	@Test
-	public void getMovesNeverReturnsEmptyArrayList() {
+	public void testGetMovesNeverReturnsEmptyArrayList() {
 		for (int i = 0; i < 100; i++) {
 			JassBoard jassBoard = new JassBoard(cards1, obeAbeGame, true);
 			// should not get filtered

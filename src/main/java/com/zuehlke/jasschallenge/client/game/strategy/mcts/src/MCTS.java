@@ -149,7 +149,7 @@ public class MCTS {
 				moveDisplay = ((TrumpfMove) move).getChosenTrumpf().toString();
 			logger.info("{} selected {} times.", moveDisplay, numTimesSelected);
 		});
-		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().parallelStream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
+		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
 
 		assert entryOptional.isPresent();
 		return entryOptional.get().getKey();

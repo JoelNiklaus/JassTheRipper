@@ -50,6 +50,11 @@ public class Player implements Serializable {
 		this.currentJassStrategy = player.getCurrentJassStrategy();
 	}
 
+	public boolean wasStartingPlayer(Round round) {
+		assert !round.getMoves().isEmpty();
+		return round.getMoves().get(0).getPlayer().equals(this);
+	}
+
 	public boolean isPartner(Player other) {
 		return !this.equals(other) && (getSeatId() + other.getSeatId()) % 2 == 0;
 	}
