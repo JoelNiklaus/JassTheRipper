@@ -122,6 +122,10 @@ public class Game implements Serializable {
 		return currentRound.getPlayingOrder();
 	}
 
+	public List<Player> getPlayers() {
+		return getOrder().getPlayersInInitialPlayingOrder();
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

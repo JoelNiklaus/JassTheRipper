@@ -15,9 +15,6 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
-/**
- * Created by dominikbriner on 12.05.17.
- */
 public class JassBoardTest {
 
 	private Set<Card> allCards = EnumSet.copyOf(Arrays.asList(Card.values()));
@@ -87,7 +84,7 @@ public class JassBoardTest {
 		obeAbeGame.makeMove(new Move(player3, Card.CLUB_KING));
 		obeAbeGame.startNextRound();
 
-		Set<Card> impossibleCardsForPlayer = JassBoard.getImpossibleCardsForPlayer(obeAbeGame, player2);
+		Set<Card> impossibleCardsForPlayer = CardKnowledgeBase.getImpossibleCardsForPlayer(obeAbeGame, player2);
 		assertEquals(9, impossibleCardsForPlayer.size());
 
 		assertTrue(impossibleCardsForPlayer.contains(Card.CLUB_SIX));
@@ -109,7 +106,7 @@ public class JassBoardTest {
 		diamondsGame.makeMove(new Move(player3, Card.DIAMOND_QUEEN));
 		diamondsGame.startNextRound();
 
-		Set<Card> impossibleCardsForPlayer = JassBoard.getImpossibleCardsForPlayer(diamondsGame, player2);
+		Set<Card> impossibleCardsForPlayer = CardKnowledgeBase.getImpossibleCardsForPlayer(diamondsGame, player2);
 		assertEquals(8, impossibleCardsForPlayer.size());
 
 		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_SIX));

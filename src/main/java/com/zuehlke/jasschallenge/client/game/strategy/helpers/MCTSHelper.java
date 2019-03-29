@@ -126,7 +126,7 @@ public class MCTSHelper {
 	 * @return
 	 */
 	private Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
-		Board jassBoard = new JassBoard(availableCards, gameSession, true, isChoosingTrumpf, shifted);
+		Board jassBoard = new JassBoard(availableCards, gameSession, false, isChoosingTrumpf, shifted);
 		return mcts.runMCTS_UCT(jassBoard, endingTime, false);
 	}
 

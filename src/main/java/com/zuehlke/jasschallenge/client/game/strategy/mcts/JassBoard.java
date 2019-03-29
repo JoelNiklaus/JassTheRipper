@@ -7,15 +7,12 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import com.zuehlke.jasschallenge.game.cards.CardValue;
-import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -56,7 +53,7 @@ public class JassBoard implements Board, Serializable {
 			this.gameSession = null;
 			this.game = new Game(gameSession.getCurrentGame());
 			if (newRandomCards)
-				distributeCardsForPlayers(this.availableCards, this.game);
+				CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
 		}
 	}
 
@@ -79,7 +76,7 @@ public class JassBoard implements Board, Serializable {
 		//this.game = SerializationUtils.clone(game);
 
 		if (newRandomCards)
-			distributeCardsForPlayers(this.availableCards, this.game);
+			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
 
 	}
 
@@ -109,6 +106,7 @@ public class JassBoard implements Board, Serializable {
 	 * Add randomized available cards for the other players based on already played cards
 	 *
 	 * @param availableCards
+	 * @deprecated
 	 */
 	private static void distributeCardsForPlayers(Set<Card> availableCards, Game game) {
 		final Player currentPlayer = game.getCurrentPlayer();
@@ -117,7 +115,6 @@ public class JassBoard implements Board, Serializable {
 		final List<Player> players = round.getPlayingOrder().getPlayersInInitialPlayingOrder();
 		Set<Card> remainingCards = getRemainingCards(availableCards, game);
 		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
-
 
 		for (Player player : players) {
 			int numberOfCardsToAdd;
@@ -129,13 +126,10 @@ public class JassBoard implements Board, Serializable {
 
 				// Make certain cards unavailable (when one player did not follow suit)
 				Set<Card> possibleCardsForPlayer = EnumSet.copyOf(remainingCards);
-				Set<Card> impossibleCardsForPlayer = getImpossibleCardsForPlayer(game, player);
-				// TODO Like this it may not be able to estimate the last player's cards well. Try to find better solution.
+				Set<Card> impossibleCardsForPlayer = CardKnowledgeBase.getImpossibleCardsForPlayer(game, player);
+				// TODO Like this it may not be able to estimate the last player's cards well. Try to find better solution. --> CardKnowledgeBase
 				if (remainingCards.size() - impossibleCardsForPlayer.size() >= numberOfCardsToAdd)
 					possibleCardsForPlayer.removeAll(impossibleCardsForPlayer);
-
-				// TODO make this more sophisticated with probability distribution and sampling.
-				//  Like this we can add cards we are quite certain are held by a specific player.
 
 				Set<Card> cards = pickRandomSubSet(possibleCardsForPlayer, numberOfCardsToAdd);
 				player.setCards(cards);
@@ -174,7 +168,7 @@ public class JassBoard implements Board, Serializable {
 	 * @param availableCards
 	 * @return
 	 */
-	private static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
+	public static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
 		Set<Card> cards = EnumSet.allOf(Card.class);
 		assert cards.size() == 36;
 		cards.removeAll(availableCards);
@@ -183,40 +177,6 @@ public class JassBoard implements Board, Serializable {
 		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
 		cards.removeAll(alreadyPlayedCards);
 		return cards;
-	}
-
-	/**
-	 * Composes a set of cards which are impossible for a given player to be held at a given point in a game
-	 * If player did not follow suit earlier in the game, add all cards of this suit to this set.
-	 *
-	 * @param game
-	 * @param player
-	 * @return
-	 */
-	public static Set<Card> getImpossibleCardsForPlayer(Game game, Player player) {
-		Set<Card> impossibleCards = EnumSet.noneOf(Card.class);
-		game.getPreviousRounds().forEach(round -> {
-			Color playerCardColor = round.getCardOfPlayer(player).getColor();
-			Color trumpfColor = game.getMode().getTrumpfColor();
-			Color leadingColor = round.getMoves().get(0).getPlayedCard().getColor();
-			boolean playerPlayedTrumpf = playerCardColor.equals(trumpfColor);
-			boolean playerFollowedSuit = playerCardColor.equals(leadingColor);
-			if (!player.wasStartingPlayer(round) && !playerFollowedSuit && !playerPlayedTrumpf) {
-				Set<Card> impossibleCardsToAdd = EnumSet.allOf(Card.class).stream()
-						.filter(card -> !cardIsPossible(trumpfColor, leadingColor, card))
-						.collect(Collectors.toSet());
-				impossibleCards.addAll(impossibleCardsToAdd);
-			}
-		});
-		return impossibleCards;
-	}
-
-	private static boolean cardIsPossible(Color trumpfColor, Color leadingColor, Card card) {
-		if (card.getColor().equals(leadingColor)) {
-			boolean cardIsTrumpfJack = card.getColor().equals(trumpfColor) && card.getValue().equals(CardValue.JACK);
-			return leadingColor.equals(trumpfColor) && cardIsTrumpfJack;
-		}
-		return true;
 	}
 
 	/**
@@ -305,7 +265,7 @@ public class JassBoard implements Board, Serializable {
 				assert gameSession.getCurrentGame() != null;
 				this.game = gameSession.getCurrentGame();
 				try {
-					distributeCardsForPlayers(this.availableCards, this.game);
+					CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
 				} catch (Exception e) {
 					logger.debug("{}", e);
 				}
