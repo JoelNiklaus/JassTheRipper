@@ -173,7 +173,8 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		Card card = calculateCard(availableCards, session, endingTime - 20);
 
 		// INFO: Even if there is only one card: wait for maxThinkingTime because opponents might detect patterns otherwise
-		waitUntilTimeIsUp(endingTime);
+		if (!session.getCurrentRound().isLastRound())
+			waitUntilTimeIsUp(endingTime);
 
 		final long endTime = System.currentTimeMillis() - startTime;
 		logger.info("Total time for move: {}ms", endTime);

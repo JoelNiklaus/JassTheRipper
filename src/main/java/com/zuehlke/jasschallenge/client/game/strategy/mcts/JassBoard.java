@@ -262,7 +262,7 @@ public class JassBoard implements Board, Serializable {
 
 			try {
 				//logger.info("Possible cards before refining: " + possibleCards);
-				possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
+				//possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
 				//logger.info("Possible cards after refining: " + possibleCards);
 			} catch (Exception e) {
 				logger.debug("{}", e);
