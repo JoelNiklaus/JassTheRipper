@@ -92,8 +92,6 @@ public class MCTSHelper {
 	private Move runPrediction(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
 		// Can do multithreading now -> Much faster
 		// Only do this when multithreading disabled
-
-
 		if (!mcts.isParallelisationEnabled()) {
 			long maxComputationTime = endingTime - System.currentTimeMillis();
 			int numberOfMCTSRuns = 4;

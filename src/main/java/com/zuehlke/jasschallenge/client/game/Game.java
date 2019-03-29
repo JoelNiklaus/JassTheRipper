@@ -15,7 +15,6 @@ public class Game implements Serializable {
 	private final Mode mode;
 	private Round currentRound;
 	private final Result result;
-	private final boolean shifted;
 
 	private List<Round> previousRounds = new ArrayList<>();
 
@@ -23,7 +22,6 @@ public class Game implements Serializable {
 		this.mode = mode;
 		this.currentRound = Round.createRound(mode, 0, order);
 		this.result = new Result(teams.get(0), teams.get(1));
-		this.shifted = shifted;
 	}
 
 	/**
@@ -35,7 +33,6 @@ public class Game implements Serializable {
 		this.mode = game.getCurrentRoundMode();
 		this.currentRound = new Round(game.getCurrentRound());
 		this.result = new Result(game.getResult());
-		this.shifted = game.isShifted();
 		this.previousRounds = new ArrayList<>();
 		for (Round previousRound : game.getPreviousRounds())
 			this.previousRounds.add(new Round(previousRound));
@@ -117,10 +114,6 @@ public class Game implements Serializable {
 		return null;
 	}
 
-	public boolean isShifted() {
-		return shifted;
-	}
-
 	public Mode getMode() {
 		return mode;
 	}
@@ -136,7 +129,6 @@ public class Game implements Serializable {
 
 		Game game = (Game) o;
 
-		if (shifted != game.shifted) return false;
 		if (!mode.equals(game.mode)) return false;
 		if (!currentRound.equals(game.currentRound)) return false;
 		if (!result.equals(game.result)) return false;
@@ -145,12 +137,11 @@ public class Game implements Serializable {
 
 	@Override
 	public int hashCode() {
-		int result1 = mode.hashCode();
-		result1 = 31 * result1 + currentRound.hashCode();
-		result1 = 31 * result1 + result.hashCode();
-		result1 = 31 * result1 + (shifted ? 1 : 0);
-		result1 = 31 * result1 + previousRounds.hashCode();
-		return result1;
+		int result = mode.hashCode();
+		result = 31 * result + currentRound.hashCode();
+		result = 31 * result + this.result.hashCode();
+		result = 31 * result + previousRounds.hashCode();
+		return result;
 	}
 
 	@Override
@@ -159,8 +150,7 @@ public class Game implements Serializable {
 				"mode=" + mode +
 				", currentRound=" + currentRound +
 				", result=" + result +
-				", shifted=" + shifted +
-				", previousRounds=" + previousRounds +
+				//", previousRounds=" + previousRounds +
 				'}';
 	}
 }

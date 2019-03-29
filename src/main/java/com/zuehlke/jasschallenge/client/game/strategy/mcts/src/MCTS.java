@@ -10,6 +10,9 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 
+// TODO evaluate which is more important: many runs or many root parallelisations
+
+
 /**
  * The main class responsible for the Monte Carlo Tree Search Method.
  */
