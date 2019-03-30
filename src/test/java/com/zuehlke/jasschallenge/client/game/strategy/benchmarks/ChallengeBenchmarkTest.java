@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ChallengeBenchmarkTest {
 
-	private static final boolean RUN_BENCHMARK = true;
+	private static final boolean RUN_BENCHMARK = false;
 
 	private final static String BOT_NAME = "JassTheRipper";
 
@@ -31,7 +31,8 @@ public class ChallengeBenchmarkTest {
 	}
 
 	@Test
-	public void testWinsAgainstChallengeWithChallengeAsTeam1() throws JSONException {
+	public void testWinsAgainstChallengeWithChallengeAsTeam1() throws JSONException, InterruptedException {
+		Thread.sleep(1000);
 		if (RUN_BENCHMARK) {
 			System.out.println("Running benchmark with " + TOURNAMENT_ROUNDS + " tournament round(s) to " + MAX_POINTS + " points with random seed " + SEED + " and with the Challenge bots as team 1");
 			BenchmarkRunner.runBenchmark(MY_STRATEGY, BOT_NAME, TOURNAMENT_ROUNDS, MAX_POINTS, SEED, true);
@@ -40,7 +41,8 @@ public class ChallengeBenchmarkTest {
 	}
 
 	@Test
-	public void testWinsAgainstChallengeWithJassTheRipperAsTeam1() throws JSONException {
+	public void testWinsAgainstChallengeWithJassTheRipperAsTeam1() throws JSONException, InterruptedException {
+		Thread.sleep(1000);
 		if (RUN_BENCHMARK) {
 			System.out.println("Running benchmark with " + TOURNAMENT_ROUNDS + " tournament round(s) to " + MAX_POINTS + " points with random seed " + SEED + " and with the JassTheRipper bots as team 1");
 			BenchmarkRunner.runBenchmark(MY_STRATEGY, BOT_NAME, TOURNAMENT_ROUNDS, MAX_POINTS, SEED, false);

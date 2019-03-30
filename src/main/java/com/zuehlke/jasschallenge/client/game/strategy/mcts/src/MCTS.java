@@ -12,6 +12,8 @@ import java.util.concurrent.*;
 
 // TODO evaluate which is more important: many runs or many root parallelisations
 
+// TODO calculate how big the tree gets at each point in the game
+
 
 /**
  * The main class responsible for the Monte Carlo Tree Search Method.
