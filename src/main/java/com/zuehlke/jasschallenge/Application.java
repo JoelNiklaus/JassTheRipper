@@ -30,12 +30,13 @@ public class Application {
 	public static void main(String[] args) throws Exception {
 		// Competition
 		String websocketUrl = parseWebsocketUrlOrDefault(args);
+		String sessionName = parseSessionNameOrDefault(args);
 		Integer chosenTeamIndex = parseChosenTeamIndexOrDefault(args);
 
 		System.out.println("Connecting... Server socket URL: " + websocketUrl);
 
 		Player player = new Player(BOT_NAME, STRATEGY);
-		startGame(websocketUrl, player, SessionType.SINGLE_GAME, chosenTeamIndex);
+		startGame(websocketUrl, player, SessionType.SINGLE_GAME, sessionName, chosenTeamIndex);
 
 
 		// Testing
@@ -63,16 +64,24 @@ public class Application {
 		return LOCAL_URL;
 	}
 
-	private static Integer parseChosenTeamIndexOrDefault(String[] args) {
+	private static String parseSessionNameOrDefault(String[] args) {
 		if (args.length > 1) {
 			System.out.println("Arguments: " + Arrays.toString(args));
-			return Integer.parseInt(args[1]);
+			return args[1];
+		}
+		return "Java Client Session";
+	}
+
+	private static Integer parseChosenTeamIndexOrDefault(String[] args) {
+		if (args.length > 2) {
+			System.out.println("Arguments: " + Arrays.toString(args));
+			return Integer.parseInt(args[2]);
 		}
 		return 1;
 	}
 
-	private static void startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType, Integer chosenTeamIndex) throws Exception {
-		RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType, chosenTeamIndex);
+	private static void startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType, String sessionName, Integer chosenTeamIndex) throws Exception {
+		RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType, sessionName, chosenTeamIndex);
 		remoteGame.start();
 	}
 }

@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 public class GameHandler {
     private final Player localPlayer;
     private final SessionType sessionType;
+    private final String sessionName;
     private final Integer chosenTeamIndex;
     private GameSession gameSession;
     private PlayerMapper playerMapper;
@@ -32,13 +33,14 @@ public class GameHandler {
 
     public GameHandler(Player localPlayer, SessionType sessionType) {
         // just choose team index 1 as default. If team is already full, server will assign to a team with empty seats
-        this(localPlayer, sessionType, 1);
+        this(localPlayer, sessionType, "Java Client Session", 1);
     }
 
-    public GameHandler(Player localPlayer, SessionType sessionType, Integer chosenTeamIndex) {
+    public GameHandler(Player localPlayer, SessionType sessionType, String sessionName, Integer chosenTeamIndex) {
         this.localPlayer = localPlayer;
         resetPlayerMapper(localPlayer);
         this.sessionType = sessionType;
+        this.sessionName = sessionName;
         this.chosenTeamIndex = chosenTeamIndex;
     }
 
@@ -57,7 +59,7 @@ public class GameHandler {
     }
 
     public ChooseSession onRequestSessionChoice() {
-        return new ChooseSession(AUTOJOIN, "Java Client session", sessionType, chosenTeamIndex);
+        return new ChooseSession(AUTOJOIN, sessionName, sessionType, chosenTeamIndex);
     }
 
     public ChoosePlayerName onRequestPlayerName() {

@@ -80,7 +80,7 @@ public class GameHandlerTest {
 
         final ChooseSession chooseSession = new GameHandler(new Player("local"), SessionType.TOURNAMENT).onRequestSessionChoice();
 
-        assertThat(chooseSession, sameBeanAs(new ChooseSession(AUTOJOIN, "Java Client session", SessionType.TOURNAMENT)));
+        assertThat(chooseSession, sameBeanAs(new ChooseSession(AUTOJOIN, "Java Client Session", SessionType.TOURNAMENT)));
     }
 
     @Test

@@ -8,7 +8,6 @@ import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
