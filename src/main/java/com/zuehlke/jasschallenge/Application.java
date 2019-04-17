@@ -3,9 +3,6 @@ package com.zuehlke.jasschallenge;
 import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperRandomCardJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperRandomTrumpfJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 
 import java.util.Arrays;
@@ -32,33 +29,18 @@ public class Application {
 		String websocketUrl = parseWebsocketUrlOrDefault(args);
 		String sessionName = parseSessionNameOrDefault(args);
 		Integer chosenTeamIndex = parseChosenTeamIndexOrDefault(args);
+		String advisedPlayerName = parseAdvisedPlayerNameOrDefault(args);
+		String botName = parseBotNameOrDefault(args);
+		System.out.println("Arguments: " + Arrays.toString(args));
 
 		System.out.println("Connecting... Server socket URL: " + websocketUrl);
 
-		Player player = new Player(BOT_NAME, STRATEGY);
-		startGame(websocketUrl, player, SessionType.SINGLE_GAME, sessionName, chosenTeamIndex);
-
-
-		// Testing
-		//Player jassTheRipper = new Player("JassTheRipper", new JassTheRipperJassStrategy());
-		//Player jassTheRipperRandomTrumpf = new Player("JassTheRipperRandomTrumpf", new JassTheRipperRandomTrumpfJassStrategy());
-		//Player jassTheRipperRandomCard = new Player("JassTheRipperRandomCard", new JassTheRipperRandomCardJassStrategy());
-		//Player randomJasser = new Player("RandomJasser", new RandomJassStrategy());
-
-		// Change here to run different bot
-		//startGame(websocketUrl, jassTheRipper, SessionType.SINGLE_GAME);
-
-
-		//startGame(websocketUrl, randomJasser, SessionType.TOURNAMENT);
-		//startGame(websocketUrl, jassTheRipper, SessionType.TOURNAMENT);
-		//startGame(websocketUrl, jassTheRipperRandomTrumpf, SessionType.TOURNAMENT);
-		//startGame(websocketUrl, jassTheRipperRandomCard, SessionType.TOURNAMENT);
-
+		Player player = new Player(botName, STRATEGY);
+		startGame(websocketUrl, player, SessionType.SINGLE_GAME, sessionName, chosenTeamIndex, advisedPlayerName);
 	}
 
 	private static String parseWebsocketUrlOrDefault(String[] args) {
 		if (args.length > 0) {
-			System.out.println("Arguments: " + Arrays.toString(args));
 			return args[0];
 		}
 		return LOCAL_URL;
@@ -66,7 +48,6 @@ public class Application {
 
 	private static String parseSessionNameOrDefault(String[] args) {
 		if (args.length > 1) {
-			System.out.println("Arguments: " + Arrays.toString(args));
 			return args[1];
 		}
 		return "Java Client Session";
@@ -74,14 +55,31 @@ public class Application {
 
 	private static Integer parseChosenTeamIndexOrDefault(String[] args) {
 		if (args.length > 2) {
-			System.out.println("Arguments: " + Arrays.toString(args));
-			return Integer.parseInt(args[2]);
+			try {
+				return Integer.parseInt(args[2]);
+			} catch (NumberFormatException e) {
+				return 1;
+			}
 		}
 		return 1;
 	}
 
-	private static void startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType, String sessionName, Integer chosenTeamIndex) throws Exception {
-		RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType, sessionName, chosenTeamIndex);
+	private static String parseAdvisedPlayerNameOrDefault(String[] args) {
+		if (args.length > 3) {
+			return !args[3].equals("null") ? args[3] : null;
+		}
+		return null;
+	}
+
+	private static String parseBotNameOrDefault(String[] args) {
+		if (args.length > 4) {
+			return !args[4].equals("null") ? args[4] : null;
+		}
+		return BOT_NAME;
+	}
+
+	private static void startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType, String sessionName, Integer chosenTeamIndex, String advisedPlayerName) throws Exception {
+		RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType, sessionName, chosenTeamIndex, advisedPlayerName);
 		remoteGame.start();
 	}
 }

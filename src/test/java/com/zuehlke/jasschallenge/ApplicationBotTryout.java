@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 class ApplicationBotTryout {
 
 	private static final String LOCAL_URL = "ws://localhost:3000";
-	private static final String SERVER_URL = "ws://jass.joeli.to/";
+	private static final String SERVER_URL = "wss://jass.joeli.to/";
 
 	//CHALLENGE2017: Set your bot name
 	private final static String BOT_NAME = "JassTheRipper";

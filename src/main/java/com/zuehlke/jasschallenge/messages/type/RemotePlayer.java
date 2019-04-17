@@ -47,4 +47,13 @@ public class RemotePlayer {
         result = 31 * result + seatId;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "RemotePlayer{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", seatId=" + seatId +
+                '}';
+    }
 }

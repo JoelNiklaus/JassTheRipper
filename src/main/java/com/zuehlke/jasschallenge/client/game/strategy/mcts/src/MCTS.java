@@ -376,6 +376,7 @@ public class MCTS {
 		while (!board.gameOver()) {
 			if (playoutPolicy == null) {
 				moves = board.getMoves(CallLocation.treePolicy);
+				assert !moves.isEmpty();
 				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally
 					move = moves.get(random.nextInt(moves.size()));

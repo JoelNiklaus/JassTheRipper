@@ -95,7 +95,6 @@ public class Player implements Serializable {
 	public Move makeMove(GameSession session) {
 		if (cards.size() == 0) throw new RuntimeException("Cannot play a card without cards in deck");
 		final Card cardToPlay = chooseCardWithFallback(session);
-		cards.remove(cardToPlay);
 		return new Move(this, cardToPlay);
 	}
 
@@ -118,6 +117,7 @@ public class Player implements Serializable {
 	}
 
 	public void onMoveMade(Move move, GameSession session) {
+		cards.remove(move.getPlayedCard());
 		currentJassStrategy.onMoveMade(move, session);
 	}
 
@@ -159,7 +159,8 @@ public class Player implements Serializable {
 	public String toString() {
 		return "Player{" +
 				"name='" + name + "'" +
-				//", id=" + id +
+				", id=" + id +
+				", seatId=" + seatId +
 				", cards=" + cards +
 				//", currentJassStrategy=" + currentJassStrategy +
 				'}';

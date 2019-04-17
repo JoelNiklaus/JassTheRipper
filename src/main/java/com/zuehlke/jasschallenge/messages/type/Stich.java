@@ -66,4 +66,15 @@ public class Stich {
         result = 31 * result + (teams != null ? teams.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Stich{" +
+                "name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                ", seatId=" + seatId +
+                ", playedCards=" + playedCards +
+                ", teams=" + teams +
+                '}';
+    }
 }

@@ -155,6 +155,7 @@ public class BenchmarkRunner {
 
 	/**
 	 * Note that bachelor-thesis-project must be in the same parent directory as the JassTheRipperProject
+	 * Make sure that the necessary packages are installed (cd into respective folder and run 'pip3 install .')
 	 * @param processes
 	 */
 	private static void startChallengeBots(ArrayList<Process> processes) {

@@ -79,4 +79,14 @@ public class RemoteTeam {
         result = 31 * result + (players != null ? players.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "RemoteTeam{" +
+                "name='" + name + '\'' +
+                ", points=" + points +
+                ", currentRoundPoints=" + currentRoundPoints +
+                ", players=" + players +
+                '}';
+    }
 }
