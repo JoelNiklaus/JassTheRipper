@@ -17,7 +17,8 @@ public class TrumpfSelectionHelper {
 
 	// TODO: Maybe this is too high or too low? => Write tests.
 	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
-	public static final int MAX_SHIFT_RATING_VAL = 75;
+	// --> The higher this value, the more likely shifting is.
+	public static final int MAX_SHIFT_RATING_VAL = 100;
 
 	private TrumpfSelectionHelper() {
 
