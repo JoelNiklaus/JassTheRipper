@@ -1,8 +1,9 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
+import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
@@ -21,23 +22,33 @@ import java.util.Set;
  */
 public class MCTSHelper {
 
-	public static final Logger logger = LoggerFactory.getLogger(MCTSHelper.class);
+	private final int numDeterminizationsFactor; // determines how many determinizations we create
+	private final RunMode runMode;
+	private static final int BUFFER_TIME_MILLIS = 25; // INFO Makes sure, that the bot really finishes before the thinking time is up.
+
 
 	private final MCTS mcts = new MCTS();
 
-	public MCTSHelper(int numThreads) {
+	public static final Logger logger = LoggerFactory.getLogger(MCTSHelper.class);
+
+	public MCTSHelper(int numDeterminizationsFactor, RunMode runMode) {
+		this.numDeterminizationsFactor = numDeterminizationsFactor;
+		this.runMode = runMode;
+
 		// TODO tune parameters
 		mcts.setExplorationConstant(1.4);
 		mcts.setOptimisticBias(0);
 		mcts.setPessimisticBias(0);
-		mcts.setTimeDisplay(true);
 		//mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
 		//mcts.setHeuristicFunction(new JassHeuristic());
 		//mcts.setPlayoutSelection(new JassPlayoutSelection());
 
-
-		if (numThreads > 1)
-			mcts.enableRootParallelisation(numThreads);
+		// if we run by runs we want the threadPool to only have as many threads as there are cores available for maximal efficiency (no unnecessary scheduling overhead)
+		if (runMode == RunMode.RUNS)
+			mcts.enableRootParallelisation(Runtime.getRuntime().availableProcessors());
+		// if we run by time we want the threadpool to have enough threads to have all determinizations running at the same time
+		if (runMode == RunMode.TIME)
+			mcts.enableRootParallelisation(10 * numDeterminizationsFactor);
 	}
 
 	/**
@@ -56,78 +67,17 @@ public class MCTSHelper {
 		return mcts.isShutDown();
 	}
 
+
 	/**
-	 * Sets the MCTS parameters, runs it and predicts a Card
+	 * Chooses a card by running the MCTS method.
 	 *
 	 * @param availableCards
 	 * @param gameSession
-	 * @param endingTime
-	 * @return
-	 * @throws Exception
-	 */
-	public Move getMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
-		if (!isChoosingTrumpf) {
-			// Fast track: If Jass Knowledge only suggests one sensible option -> return this one.
-			// But, we do not want to trust this too much but rather rely on the MCTS. It can be included there too.
-			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, gameSession.getCurrentGame());
-			//possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, gameSession.getCurrentGame());
-			if (possibleCards.size() == 1) {
-				logger.info("Based on expert Jass Knowledge there is only one sensible card available now.");
-				Card card = (Card) possibleCards.toArray()[0];
-				return new CardMove(gameSession.getCurrentPlayer(), card);
-			}
-		}
-
-		return runPrediction(availableCards, gameSession, isChoosingTrumpf, shifted, endingTime);
-	}
-
-	/**
-	 * Runs the prediction of the card. Runs differently whether or not parallelisation is enabled.
-	 *
-	 * @param availableCards
-	 * @param gameSession
-	 * @param endingTime
-	 * @return
-	 */
-	private Move runPrediction(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
-		// Can do multithreading now -> Much faster
-		// Only do this when multithreading disabled
-		if (!mcts.isParallelisationEnabled()) {
-			long maxComputationTime = endingTime - System.currentTimeMillis();
-			int numberOfMCTSRuns = 4;
-
-			long timePerRun = maxComputationTime / numberOfMCTSRuns;
-
-			HashMap<Move, Integer> numberOfSelections = new HashMap<>();
-			for (int i = 0; i < numberOfMCTSRuns; i++) {
-				Move move = predictMove(availableCards, gameSession, isChoosingTrumpf, shifted, System.currentTimeMillis() + timePerRun);
-				int number = 1;
-				if (numberOfSelections.containsKey(move)) {
-					number += numberOfSelections.get(move);
-				}
-				numberOfSelections.put(move, number);
-			}
-			Move move = numberOfSelections.entrySet().stream()
-					.sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-					.findFirst().get().getKey();
-			return move;
-		}
-
-
-		return predictMove(availableCards, gameSession, isChoosingTrumpf, shifted, endingTime);
-	}
-
-	/**
-	 * Chooses a card by running the mcts method.
-	 *
-	 * @param availableCards
-	 * @param gameSession
-	 * @param endingTime
+	 * @param strengthLevel
 	 * @return
 	 */
 	private Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
 		Board jassBoard = new JassBoard(availableCards, gameSession, false, isChoosingTrumpf, shifted);
 		return mcts.runMCTS_UCT(jassBoard, endingTime, false);
 	}
-
 }

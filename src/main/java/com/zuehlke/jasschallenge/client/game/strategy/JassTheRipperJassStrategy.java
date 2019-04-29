@@ -108,6 +108,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private StrengthLevel strengthLevel = StrengthLevel.INSANE;
 
+	// TODO MCTS still does not like to shift. Otherwise the selected trumpfs are not bad.
 	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
@@ -142,7 +143,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			if (trumpfSelectionMethod == TrumpfSelectionMethod.MCTS)
 				try {
 					assert mctsHelper != null;
-					Move move = mctsHelper.getMove(availableCards, session, true, isGschobe, startTime + strengthLevel.getMaxThinkingTime());
+					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe, StrengthLevel.TRUMPF);
 					mode = ((TrumpfMove) move).getChosenTrumpf();
 				} catch (MCTSException e) {
 					logger.debug("{}", e);
@@ -169,8 +170,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		final long endingTime = startTime + time;
 		printCards(availableCards);
 
-		// INFO Make sure, that the bot really finishes before the thinking time is up.
-		Card card = calculateCard(availableCards, session, endingTime - 20);
+		Card card = calculateCard(availableCards, session);
 
 		// INFO: Even if there is only one card: wait for maxThinkingTime because opponents might detect patterns otherwise
 		if (!session.getCurrentRound().isLastRound())
@@ -191,7 +191,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		}
 	}
 
-	private Card calculateCard(Set<Card> availableCards, GameSession gameSession, long endingTime) {
+	private Card calculateCard(Set<Card> availableCards, GameSession gameSession) {
 		try {
 			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, gameSession.getCurrentGame());
 
@@ -209,7 +209,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			logger.info("Thinking now...");
 			try {
 				assert mctsHelper != null;
-				final Card mctsCard = ((CardMove) mctsHelper.getMove(availableCards, gameSession, false, false, endingTime)).getPlayedCard();
+				final Card mctsCard = ((CardMove) mctsHelper.predictMove(availableCards, gameSession, false, false, strengthLevel)).getPlayedCard();
 				if (possibleCards.contains(card)) {
 					logger.info("Chose Card based on MCTS, Hurra!");
 					card = mctsCard;
@@ -234,7 +234,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	}
 
 	private void printCards(Set<Card> availableCards) {
-		logger.info("Hi there! I am JassTheRipper and these are my cards: {}", availableCards);
+		logger.info("Hi there! I am JassTheRipper, these are my cards: {} and this is my strength level: {}", availableCards, strengthLevel);
 	}
 
 	public void onSessionFinished() {
@@ -242,7 +242,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	}
 
 	public void onSessionStarted(GameSession gameSession) {
-		mctsHelper = new MCTSHelper(strengthLevel.getNumThreads());
+		mctsHelper = new MCTSHelper(strengthLevel.getNumDeterminizationsFactor(), RunMode.RUNS);
 	}
 
 	@Override

@@ -21,108 +21,96 @@ import java.util.concurrent.*;
 public class MCTS {
 	private final Random random = new Random();
 
-	private boolean scoreBounds;
+	private boolean scoreBounds = false;
 	private double explorationConstant = Math.sqrt(2.0);
 	private double pessimisticBias = 0.0;
 	private double optimisticBias = 0.0;
 	private boolean rootParallelisation;
-	private boolean trackTime; // display thinking time used
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.robustChild;
-	private HeuristicFunction heuristic;
+	private HeuristicFunction heuristicFunction;
 	private PlayoutSelection playoutPolicy;
 
-	private int threads;
-	private ExecutorService threadpool;
-	private ArrayList<FutureTask<Node>> futures;
+	private ExecutorService threadPool;
+	private ArrayList<FutureTask<Move>> futures;
 
 	public static final Logger logger = LoggerFactory.getLogger(MCTS.class);
 
+
 	/**
-	 * Run a UCT-MCTS simulation for a a certain amount of time.
+	 * Run a UCT-MCTS simulation for a certain amount of time.
 	 *
 	 * @param startingBoard starting board
 	 * @param endingTime    time when to stop running (in milliseconds)
-	 * @param bounds        enable or disable score bounds.
 	 * @return
 	 */
-	public Move runMCTS_UCT(Board startingBoard, long endingTime, boolean bounds) throws MCTSException {
-		scoreBounds = bounds;
-		Move bestMoveFound;
-
-		//long startTime = System.currentTimeMillis();
-
+	public Move runForTime(Board startingBoard, int numDeterminizations, long endingTime) throws MCTSException {
 		if (!rootParallelisation) {
-			logger.info("Not parallelised :(");
-			Node rootNode = new Node(startingBoard);
-			runUntilTimeRunsOut(startingBoard, rootNode, endingTime);
-			return finalMoveSelection(rootNode);
+			logger.info("Only running one determinization :(");
+			return executeByTime(startingBoard, endingTime);
 		} else {
-			logger.info("Parallelised with {} threads :)", threads);
-			//logger.info("{}ms thinking time left.", endingTime - startTime);
-			for (int i = 0; i < threads; i++)
-				futures.add((FutureTask<Node>) threadpool.submit(new MCTSTask(startingBoard, endingTime)));
-
-			try {
-
-				while (!checkDone(futures)) {
-					//System.err.println("Futures not ready yet. Simulation is still running. Waiting now...");
-					Thread.sleep(10);
-				}
-
-				for (FutureTask<Node> future : futures)
-					assert future.isDone();
-
-				ArrayList<Node> rootNodes = new ArrayList<>();
-
-				// Collect all computed root nodes
-				for (FutureTask<Node> future : futures)
-					rootNodes.add(future.get());
-
-				assert !rootNodes.isEmpty();
-
-				ArrayList<Move> moves = new ArrayList<>();
-
-				for (Node node : rootNodes) {
-					if (node.isValid()) { // so, if there was at least one run
-						Move move = finalMoveSelection(node);
-						moves.add(move);
-						//logger.info(move);
-					}
-				}
-
-				assert !moves.isEmpty();
-
-				return vote(moves);
-
-			} catch (InterruptedException | ExecutionException e) {
-				logger.debug("{}", e);
-				throw (new MCTSException("There was a problem in the MCTS. Enable debug logging for more information."));
-			} finally {
-				//threadpool.shutdown();
-				futures.clear();
-
-				//assert threadpool.isShutdown();
-				assert futures.isEmpty();
-			}
+			logger.info("Running {} determinizations :)", numDeterminizations);
+			submitTimeTasks(startingBoard, numDeterminizations, endingTime);
+			return collectResultsAndGetFinalSelectedMove();
 		}
-
-		//long endTime = System.currentTimeMillis();
-
-		/*
-		if (this.trackTime) {
-			//logger.info("Making choice for player: " + bestMoveFound);
-			logger.info("Thinking time for move: " + (endTime - startTime) + "ms");
-		}
-		*/
 	}
 
-	private void runNTimes(Board startingBoard, Node rootNode, int runs) {
+	private void submitTimeTasks(Board startingBoard, int numDeterminizations, long endingTime) {
+		for (int i = 0; i < numDeterminizations; i++)
+			futures.add((FutureTask<Move>) threadPool.submit(new MCTSTaskTime(startingBoard, endingTime)));
+	}
+
+
+	/**
+	 * Run a UCT-MCTS simulation for a certain number of runs.
+	 *
+	 * @param startingBoard starting board
+	 * @param runs          the number of runs
+	 * @return
+	 */
+	public Move runForRuns(Board startingBoard, int numDeterminizations, long runs) throws MCTSException {
+		if (!rootParallelisation) {
+			logger.info("Only running one determinization :(");
+			return executeByRuns(startingBoard, runs);
+		} else {
+			logger.info("Running {} determinizations :)", numDeterminizations);
+			submitRunsTasks(startingBoard, numDeterminizations, runs);
+			return collectResultsAndGetFinalSelectedMove();
+		}
+	}
+
+
+	private void submitRunsTasks(Board startingBoard, int numDeterminizations, long runs) {
+		for (int i = 0; i < numDeterminizations; i++)
+			futures.add((FutureTask<Move>) threadPool.submit(new MCTSTaskRuns(startingBoard, runs)));
+	}
+
+
+	/**
+	 * Runs the MCTS for one determinization for the specified number of runs
+	 *
+	 * @param startingBoard
+	 * @param runs
+	 * @return the final move selected
+	 */
+	private Move executeByRuns(Board startingBoard, long runs) {
+		Node rootNode = new Node(startingBoard);
+		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < runs; i++)
-			select(startingBoard.duplicate(false), rootNode);
+			select(startingBoard, rootNode);
+		logger.debug("Run for {} ms.", System.currentTimeMillis() - startTime);
+		return finalMoveSelection(rootNode);
 	}
 
-	private void runUntilTimeRunsOut(Board startingBoard, Node rootNode, long endingTime) {
-		int runCounter = 0;
+	/**
+	 * Runs the MCTS for one determinization until the time runs out
+	 *
+	 * @param startingBoard
+	 * @param endingTime
+	 * @return the final move selected
+	 */
+	private Move executeByTime(Board startingBoard, long endingTime) {
+		Node rootNode = new Node(startingBoard);
+		long runCounter = 0;
 		while ((System.currentTimeMillis() < endingTime)) {
 			// Start new path from root node
 			select(startingBoard, rootNode);
@@ -131,7 +119,37 @@ public class MCTS {
 		if (runCounter == 0) {
 			rootNode.invalidate();
 		}
-		logger.info("Run {} times for same random cards", runCounter);
+		logger.debug("Run {} times.", runCounter);
+		return finalMoveSelection(rootNode);
+	}
+
+	private Move collectResultsAndGetFinalSelectedMove() throws MCTSException {
+		try {
+			while (!checkDone(futures)) {
+				// logger.debug("Futures not ready yet. Simulation is still running. Waiting now...");
+				Thread.sleep(10);
+			}
+
+			for (FutureTask<Move> future : futures)
+				assert future.isDone();
+
+			ArrayList<Move> moves = new ArrayList<>();
+
+			// Collect all computed root nodes
+			for (FutureTask<Move> future : futures) {
+				final Move move = future.get();
+				if (move != null)
+					moves.add(move);
+			}
+
+			return vote(moves);
+
+		} catch (InterruptedException | ExecutionException e) {
+			logger.debug("{}", e);
+			throw (new MCTSException("There was a problem in the MCTS. Enable debug logging for more information."));
+		} finally {
+			futures.clear();
+		}
 	}
 
 	private Move vote(ArrayList<Move> moves) {
@@ -206,7 +224,6 @@ public class MCTS {
 	 */
 	private void select(Board currentBoard, Node currentNode) {
 		BoardNodePair boardNodePair = treePolicy(currentBoard, currentNode);
-
 
 		// Run a random playout until the end of the game.
 		double[] score = playout(boardNodePair.getBoard());
@@ -290,11 +307,13 @@ public class MCTS {
 	 * actually make.
 	 *
 	 * @param node this is the node whose children are considered
-	 * @return the best Move the algorithm can find
+	 * @return the best Move the algorithm can find or null if the node is invalid
 	 */
 	private Move finalMoveSelection(Node node) {
-		Node finalMove;
+		if (!node.isValid()) // if there was no run completed
+			return null;
 
+		Node finalMove;
 		switch (finalSelectionPolicy) {
 			case maxChild:
 				finalMove = maxChild(node);
@@ -446,8 +465,8 @@ public class MCTS {
 				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.getOpti()[node.getPlayer()]
 						+ pessimisticBias * s.getPess()[node.getPlayer()];
 
-				if (heuristic != null) {
-					tempBest += heuristic.heuristic(board);
+				if (heuristicFunction != null) {
+					tempBest += heuristicFunction.heuristicFunction(board);
 				}
 
 				bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
@@ -455,6 +474,15 @@ public class MCTS {
 		}
 
 		return bestNodes;
+	}
+
+	/**
+	 * Determines if score bounds should be used or not.
+	 *
+	 * @param scoreBounds
+	 */
+	public void setScoreBounds(boolean scoreBounds) {
+		this.scoreBounds = scoreBounds;
 	}
 
 	/**
@@ -472,10 +500,20 @@ public class MCTS {
 		this.finalSelectionPolicy = finalSelectionPolicy;
 	}
 
+	/**
+	 * Sets the heuristicFunction used to make some nodes more probable to be selected based on heuristic.
+	 *
+	 * @param heuristicFunction
+	 */
 	public void setHeuristicFunction(HeuristicFunction heuristicFunction) {
-		heuristic = heuristicFunction;
+		this.heuristicFunction = heuristicFunction;
 	}
 
+	/**
+	 * Sets the playoutPolicy used to replace the random rollout during the simulation phase.
+	 *
+	 * @param playoutSelection
+	 */
 	public void setPlayoutSelection(PlayoutSelection playoutSelection) {
 		playoutPolicy = playoutSelection;
 	}
@@ -500,22 +538,14 @@ public class MCTS {
 		this.optimisticBias = optimisticBias;
 	}
 
-	public void setTimeDisplay(boolean displayTime) {
-		this.trackTime = displayTime;
-	}
-
 	/**
-	 * Switch on multi threading. The argument indicates
-	 * how many threads you want in the thread pool.
-	 * IMPORTANT: A threadpool is started here. Make sure that you terminate it using the {@link #shutDown()} method in the end (might be outside this class)!
-	 *
-	 * @param threads
-	 */
-	public void enableRootParallelisation(int threads) {
+	 * Switch on multi threading.
+	 * IMPORTANT: A threadPool is started here. Make sure that you terminate it using the {@link #shutDown()} method in the end (might be outside this class)!
+	 **/
+	public void enableRootParallelisation(int numThreads) {
 		rootParallelisation = true;
-		this.threads = threads;
 
-		threadpool = Executors.newFixedThreadPool(threads);
+		threadPool = Executors.newFixedThreadPool(numThreads);
 		futures = new ArrayList<>();
 	}
 
@@ -527,14 +557,14 @@ public class MCTS {
 	 * Shuts down the thread pool. Has to be called as soon as it is not used anymore!
 	 */
 	public void shutDown() {
-		threadpool.shutdown();
+		threadPool.shutdown();
 	}
 
 	/**
 	 * Checks if the thread pool has been shut down.
 	 */
 	public boolean isShutDown() {
-		return threadpool.isShutdown();
+		return threadPool.isShutdown();
 	}
 
 	/**
@@ -543,8 +573,8 @@ public class MCTS {
 	 * @param tasks
 	 * @return
 	 */
-	private boolean checkDone(ArrayList<FutureTask<Node>> tasks) {
-		for (FutureTask<Node> task : tasks) {
+	private boolean checkDone(ArrayList<FutureTask<Move>> tasks) {
+		for (FutureTask<Move> task : tasks) {
 			if (!task.isDone()) {
 				return false;
 			}
@@ -553,29 +583,47 @@ public class MCTS {
 		return true;
 	}
 
+	protected abstract class MCTSTask implements Callable<Move> {
+		protected Board board;
+
+		protected MCTSTask(Board board) {
+			this.board = board.duplicate(true);
+		}
+	}
 
 	/**
-	 * This is a task for the threadpool.
+	 * This is a time bounded task for the threadPool.
 	 */
-	private class MCTSTask implements Callable<Node> {
-		private Board board;
-		private long endingTime;
+	protected class MCTSTaskTime extends MCTSTask {
+		protected long endingTime;
 
-		private MCTSTask(Board board, long endingTime) {
+		protected MCTSTaskTime(Board board, long endingTime) {
+			super(board);
 			this.endingTime = endingTime;
-			this.board = board.duplicate(true);
 		}
 
 		@Override
-		public Node call() {
-			Node root = new Node(board);
+		public Move call() {
+			return executeByTime(board, endingTime);
+		}
+	}
 
-			//logger.info("New random cards dealt");
-			runUntilTimeRunsOut(board, root, endingTime);
 
-			return root;
+	/**
+	 * This is a runs bounded task for the threadPool.
+	 */
+	protected class MCTSTaskRuns extends MCTSTask {
+		protected long runs;
+
+		protected MCTSTaskRuns(Board board, long runs) {
+			super(board);
+			this.runs = runs;
 		}
 
+		@Override
+		public Move call() {
+			return executeByRuns(board, runs);
+		}
 	}
 
 }
