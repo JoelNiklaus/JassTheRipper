@@ -9,5 +9,5 @@ package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
  *
  */
 public interface HeuristicFunction {
-	double heuristic(Board board);
+	double heuristicFunction(Board board);
 }

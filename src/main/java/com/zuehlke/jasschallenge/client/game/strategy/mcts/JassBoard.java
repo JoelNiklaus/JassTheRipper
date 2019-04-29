@@ -21,174 +21,51 @@ import java.util.*;
 public class JassBoard implements Board, Serializable {
 
 	private final Set<Card> availableCards;
-	private Game game;
-	private final GameSession gameSession;
-
+	private GameSession gameSession;
 	private boolean shifted;
-	private boolean isChoosingTrumpf;
+	private Game game;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-
-	/**
-	 * Constructs a new JassBoard based on a game session. The game session is needed for choosing a trumpf.
-	 *
-	 * @param availableCards
-	 * @param gameSession
-	 * @param newRandomCards
-	 * @param isChoosingTrumpf
-	 * @param shifted
-	 */
-	public JassBoard(Set<Card> availableCards, GameSession gameSession, boolean newRandomCards, boolean isChoosingTrumpf, boolean shifted) {
-		this.availableCards = EnumSet.copyOf(availableCards);
-		this.isChoosingTrumpf = isChoosingTrumpf;
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game) {
+		this.availableCards = availableCards;
+		this.gameSession = gameSession;
 		this.shifted = shifted;
-
-		if (isChoosingTrumpf) {
-			this.gameSession = new GameSession(gameSession);
-			this.game = this.gameSession.getCurrentGame();
-			if (newRandomCards)
-				distributeCardsForPlayers(this.availableCards, this.gameSession);
-		} else {
-			this.gameSession = null;
-			this.game = new Game(gameSession.getCurrentGame());
-			if (newRandomCards)
-				CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
-		}
+		this.game = game;
 	}
 
-	/**
-	 * Constructs a new JassBoard based on a game. If the flag is set, deals new random cards to the players.
-	 *
-	 * @param availableCards
-	 * @param game
-	 * @param newRandomCards
-	 */
-	JassBoard(Set<Card> availableCards, Game game, boolean newRandomCards) {
-		this.availableCards = EnumSet.copyOf(availableCards);
+	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted) {
+		return new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null);
+	}
 
-		this.gameSession = null;
-		this.game = new Game(game);
+	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game) {
 		// INFO: The version with copy constructors is almost factor 100 more efficient than the fastest other version
 		//this.game = (Game) DeepCopy.copy(game);
 		//this.game = (Game) new Cloner().deepClone(game);
 		//this.game = ObjectCloner.deepCopySerialization(game);
 		//this.game = SerializationUtils.clone(game);
-
-		if (newRandomCards)
-			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
-
+		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game));
 	}
 
-	/**
-	 * Distribute the unknown cards to the other players at the beginning of the game, when a player is choosing a trumpf.
-	 *
-	 * @param availableCards
-	 * @param gameSession
-	 */
-	private static void distributeCardsForPlayers(Set<Card> availableCards, GameSession gameSession) {
-		Player currentPlayer = gameSession.getCurrentPlayer();
-		currentPlayer.setCards(EnumSet.copyOf(availableCards));
-
-		Set<Card> remainingCards = EnumSet.allOf(Card.class);
-		remainingCards.removeAll(availableCards);
-		assert !remainingCards.isEmpty();
-		for (Player player : gameSession.getPlayersInInitialPlayingOrder())
-			if (!player.equals(currentPlayer)) {
-				Set<Card> cards = pickRandomSubSet(remainingCards, 9);
-				player.setCards(cards);
-				remainingCards.removeAll(cards);
-			}
-		assert remainingCards.isEmpty();
-	}
 
 	/**
-	 * Add randomized available cards for the other players based on already played cards
-	 *
-	 * @param availableCards
-	 * @deprecated
-	 */
-	private static void distributeCardsForPlayers(Set<Card> availableCards, Game game) {
-		final Player currentPlayer = game.getCurrentPlayer();
-		currentPlayer.setCards(EnumSet.copyOf(availableCards));
-		final Round round = game.getCurrentRound();
-		final List<Player> players = round.getPlayingOrder().getPlayersInInitialPlayingOrder();
-		Set<Card> remainingCards = getRemainingCards(availableCards, game);
-		final double numberOfCards = remainingCards.size() / 3.0; // rounds down the number
-
-		for (Player player : players) {
-			int numberOfCardsToAdd;
-			if (!player.equals(currentPlayer)) { // randomize cards for the other players
-				if (round.hasPlayerAlreadyPlayed(player))
-					numberOfCardsToAdd = (int) Math.floor(numberOfCards);
-				else
-					numberOfCardsToAdd = (int) Math.ceil(numberOfCards);
-
-				// Make certain cards unavailable (when one player did not follow suit)
-				Set<Card> possibleCardsForPlayer = EnumSet.copyOf(remainingCards);
-				Set<Card> impossibleCardsForPlayer = CardKnowledgeBase.getImpossibleCardsForPlayer(game, player);
-				// TODO Like this it may not be able to estimate the last player's cards well. Try to find better solution. --> CardKnowledgeBase
-				if (remainingCards.size() - impossibleCardsForPlayer.size() >= numberOfCardsToAdd)
-					possibleCardsForPlayer.removeAll(impossibleCardsForPlayer);
-
-				Set<Card> cards = pickRandomSubSet(possibleCardsForPlayer, numberOfCardsToAdd);
-				player.setCards(cards);
-
-				if (!remainingCards.removeAll(cards))
-					JassHelper.logger.debug("Could not remove picked cards from remaining cards");
-				assert !remainingCards.containsAll(cards);
-			}
-
-		}
-		assert remainingCards.isEmpty();
-	}
-
-	/**
-	 * Picks a random sub set out of the given cards with the given size.
-	 *
-	 * @param cards
-	 * @param numberOfCards
-	 * @return
-	 */
-	static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
-		assert (numberOfCards > 0 || numberOfCards <= 9);
-		List<Card> listOfCards = new LinkedList<>(cards);
-		assert numberOfCards <= listOfCards.size();
-		Collections.shuffle(listOfCards);
-		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
-		Set<Card> randomSubSet = EnumSet.copyOf(randomSublist);
-		assert (cards.containsAll(randomSubSet));
-		return randomSubSet;
-	}
-
-	/**
-	 * Get the cards remaining to be split up on the other players.
-	 * All cards - already played cards - available cards
-	 *
-	 * @param availableCards
-	 * @return
-	 */
-	public static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
-		Set<Card> cards = EnumSet.allOf(Card.class);
-		assert cards.size() == 36;
-		cards.removeAll(availableCards);
-		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
-		Round round = game.getCurrentRound();
-		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
-		cards.removeAll(alreadyPlayedCards);
-		return cards;
-	}
-
-	/**
-	 * Reconstruct Game but add known random cards for players.
+	 * Duplicates the board and determinizes the the cards of the other players.
 	 *
 	 * @return
 	 */
 	@Override
 	public Board duplicate(boolean newRandomCards) {
-		if (isChoosingTrumpf)
-			return new JassBoard(availableCards, gameSession, newRandomCards, true, shifted);
-		return new JassBoard(availableCards, game, newRandomCards);
+		if (isChoosingTrumpf())
+			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted);
+
+		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game);
+		if (newRandomCards)
+			jassBoard.sampleCardDeterminizationToPlayers();
+		return jassBoard;
+	}
+
+	void sampleCardDeterminizationToPlayers() {
+		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
 	}
 
 	/**
@@ -201,7 +78,7 @@ public class JassBoard implements Board, Serializable {
 	public List<Move> getMoves(CallLocation location) {
 		ArrayList<Move> moves = new ArrayList<>();
 
-		if (isChoosingTrumpf) {
+		if (isChoosingTrumpf()) {
 			Player player = gameSession.getCurrentPlayer();
 
 			List<Mode> availableModes = Mode.allModes();
@@ -249,7 +126,7 @@ public class JassBoard implements Board, Serializable {
 	public void makeMove(Move move) {
 		assert move != null;
 
-		if (isChoosingTrumpf) {
+		if (isChoosingTrumpf()) {
 			assert move instanceof TrumpfMove;
 			final TrumpfMove trumpfMove = (TrumpfMove) move;
 			assert trumpfMove != null;
@@ -261,14 +138,10 @@ public class JassBoard implements Board, Serializable {
 			} else {
 				//logger.debug("Started game with trumpf {}", mode);
 				this.gameSession.startNewGame(mode, shifted);
-				this.isChoosingTrumpf = false;
 				assert gameSession.getCurrentGame() != null;
 				this.game = gameSession.getCurrentGame();
-				try {
-					CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
-				} catch (Exception e) {
-					logger.debug("{}", e);
-				}
+				this.gameSession = null; // NOTE: this is needed so that the method isChoosingTrumpf() will evaluate to false afterwards
+				CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
 			}
 		} else {
 			Player player = game.getCurrentPlayer();
@@ -312,7 +185,7 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public int getCurrentPlayer() {
-		if (isChoosingTrumpf) {
+		if (isChoosingTrumpf()) {
 			Player currentPlayer = gameSession.getGameStartingPlayerOrder().getCurrentPlayer();
 			if (shifted)
 				return gameSession.getPartnerOfPlayer(currentPlayer).getSeatId();
@@ -324,7 +197,7 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public boolean gameOver() {
-		if (isChoosingTrumpf)
+		if (isChoosingTrumpf())
 			return false;
 		assert game != null;
 		return game.gameFinished();
@@ -351,5 +224,14 @@ public class JassBoard implements Board, Serializable {
 	public double[] getMoveWeights() {
 		// TODO give high weights for good choices and low weights for bad choices. So in random choosing of moves good moves are favoured.
 		return new double[game.getCurrentPlayer().getCards().size()];
+	}
+
+	/**
+	 * Specifies if we are in the trumpf selection phase or in the card selection phase
+	 *
+	 * @return
+	 */
+	private boolean isChoosingTrumpf() {
+		return this.gameSession != null && this.game == null;
 	}
 }

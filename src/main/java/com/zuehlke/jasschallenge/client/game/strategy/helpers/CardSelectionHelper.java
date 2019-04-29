@@ -35,7 +35,7 @@ public class CardSelectionHelper {
 	}
 
 	/**
-	 * TODO Maybe this can be used as a heuristic function in the MCTS!
+	 * TODO Maybe this can be used as a heuristicFunction function in the MCTS!
 	 * <p>
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
 	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible

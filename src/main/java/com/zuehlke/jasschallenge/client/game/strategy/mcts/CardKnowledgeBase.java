@@ -63,7 +63,7 @@ public class CardKnowledgeBase {
 						cardDistributionEntry.setValue(null);
 
 						// As soon as a player has enough cards, delete him from all distributions
-						final double numberOfCards = JassBoard.getRemainingCards(availableCards, game).size() / 3.0; // rounds down the number
+						final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0; // rounds down the number
 						if (cards.size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
 							getStreamWithNonNullDistributions(cardDistributionMap)
 									.filter(entry -> entry.getValue().hasEvent(player))
@@ -96,7 +96,7 @@ public class CardKnowledgeBase {
 	private static Map<Card, Distribution<Player>> initCardDistributionMap(Game game, Set<Card> availableCards) {
 		Map<Card, Distribution<Player>> cardDistributionMap = new EnumMap<>(Card.class);
 
-		for (Card card : JassBoard.getRemainingCards(availableCards, game)) {
+		for (Card card : getRemainingCards(availableCards, game)) {
 			Map<Player, Double> probabilitiesMap = new HashMap<>();
 			List<Player> players = new ArrayList<>(game.getPlayers());
 			players.remove(game.getCurrentPlayer());
@@ -168,5 +168,23 @@ public class CardKnowledgeBase {
 			return leadingColor.equals(trumpfColor) && cardIsTrumpfJack;
 		}
 		return true;
+	}
+
+	/**
+	 * Get the cards remaining to be split up on the other players.
+	 * All cards - already played cards - available cards
+	 *
+	 * @param availableCards
+	 * @return
+	 */
+	private static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
+		Set<Card> cards = EnumSet.allOf(Card.class);
+		assert cards.size() == 36;
+		cards.removeAll(availableCards);
+		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
+		Round round = game.getCurrentRound();
+		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
+		cards.removeAll(alreadyPlayedCards);
+		return cards;
 	}
 }

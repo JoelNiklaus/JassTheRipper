@@ -18,6 +18,7 @@ public class Game implements Serializable {
 
 	private List<Round> previousRounds = new ArrayList<>();
 
+	// TODO do we need to know in the game if it has been shifted or not?
 	private Game(Mode mode, PlayingOrder order, List<Team> teams, boolean shifted) {
 		this.mode = mode;
 		this.currentRound = Round.createRound(mode, 0, order);

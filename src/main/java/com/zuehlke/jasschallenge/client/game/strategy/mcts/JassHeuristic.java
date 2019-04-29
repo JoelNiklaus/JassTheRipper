@@ -9,7 +9,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.HeuristicFunction
 public class JassHeuristic implements HeuristicFunction {
 
 	@Override
-	public double heuristic(Board board) {
+	public double heuristicFunction(Board board) {
 		return 0;
 	}
 

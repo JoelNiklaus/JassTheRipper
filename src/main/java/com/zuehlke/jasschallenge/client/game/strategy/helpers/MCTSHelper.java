@@ -76,8 +76,20 @@ public class MCTSHelper {
 	 * @param strengthLevel
 	 * @return
 	 */
-	private Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, long endingTime) throws MCTSException {
-		Board jassBoard = new JassBoard(availableCards, gameSession, false, isChoosingTrumpf, shifted);
-		return mcts.runMCTS_UCT(jassBoard, endingTime, false);
+	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, StrengthLevel strengthLevel) throws MCTSException {
+		Board jassBoard;
+		if (isChoosingTrumpf)
+			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted);
+		else
+			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame());
+		int roundMultiplier = 10;
+		if (!isChoosingTrumpf)
+			roundMultiplier = (9 - gameSession.getCurrentRound().getRoundNumber());
+		int numDeterminizations = roundMultiplier * numDeterminizationsFactor;
+		if (runMode == RunMode.RUNS)
+			return mcts.runForRuns(jassBoard, numDeterminizations, strengthLevel.getNumRuns());
+		else if (runMode == RunMode.TIME)
+			return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.getMaxThinkingTime() - BUFFER_TIME_MILLIS);
+		return null;
 	}
 }
