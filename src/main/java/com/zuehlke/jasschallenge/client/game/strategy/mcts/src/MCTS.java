@@ -394,7 +394,7 @@ public class MCTS {
 		// Start playing random moves until the game is over
 		while (!board.gameOver()) {
 			if (playoutPolicy == null) {
-				moves = board.getMoves(CallLocation.treePolicy);
+				moves = board.getMoves(CallLocation.playout); // NOTE: Originally it used CallLocation.treePolicy here
 				assert !moves.isEmpty();
 				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally
@@ -406,11 +406,10 @@ public class MCTS {
 					// of the moves.
 					move = getRandomMove(board, moves);
 				}
-
-				board.makeMove(move);
 			} else {
-				playoutPolicy.process(board); // NOTE: Originally it used the not duplicated oldBoard here.
+				move = playoutPolicy.getBestMove(board); // NOTE: Originally it used the not duplicated oldBoard here.
 			}
+			board.makeMove(move);
 		}
 		return board.getScore();
 	}

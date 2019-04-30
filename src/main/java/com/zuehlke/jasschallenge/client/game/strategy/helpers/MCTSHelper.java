@@ -5,6 +5,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassPlayoutSelection;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
@@ -41,7 +42,7 @@ public class MCTSHelper {
 		mcts.setPessimisticBias(0);
 		//mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
 		//mcts.setHeuristicFunction(new JassHeuristic());
-		//mcts.setPlayoutSelection(new JassPlayoutSelection());
+		mcts.setPlayoutSelection(new JassPlayoutSelection());
 
 		// if we run by runs we want the threadPool to only have as many threads as there are cores available for maximal efficiency (no unnecessary scheduling overhead)
 		if (runMode == RunMode.RUNS)

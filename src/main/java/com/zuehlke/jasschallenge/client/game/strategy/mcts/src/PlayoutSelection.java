@@ -4,11 +4,12 @@ package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
  * Use this as a replacement for the conventional
  * playout function during simulations. The idea
  * is to implement a function that takes a game
- * board, applies some random available move from
- * the current state and returns it.
+ * board and adds for example domain knowledge
+ * to enhance the quality of the playout
+ * in comparison to the random playout.
  *
- * @author KGS
+ * @author joelniklaus
  */
 public interface PlayoutSelection {
-	void process(Board board);
+	Move getBestMove(Board board);
 }

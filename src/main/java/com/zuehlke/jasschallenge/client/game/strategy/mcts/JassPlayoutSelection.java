@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.PlayoutSelection;
 
 /**
@@ -8,7 +9,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.PlayoutSelection;
  */
 public class JassPlayoutSelection implements PlayoutSelection {
 	@Override
-	public void process(Board board) {
-
+	public Move getBestMove(Board board) {
+		return board.getBestMove();
 	}
 }

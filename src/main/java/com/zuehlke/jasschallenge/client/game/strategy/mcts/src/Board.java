@@ -41,8 +41,8 @@ public interface Board {
 	boolean gameOver();
 
 	/**
-	 * Returns the player ID for the player whose turn is active. This method is
-	 * called by the MCTS.
+	 * Returns the player ID for the player whose turn is active.
+	 * This method is called by the MCTS.
 	 *
 	 * @return
 	 */
@@ -74,4 +74,17 @@ public interface Board {
 	 * @return array of weights
 	 */
 	double[] getMoveWeights();
+
+	/**
+	 * Returns the best possible move considering the
+	 * information from the determinization.
+	 * This method should only be invoked in the playout phase!
+	 * Here we assume that we are in a Perfect information game
+	 * determinization. If we invoke this method outside the playout,
+	 * it would be cheating, because we are not supposed to
+	 * have access to the hidden information there!
+	 *
+	 * @return
+	 */
+	Move getBestMove();
 }

@@ -47,6 +47,18 @@ public class JassBoard implements Board, Serializable {
 		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game));
 	}
 
+	/**
+	 * Specifies if we are in the trumpf selection phase or in the card selection phase
+	 *
+	 * @return
+	 */
+	private boolean isChoosingTrumpf() {
+		return this.gameSession != null && this.game == null;
+	}
+
+	void sampleCardDeterminizationToPlayers() {
+		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
+	}
 
 	/**
 	 * Duplicates the board and determinizes the the cards of the other players.
@@ -64,9 +76,6 @@ public class JassBoard implements Board, Serializable {
 		return jassBoard;
 	}
 
-	void sampleCardDeterminizationToPlayers() {
-		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
-	}
 
 	/**
 	 * Puts together a list of moves containing possible (or reduced to only sensible) cards to play.
@@ -91,7 +100,6 @@ public class JassBoard implements Board, Serializable {
 			}
 		} else {
 			final Player player = game.getCurrentPlayer();
-
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 
@@ -209,8 +217,7 @@ public class JassBoard implements Board, Serializable {
 
 		double[] score = new double[getQuantityOfPlayers()];
 		Result result = game.getResult();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-		for (Player player : order.getPlayersInInitialPlayingOrder())
+		for (Player player : game.getPlayers())
 			score[player.getSeatId()] = result.getTeamScore(player);
 
 		return score;
@@ -222,16 +229,17 @@ public class JassBoard implements Board, Serializable {
 	 * interface contract.
 	 */
 	public double[] getMoveWeights() {
-		// TODO give high weights for good choices and low weights for bad choices. So in random choosing of moves good moves are favoured.
 		return new double[game.getCurrentPlayer().getCards().size()];
 	}
 
-	/**
-	 * Specifies if we are in the trumpf selection phase or in the card selection phase
-	 *
-	 * @return
-	 */
-	private boolean isChoosingTrumpf() {
-		return this.gameSession != null && this.game == null;
+	@Override
+	public Move getBestMove() {
+		if(isChoosingTrumpf()) {
+			final List<Move> moves = getMoves(CallLocation.playout); // This must only be called in playout!
+			return moves.get(new Random().nextInt(moves.size())); // return random trumpf move
+		}
+
+		return PerfectInformationGameSolver.getMove(game);
 	}
+
 }
