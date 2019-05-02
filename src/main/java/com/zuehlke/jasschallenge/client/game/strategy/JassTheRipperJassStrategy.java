@@ -138,7 +138,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			Mode mode = TrumpfSelectionHelper.getRandomMode(isGschobe);
 
 			if (trumpfSelectionMethod == TrumpfSelectionMethod.RULE_BASED)
-				mode = TrumpfSelectionHelper.predictTrumpf(availableCards, mode, isGschobe);
+				mode = TrumpfSelectionHelper.predictTrumpf(availableCards, isGschobe);
 
 			if (trumpfSelectionMethod == TrumpfSelectionMethod.MCTS)
 				try {

@@ -43,11 +43,11 @@ public class TrumpfSelectionHelper {
 	 * If no value exceeds the threshold MAX_SHIFT_RATING_VAL, the bot shifts
 	 *
 	 * @param availableCards
-	 * @param prospectiveMode
 	 * @param isGschobe
 	 * @return
 	 */
-	public static Mode predictTrumpf(Set<Card> availableCards, Mode prospectiveMode, boolean isGschobe) {
+	public static Mode predictTrumpf(Set<Card> availableCards, boolean isGschobe) {
+		Mode prospectiveMode = TrumpfSelectionHelper.getRandomMode(isGschobe);
 		int max = 0;
 		for (Color color : Color.values()) {
 			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
@@ -57,16 +57,14 @@ public class TrumpfSelectionHelper {
 			}
 		}
 		// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
-		// Rate ObeAbe and UndeUfe much much lower (with 1/3) when it is gschobe
-		// TODO: This is an ugly hotfix, make it nicer ;)
-		double gschobeFactor = 1;
+		double noTrumpfWeight = 0.8; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
 		if (isGschobe)
-			gschobeFactor = 1 / 3.0;
-		if (gschobeFactor * rateObeabe(availableCards) > max) {
+			noTrumpfWeight -= 0.1; // INFO: make obeae and undeufe just a little bit more unlikely
+		if (noTrumpfWeight * rateObeabe(availableCards) > max) {
 			prospectiveMode = Mode.topDown();
 			max = rateObeabe(availableCards);
 		}
-		if (gschobeFactor * rateUndeufe(availableCards) > max) {
+		if (noTrumpfWeight * rateUndeufe(availableCards) > max) {
 			prospectiveMode = Mode.bottomUp();
 			max = rateUndeufe(availableCards);
 		}
