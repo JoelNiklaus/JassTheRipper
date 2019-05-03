@@ -97,7 +97,6 @@ public class ChooseTrumpfTest {
 
 	@Test
 	public void testDefinitelyShift() {
-		// TODO Trumpf selection is still very much against shifting...
 		Set<Card> cards = definitelyShift;
 		int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
 		int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);

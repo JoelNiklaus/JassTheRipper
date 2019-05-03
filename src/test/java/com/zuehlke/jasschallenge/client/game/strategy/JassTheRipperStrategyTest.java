@@ -50,7 +50,7 @@ public class JassTheRipperStrategyTest {
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		Mode mode = strategy.chooseTrumpf(cards1, gameSession, false);
-		assertEquals(Mode.shift(), mode);
+		assertEquals(Mode.from(Trumpf.TRUMPF, Color.HEARTS), mode);
 	}
 
 	@Test

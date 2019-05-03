@@ -31,6 +31,8 @@ public class Game implements Serializable {
 	 * @param game
 	 */
 	public Game(Game game) {
+		// INFO: Certain Objects (e.g. Players, Round) are duplicated multiple times
+		// -> we have different references! When we update one Player in the Round, the corresponding Player in the Result will not be updated!
 		this.mode = game.getCurrentRoundMode();
 		this.currentRound = new Round(game.getCurrentRound());
 		this.result = new Result(game.getResult());

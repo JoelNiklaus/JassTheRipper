@@ -19,6 +19,7 @@ public class TrumpfSelectionHelper {
 	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
 	// --> The higher this value, the more likely shifting is.
 	public static final int MAX_SHIFT_RATING_VAL = 100;
+	public static final int TOP_TRUMPF_THRESHOLD = 50; // INFO: very conservative at the moment. Can probably be increased
 
 	private TrumpfSelectionHelper() {
 
@@ -47,31 +48,58 @@ public class TrumpfSelectionHelper {
 	 * @return
 	 */
 	public static Mode predictTrumpf(Set<Card> availableCards, boolean isGschobe) {
-		Mode prospectiveMode = TrumpfSelectionHelper.getRandomMode(isGschobe);
-		int max = 0;
-		for (Color color : Color.values()) {
-			int colorTrumpRating = rateColorForTrumpf(availableCards, color);
-			if (colorTrumpRating > max) {
-				max = colorTrumpRating;
-				prospectiveMode = Mode.from(Trumpf.TRUMPF, color);
-			}
-		}
+		return rateModes(availableCards, isGschobe).entrySet().iterator().next().getKey();
+	}
+
+	/**
+	 * Returns the trumpf choices whose ratings exceed a certain threshold (hyperparameter)
+	 * Can be used for pruning.
+	 *
+	 * @param availableCards
+	 * @param isGschobe
+	 * @return
+	 */
+	public static List<Mode> getTopTrumpfChoices(Set<Card> availableCards, boolean isGschobe) {
+		final LinkedHashMap<Mode, Integer> trumpfRatings = rateModes(availableCards, isGschobe);
+		List<Mode> topTrumpfChoices = trumpfRatings.entrySet().stream()
+				.filter(e -> e.getValue() > TOP_TRUMPF_THRESHOLD)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toList());
+		if (topTrumpfChoices.isEmpty()) // if no trumpf can make the cut, add the best one
+			topTrumpfChoices.add(trumpfRatings.entrySet().iterator().next().getKey());
+		return topTrumpfChoices;
+	}
+
+	/**
+	 * Calculates the values for each mode and sorts them in decending order:
+	 * The first entry contains the highest rating and its corresponding mode.
+	 * The last entry contains the lowest rating and its corresponding mode.
+	 *
+	 * @param availableCards
+	 * @param isGschobe
+	 * @return
+	 */
+	private static LinkedHashMap<Mode, Integer> rateModes(Set<Card> availableCards, boolean isGschobe) {
+		LinkedHashMap<Mode, Integer> trumpfRatings = new LinkedHashMap<>();
+
+		for (Color color : Color.values())
+			trumpfRatings.put(Mode.from(Trumpf.TRUMPF, color), rateColorForTrumpf(availableCards, color));
 		// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
-		double noTrumpfWeight = 0.8; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
+		float noTrumpfWeight = 0.8f; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
 		if (isGschobe)
-			noTrumpfWeight -= 0.1; // INFO: make obeae and undeufe just a little bit more unlikely
-		if (noTrumpfWeight * rateObeabe(availableCards) > max) {
-			prospectiveMode = Mode.topDown();
-			max = rateObeabe(availableCards);
-		}
-		if (noTrumpfWeight * rateUndeufe(availableCards) > max) {
-			prospectiveMode = Mode.bottomUp();
-			max = rateUndeufe(availableCards);
-		}
-		logger.info("ChooseTrumpf succeeded!");
-		if (max < MAX_SHIFT_RATING_VAL && !isGschobe)
-			return Mode.shift();
-		return prospectiveMode;
+			noTrumpfWeight -= 0.1f; // INFO: make obeae and undeufe just a little bit more unlikely
+		trumpfRatings.put(Mode.topDown(), Math.round(noTrumpfWeight * rateObeabe(availableCards)));
+		trumpfRatings.put(Mode.bottomUp(), Math.round(noTrumpfWeight * rateUndeufe(availableCards)));
+		if (!isGschobe)
+			trumpfRatings.put(Mode.shift(), MAX_SHIFT_RATING_VAL);
+
+		LinkedHashMap<Mode, Integer> sortedTrumpfRatings = new LinkedHashMap<>();
+		trumpfRatings.entrySet()
+				.stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+				.forEachOrdered(x -> sortedTrumpfRatings.put(x.getKey(), x.getValue()));
+		logger.info("Rule-based TrumpfRatings: {}",sortedTrumpfRatings);
+		return sortedTrumpfRatings;
 	}
 
 	/**

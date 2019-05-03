@@ -2,7 +2,7 @@ package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
-import com.zuehlke.jasschallenge.client.game.strategy.helpers.JassHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public class JassBoard implements Board, Serializable {
 
-	private final Set<Card> availableCards;
+	private final Set<Card> availableCards; // NOTE: should only be used in duplicating. Use player.getCards() otherwise
 	private GameSession gameSession;
 	private boolean shifted;
 	private Game game;
@@ -35,7 +35,9 @@ public class JassBoard implements Board, Serializable {
 	}
 
 	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted) {
-		return new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null);
+		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null);
+		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
+		return jassBoard;
 	}
 
 	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game) {
@@ -56,8 +58,29 @@ public class JassBoard implements Board, Serializable {
 		return this.gameSession != null && this.game == null;
 	}
 
-	void sampleCardDeterminizationToPlayers() {
-		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
+
+	void sampleCardDeterminizationToPlayersInTrumpfSelection() {
+		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.gameSession, this.availableCards);
+	}
+
+	void sampleCardDeterminizationToPlayersInCardPlay() {
+		if (cardsAreNotDistributedYet())
+			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
+	}
+
+	/**
+	 * Checks if the players already have cards.
+	 * If they do, we are in a Trumpf selection tree, where the cards are already distributed.
+	 * If they don't, we are in a card selection tree where we the player do not have cards yet.
+	 *
+	 * @return
+	 */
+	private boolean cardsAreNotDistributedYet() {
+		for (Player player : this.game.getPlayers()) {
+			if (player.getCards().isEmpty())
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -72,7 +95,7 @@ public class JassBoard implements Board, Serializable {
 
 		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game);
 		if (newRandomCards)
-			jassBoard.sampleCardDeterminizationToPlayers();
+			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 		return jassBoard;
 	}
 
@@ -89,15 +112,14 @@ public class JassBoard implements Board, Serializable {
 
 		if (isChoosingTrumpf()) {
 			Player player = gameSession.getCurrentPlayer();
-
-			List<Mode> availableModes = Mode.allModes();
-			if (shifted) {
-				availableModes.remove(Mode.shift());
+			if (shifted)
 				player = gameSession.getPartnerOfPlayer(player);
-			}
-			for (Mode mode : availableModes) {
+
+			// INFO: This performs pruning: removes all the trumpfs which are obviously bad, so that more time can be spent on the good trumpfs
+			List<Mode> topTrumpfChoices = TrumpfSelectionHelper.getTopTrumpfChoices(player.getCards(), shifted);
+
+			for (Mode mode : topTrumpfChoices)
 				moves.add(new TrumpfMove(player, mode));
-			}
 		} else {
 			final Player player = game.getCurrentPlayer();
 
@@ -105,6 +127,8 @@ public class JassBoard implements Board, Serializable {
 
 			assert (possibleCards.size() > 0);
 
+			// INFO: This would be pruning for cards. At the moment we do not want to do this.
+			// It could be a possiblity later on if we see that the bot still plays badly in the first 1-3 moves of a game.
 			try {
 				//logger.info("Possible cards before refining: " + possibleCards);
 				//possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
@@ -149,7 +173,6 @@ public class JassBoard implements Board, Serializable {
 				assert gameSession.getCurrentGame() != null;
 				this.game = gameSession.getCurrentGame();
 				this.gameSession = null; // NOTE: this is needed so that the method isChoosingTrumpf() will evaluate to false afterwards
-				CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
 			}
 		} else {
 			Player player = game.getCurrentPlayer();
@@ -234,7 +257,7 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public Move getBestMove() {
-		if(isChoosingTrumpf()) {
+		if (isChoosingTrumpf()) {
 			final List<Move> moves = getMoves(CallLocation.playout); // This must only be called in playout!
 			return moves.get(new Random().nextInt(moves.size())); // return random trumpf move
 		}

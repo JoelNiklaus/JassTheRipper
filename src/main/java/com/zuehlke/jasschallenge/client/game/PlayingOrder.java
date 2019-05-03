@@ -7,8 +7,8 @@ import java.util.List;
 public class PlayingOrder implements Serializable {
 
 	private final List<Player> playersInInitialPlayingOrder;
-	private final int startingPlayerInt;
-	private int currentPlayerInt;
+	private final int startingPlayerIndex;
+	private int currentPlayerIndex;
 
 	public static PlayingOrder createOrder(List<Player> playersInInitialPlayingOrder) {
 		return new PlayingOrder(playersInInitialPlayingOrder, 0);
@@ -18,13 +18,11 @@ public class PlayingOrder implements Serializable {
 		return new PlayingOrder(playersInPlayingOrder, playersInPlayingOrder.indexOf(startFrom));
 	}
 
-	private PlayingOrder(List<Player> playersInInitialPlayingOrder, int startingPlayerInt) {
+	private PlayingOrder(List<Player> playersInInitialPlayingOrder, int startingPlayerIndex) {
 		this.playersInInitialPlayingOrder = playersInInitialPlayingOrder;
-		this.startingPlayerInt = startingPlayerInt;
-		this.currentPlayerInt = 0;
+		this.startingPlayerIndex = startingPlayerIndex;
+		this.currentPlayerIndex = 0;
 	}
-
-	// TODO maybe order is confused
 
 	/**
 	 * Copy constructor for deep copy
@@ -35,33 +33,43 @@ public class PlayingOrder implements Serializable {
 		this.playersInInitialPlayingOrder = new ArrayList<>();
 		for (Player player : playingOrder.getPlayersInInitialPlayingOrder())
 			this.playersInInitialPlayingOrder.add(new Player(player));
-		this.startingPlayerInt = playingOrder.getStartingPlayerInt();
-		this.currentPlayerInt = playingOrder.getCurrentPlayerInt();
+		this.startingPlayerIndex = playingOrder.getStartingPlayerIndex();
+		this.currentPlayerIndex = playingOrder.getCurrentPlayerIndex();
 	}
 
 	public List<Player> getPlayersInInitialPlayingOrder() {
 		return playersInInitialPlayingOrder;
 	}
 
-	public int getStartingPlayerInt() {
-		return startingPlayerInt;
+	public Player getCurrentPlayer() {
+		return getPlayerByIndex(currentPlayerIndex);
 	}
 
-	public Player getCurrentPlayer() {
-		return playersInInitialPlayingOrder.get(getBoundIndex(currentPlayerInt));
+
+	public Player getPartnerOfPlayer(Player player) {
+		return getPlayerByIndex(playersInInitialPlayingOrder.indexOf(player) + 2);
 	}
 
 	public void moveToNextPlayer() {
-		currentPlayerInt++;
+		currentPlayerIndex++;
+	}
+
+	private int getStartingPlayerIndex() {
+		return startingPlayerIndex;
+	}
+
+	private Player getPlayerByIndex(int index) {
+		return playersInInitialPlayingOrder.get(getBoundIndex(index));
 	}
 
 	private int getBoundIndex(int playerPosition) {
-		return (this.startingPlayerInt + playerPosition) % playersInInitialPlayingOrder.size();
+		return (this.startingPlayerIndex + playerPosition) % playersInInitialPlayingOrder.size();
 	}
 
-	private int getCurrentPlayerInt() {
-		return currentPlayerInt;
+	private int getCurrentPlayerIndex() {
+		return currentPlayerIndex;
 	}
+
 
 	@Override
 	public boolean equals(Object o) {
@@ -70,16 +78,16 @@ public class PlayingOrder implements Serializable {
 
 		PlayingOrder that = (PlayingOrder) o;
 
-		if (startingPlayerInt != that.startingPlayerInt) return false;
-		if (currentPlayerInt != that.currentPlayerInt) return false;
+		if (startingPlayerIndex != that.startingPlayerIndex) return false;
+		if (currentPlayerIndex != that.currentPlayerIndex) return false;
 		return playersInInitialPlayingOrder != null ? playersInInitialPlayingOrder.equals(that.playersInInitialPlayingOrder) : that.playersInInitialPlayingOrder == null;
 	}
 
 	@Override
 	public int hashCode() {
 		int result = playersInInitialPlayingOrder != null ? playersInInitialPlayingOrder.hashCode() : 0;
-		result = 31 * result + startingPlayerInt;
-		result = 31 * result + currentPlayerInt;
+		result = 31 * result + startingPlayerIndex;
+		result = 31 * result + currentPlayerIndex;
 		return result;
 	}
 
@@ -87,8 +95,8 @@ public class PlayingOrder implements Serializable {
 	public String toString() {
 		return "PlayingOrder{" +
 				"playersInInitialPlayingOrder=" + playersInInitialPlayingOrder +
-				", startingPlayerInt=" + startingPlayerInt +
-				", currentPlayerInt=" + currentPlayerInt +
+				", startingPlayerIndex=" + startingPlayerIndex +
+				", currentPlayerIndex=" + currentPlayerIndex +
 				'}';
 	}
 }

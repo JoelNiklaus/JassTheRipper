@@ -46,7 +46,7 @@ public class Round implements Serializable {
 		if (!move.getPlayer().equals(playingOrder.getCurrentPlayer()))
 			throw new RuntimeException("It's not players " + move.getPlayer() + " turn. It's " + playingOrder.getCurrentPlayer() + " turn.");
 		if (moves.size() == 4)
-			throw new RuntimeException("Only four cards can be played in a round");
+			throw new RuntimeException("Only four cards can be played in a round.");
 
 		moves.add(move);
 		playingOrder.moveToNextPlayer();

@@ -94,11 +94,6 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	// IDEA: only one stateless jasstheripper computation container which provides an api to be called
 
-	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
-
-	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards
-
-	// TODO find a way to visualize the MCTS tree
 
 	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
 	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
@@ -108,18 +103,18 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private StrengthLevel strengthLevel = StrengthLevel.INSANE;
 
-	// TODO MCTS still does not like to shift. Otherwise the selected trumpfs are not bad.
-	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED;
+	// TODO MCTS still does not like to shift by itself. It is forced to shift now because of the rule-based pruning
+	//  --> Investigate why MCTS without pruning does not like shifting
+	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.MCTS;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
-
+	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
+	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards -> not planned at the moment
+	// TODO find a way to visualize the MCTS tree
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
-
 	// TODO add exceptions to code!!!
 	// TODO add tests!
-
-
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
 	public JassTheRipperJassStrategy() {
@@ -237,10 +232,12 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		logger.info("Hi there! I am JassTheRipper, these are my cards: {} and this is my strength level: {}", availableCards, strengthLevel);
 	}
 
+	@Override
 	public void onSessionFinished() {
 		mctsHelper.shutDown();
 	}
 
+	@Override
 	public void onSessionStarted(GameSession gameSession) {
 		mctsHelper = new MCTSHelper(strengthLevel.getNumDeterminizationsFactor(), RunMode.RUNS);
 	}

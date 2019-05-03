@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.Game;
+import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -28,8 +29,33 @@ public class CardKnowledgeBase {
 	}
 
 	/**
+	 * Distribute the unknown cards to the other players at the beginning of the game, when a player is choosing a trumpf.
+	 * IMPORTANT: To be used before the game started, during trumpf selection!
+	 *
+	 * @param availableCards
+	 * @param gameSession
+	 */
+	public static void sampleCardDeterminizationToPlayers(GameSession gameSession, Set<Card> availableCards) {
+		Player currentPlayer = gameSession.getCurrentPlayer();
+		currentPlayer.setCards(EnumSet.copyOf(availableCards));
+
+		Set<Card> remainingCards = EnumSet.allOf(Card.class);
+		remainingCards.removeAll(availableCards);
+		assert !remainingCards.isEmpty();
+		for (Player player : gameSession.getPlayersInInitialPlayingOrder())
+			if (!player.equals(currentPlayer)) {
+				Set<Card> cards = pickRandomSubSet(remainingCards, 9);
+				player.setCards(cards);
+				remainingCards.removeAll(cards);
+			}
+		assert remainingCards.isEmpty();
+	}
+
+
+	/**
 	 * Samples a card determinization for a player with the given cards for the current player in a given game.
 	 * If a player did not follow suit in the game so far, the player will not be distributed any cards of this suit.
+	 * IMPORTANT: To be used during a game!
 	 *
 	 * @param game
 	 * @param availableCards
@@ -91,6 +117,24 @@ public class CardKnowledgeBase {
 
 		for (Player player : game.getPlayers())
 			assert !player.getCards().isEmpty();
+	}
+
+	/**
+	 * Picks a random sub set out of the given cards with the given size.
+	 *
+	 * @param cards
+	 * @param numberOfCards
+	 * @return
+	 */
+	static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
+		assert (numberOfCards > 0 || numberOfCards <= 9);
+		List<Card> listOfCards = new LinkedList<>(cards);
+		assert numberOfCards <= listOfCards.size();
+		Collections.shuffle(listOfCards);
+		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
+		Set<Card> randomSubSet = EnumSet.copyOf(randomSublist);
+		assert (cards.containsAll(randomSubSet));
+		return randomSubSet;
 	}
 
 	private static Map<Card, Distribution<Player>> initCardDistributionMap(Game game, Set<Card> availableCards) {

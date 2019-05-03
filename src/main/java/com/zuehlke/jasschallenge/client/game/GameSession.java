@@ -32,6 +32,8 @@ public class GameSession implements Serializable {
 	 * @param gameSession
 	 */
 	public GameSession(GameSession gameSession) {
+		// INFO: Certain Objects (e.g. Players, Teams) are duplicated multiple times
+		// -> we have different references! When we update one Player in the Playingorder, the corresponding Player in the Team will not be updated!
 		this.teams = new ArrayList<>();
 		for (Team team : gameSession.getTeams())
 			this.teams.add(new Team(team));
@@ -70,10 +72,7 @@ public class GameSession implements Serializable {
 	}
 
 	public Player getPartnerOfPlayer(Player player) {
-		List<Player> players = getTeamOfPlayer(player).getPlayers();
-		if (players.get(0) == player)
-			return players.get(1);
-		return players.get(0);
+		return gameStartingPlayerOrder.getPartnerOfPlayer(player);
 	}
 
 	public void startNewGame(Mode mode, boolean shifted) {
