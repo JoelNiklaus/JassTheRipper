@@ -44,4 +44,22 @@ public class PlayingOrderTest {
         order.moveToNextPlayer();
         assertThat(order.getCurrentPlayer(), equalTo(playerB));
     }
+
+    @Test
+    public void testGetPlayersInCurrentPlayingOrder() {
+        final Player playerA = new Player("a");
+        final Player playerB = new Player("b");
+        final Player playerC = new Player("c");
+        final Player playerD = new Player("d");
+        final List<Player> players = asList(playerA, playerB, playerC, playerD);
+        final PlayingOrder order = PlayingOrder.createOrderStartingFromPlayer(players, playerC);
+
+        assertThat(order.getCurrentPlayer(), equalTo(playerC));
+        order.moveToNextPlayer();
+        assertThat(order.getCurrentPlayer(), equalTo(order.getPlayersInCurrentPlayingOrder().get(0)));
+        order.moveToNextPlayer();
+        assertThat(order.getCurrentPlayer(), equalTo(playerA));
+        order.moveToNextPlayer();
+        assertThat(order.getCurrentPlayer(), equalTo(playerB));
+    }
 }

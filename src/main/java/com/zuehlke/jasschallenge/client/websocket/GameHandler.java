@@ -142,7 +142,6 @@ public class GameHandler {
 	}
 
 	public void onPlayedCards(List<RemoteCard> playedCards) {
-
 		final int playerPosition = playedCards.size() - 1;
 		final RemoteCard remoteCard = playedCards.get(playerPosition);
 

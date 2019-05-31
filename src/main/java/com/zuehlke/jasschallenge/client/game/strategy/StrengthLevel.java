@@ -49,7 +49,7 @@ public enum StrengthLevel {
 
 	@Override
 	public String toString() {
-		return "StrengthLevel{" +
+		return this.name() + ": {" +
 				"numDeterminizationsFactor=" + numDeterminizationsFactor +
 				", maxThinkingTime=" + maxThinkingTime +
 				", numRuns=" + numRuns +

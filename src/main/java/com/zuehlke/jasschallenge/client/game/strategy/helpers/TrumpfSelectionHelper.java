@@ -98,7 +98,7 @@ public class TrumpfSelectionHelper {
 				.stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.forEachOrdered(x -> sortedTrumpfRatings.put(x.getKey(), x.getValue()));
-		logger.info("Rule-based TrumpfRatings: {}",sortedTrumpfRatings);
+		logger.info("Rule-based TrumpfRatings: {}", sortedTrumpfRatings);
 		return sortedTrumpfRatings;
 	}
 

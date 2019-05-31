@@ -292,7 +292,6 @@ public class MCTS {
 				// The tree policy for random nodes is different. We
 				// ignore selection heuristics and pick one node at
 				// random based on the weight vector.
-
 				Node selectedNode = node.getChildren().get(getRandomChildNodeIndex(board));
 				node = selectedNode;
 				board.makeMove(selectedNode.getMove());

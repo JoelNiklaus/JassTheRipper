@@ -28,10 +28,10 @@ public class DeepCopyTest {
 	private Set<Card> cards2 = EnumSet.of(Card.HEART_ACE, Card.HEART_EIGHT, Card.HEART_JACK, Card.CLUB_SIX, Card.CLUB_SEVEN, Card.DIAMOND_QUEEN, Card.SPADE_TEN, Card.DIAMOND_NINE, Card.DIAMOND_JACK);
 	private Set<Card> cards3 = EnumSet.of(Card.SPADE_ACE, Card.SPADE_EIGHT, Card.SPADE_JACK, Card.HEART_SIX, Card.HEART_SEVEN, Card.CLUB_QUEEN, Card.DIAMOND_TEN, Card.CLUB_NINE, Card.CLUB_JACK);
 	private Set<Card> cards4 = EnumSet.of(Card.DIAMOND_ACE, Card.DIAMOND_EIGHT, Card.DIAMOND_JACK, Card.SPADE_SIX, Card.SPADE_SEVEN, Card.HEART_QUEEN, Card.CLUB_TEN, Card.HEART_NINE, Card.HEART_JACK);
-	private Player firstPlayer = new Player("0", "firstPlayer", 0);
-	private Player secondPlayer = new Player("1", "secondPlayer", 1);
-	private Player thirdPlayer = new Player("2", "thirdPlayer", 2);
-	private Player lastPlayer = new Player("3", "lastPlayer", 3);
+	private Player firstPlayer = new Player("0", "Player 1", 0);
+	private Player secondPlayer = new Player("1", "Player 2", 1);
+	private Player thirdPlayer = new Player("2", "Player 3", 2);
+	private Player lastPlayer = new Player("3", "Player 4", 3);
 	private PlayingOrder order = PlayingOrder.createOrder(asList(firstPlayer, secondPlayer, thirdPlayer, lastPlayer));
 	private GameSession gameSession;
 
@@ -200,6 +200,11 @@ public class DeepCopyTest {
 		gameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().remove(Card.CLUB_ACE);
 		assertTrue(originalGameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().contains(Card.CLUB_ACE));
 		assertFalse(gameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().contains(Card.CLUB_ACE));
+
+		// NOTE: At the moment we dont have this constraint. It is very complex to implement, because of many interdependencies!
+		//final Player teamPlayer = gameSession.getTeams().get(0).getPlayers().get(1);
+		//final Player orderPlayer = gameSession.getGameStartingPlayingOrder().getPlayersInInitialPlayingOrder().get(2);
+		//ssertSame(teamPlayer, orderPlayer); // References of the two players should be the same!
 	}
 
 	@Test
