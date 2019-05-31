@@ -88,6 +88,11 @@ public class Result implements Serializable {
 		else return teamAScore;
 	}
 
+	public void resetScores() {
+		teamAScore.resetScore();
+		teamBScore.resetScore();
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

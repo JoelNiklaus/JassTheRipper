@@ -20,6 +20,7 @@ public class Player implements Serializable {
 	private int seatId;
 	private final Set<Card> cards;
 	private final JassStrategy currentJassStrategy;
+	private boolean networkTrainable; // This is used in Self Play Training
 
 	public Player(String id, String name, int seatId) {
 		this(name);
@@ -48,6 +49,7 @@ public class Player implements Serializable {
 		this.seatId = player.getSeatId();
 		this.cards = EnumSet.copyOf(player.getCards());
 		this.currentJassStrategy = player.getCurrentJassStrategy();
+		this.networkTrainable = player.isNetworkTrainable();
 	}
 
 	public boolean wasStartingPlayer(Round round) {
@@ -81,6 +83,14 @@ public class Player implements Serializable {
 
 	public String getName() {
 		return name;
+	}
+
+	public boolean isNetworkTrainable() {
+		return networkTrainable;
+	}
+
+	public void setNetworkTrainable(boolean networkTrainable) {
+		this.networkTrainable = networkTrainable;
 	}
 
 	public Set<Card> getCards() {

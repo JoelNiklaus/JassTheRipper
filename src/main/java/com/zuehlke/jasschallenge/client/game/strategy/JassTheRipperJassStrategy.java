@@ -7,6 +7,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelpe
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -94,14 +95,15 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	// IDEA: only one stateless jasstheripper computation container which provides an api to be called
 
+	private NeuralNetwork learningNetwork = new NeuralNetwork();
+	private NeuralNetwork frozenNetwork = new NeuralNetwork(learningNetwork);
 
-	private Set<Color> partnerHatAngezogen = EnumSet.noneOf(Color.class);
-	private Set<Color> partnerHatVerworfen = EnumSet.noneOf(Color.class);
-
+	private boolean mctsEnabled = true; // disable this for pitting only the networks against each other
 
 	private MCTSHelper mctsHelper;
 
-	private StrengthLevel strengthLevel = StrengthLevel.INSANE;
+	public StrengthLevel cardStrengthLevel = StrengthLevel.INSANE;
+	public StrengthLevel trumpfStrengthLevel = StrengthLevel.TRUMPF;
 
 	// TODO MCTS still does not like to shift by itself. It is forced to shift now because of the rule-based pruning
 	//  --> Investigate why MCTS without pruning does not like shifting
@@ -203,7 +205,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		final long startTime = System.currentTimeMillis();
-		long time = strengthLevel.getMaxThinkingTime();
+		long time = cardStrengthLevel.getMaxThinkingTime();
 		final long endingTime = startTime + time;
 		printCards(availableCards);
 
@@ -229,8 +231,9 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	}
 
 	private Card calculateCard(Set<Card> availableCards, GameSession gameSession) {
+		final Game game = gameSession.getCurrentGame();
 		try {
-			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, gameSession.getCurrentGame());
+			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, game);
 
 			if (possibleCards.isEmpty())
 				logger.error("We have a serious problem! No possible card to play!");
@@ -241,12 +244,18 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 				return card;
 			}
 
-			Card card = CardSelectionHelper.getRandomCard(possibleCards, gameSession.getCurrentGame());
+			Card card = CardSelectionHelper.getRandomCard(possibleCards, game);
+
+			// Choose the network's prediction directly, without the mcts policy enhancement
+			if (!isMctsEnabled()) {
+				return getNeuralNetwork(game.getCurrentPlayer().isNetworkTrainable()).predictMove(game).getPlayedCard();
+			}
+
 
 			logger.info("Thinking now...");
 			try {
 				assert mctsHelper != null;
-				final Card mctsCard = ((CardMove) mctsHelper.predictMove(availableCards, gameSession, false, false, strengthLevel)).getPlayedCard();
+				final Card mctsCard = ((CardMove) mctsHelper.predictMove(availableCards, gameSession, false, false, cardStrengthLevel)).getPlayedCard();
 				if (possibleCards.contains(card)) {
 					logger.info("Chose Card based on MCTS, Hurra!");
 					card = mctsCard;
@@ -266,12 +275,30 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 		} catch (Exception e) {
 			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random card now.");
 			logger.debug("{}", e);
-			return CardSelectionHelper.getRandomCard(availableCards, gameSession.getCurrentGame());
+			return CardSelectionHelper.getRandomCard(availableCards, game);
 		}
 	}
 
 	private void printCards(Set<Card> availableCards) {
-		logger.info("Hi there! I am JassTheRipper, these are my cards: {} and this is my strength level: {}", availableCards, strengthLevel);
+		logger.info("Hi there! I am JassTheRipper, these are my cards: {} and this is my strength level: {}", availableCards, cardStrengthLevel);
+	}
+	
+	public NeuralNetwork getNeuralNetwork(boolean trainable) {
+		if (trainable)
+			return this.learningNetwork;
+		return this.frozenNetwork;
+	}
+
+	public void updateNetworks() {
+		this.frozenNetwork = new NeuralNetwork(this.learningNetwork);
+	}
+
+	public boolean isMctsEnabled() {
+		return mctsEnabled;
+	}
+
+	public void setMctsEnabled(boolean mctsEnabled) {
+		this.mctsEnabled = mctsEnabled;
 	}
 
 	@Override
@@ -281,13 +308,14 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	@Override
 	public void onSessionStarted(GameSession gameSession) {
-		mctsHelper = new MCTSHelper(strengthLevel.getNumDeterminizationsFactor(), RunMode.RUNS);
+		mctsHelper = new MCTSHelper(cardStrengthLevel.getNumDeterminizationsFactor(), RunMode.RUNS);
 	}
 
 	@Override
 	public String toString() {
 		return "JassTheRipperJassStrategy{" +
-				"strengthLevel=" + strengthLevel +
+				"cardStrengthLevel=" + cardStrengthLevel +
+				"trumpfStrengthLevel=" + trumpfStrengthLevel +
 				'}';
 	}
 }

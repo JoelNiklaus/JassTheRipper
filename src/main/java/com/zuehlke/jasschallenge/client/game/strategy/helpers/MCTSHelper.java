@@ -41,9 +41,9 @@ public class MCTSHelper implements Serializable {
 		mcts.setExplorationConstant(1.4);
 		mcts.setOptimisticBias(0);
 		mcts.setPessimisticBias(0);
-		//mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
-		//mcts.setHeuristicFunction(new JassHeuristic());
-		mcts.setPlayoutSelection(new JassPlayoutSelection());
+		// mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
+		// mcts.setHeuristicFunction(new JassHeuristic());
+		// mcts.setPlayoutSelection(new JassPlayoutSelection());
 
 		// if we run by runs we want the threadPool to only have as many threads as there are cores available for maximal efficiency (no unnecessary scheduling overhead)
 		if (runMode == RunMode.RUNS)

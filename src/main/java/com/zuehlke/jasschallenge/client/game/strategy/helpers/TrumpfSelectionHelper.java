@@ -19,7 +19,7 @@ public class TrumpfSelectionHelper {
 	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
 	// --> The higher this value, the more likely shifting is.
 	public static final int MAX_SHIFT_RATING_VAL = 100;
-	public static final int TOP_TRUMPF_THRESHOLD = 50; // INFO: very conservative at the moment. Can probably be increased
+	public static final int TOP_TRUMPF_THRESHOLD = 30; // INFO: very conservative at the moment. Can probably be increased
 
 	private TrumpfSelectionHelper() {
 
@@ -84,12 +84,16 @@ public class TrumpfSelectionHelper {
 
 		for (Color color : Color.values())
 			trumpfRatings.put(Mode.from(Trumpf.TRUMPF, color), rateColorForTrumpf(availableCards, color));
+
+		/* // TODO IMPORTANT: This filters out obeabe and undeufe for easier training of the neural network
 		// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
 		float noTrumpfWeight = 0.8f; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
 		if (isGschobe)
 			noTrumpfWeight -= 0.1f; // INFO: make obeae and undeufe just a little bit more unlikely
 		trumpfRatings.put(Mode.topDown(), Math.round(noTrumpfWeight * rateObeabe(availableCards)));
 		trumpfRatings.put(Mode.bottomUp(), Math.round(noTrumpfWeight * rateUndeufe(availableCards)));
+		*/
+
 		if (!isGschobe)
 			trumpfRatings.put(Mode.shift(), MAX_SHIFT_RATING_VAL);
 

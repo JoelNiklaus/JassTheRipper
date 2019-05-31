@@ -1,11 +1,10 @@
 package com.zuehlke.jasschallenge.client.game;
 
+import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrder;
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
@@ -13,7 +12,7 @@ import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStar
 public class GameSession implements Serializable {
 
 	private final List<Team> teams;
-	private final PlayingOrder gameStartingPlayerOrder;
+	private final PlayingOrder gameStartingPlayingOrder;
 	private Game currentGame;
 	private final Result result;
 
@@ -21,7 +20,7 @@ public class GameSession implements Serializable {
 		this.teams = teams;
 		assert teams.size() == 2;
 
-		this.gameStartingPlayerOrder = createOrder(playersInPlayingOrder);
+		this.gameStartingPlayingOrder = createOrder(playersInPlayingOrder);
 
 		result = new Result(teams.get(0), teams.get(0));
 	}
@@ -37,7 +36,7 @@ public class GameSession implements Serializable {
 		this.teams = new ArrayList<>();
 		for (Team team : gameSession.getTeams())
 			this.teams.add(new Team(team));
-		this.gameStartingPlayerOrder = new PlayingOrder(gameSession.getGameStartingPlayerOrder());
+		this.gameStartingPlayingOrder = new PlayingOrder(gameSession.getGameStartingPlayingOrder());
 		if (gameSession.getCurrentGame() == null)
 			this.currentGame = null;
 		else
@@ -72,14 +71,14 @@ public class GameSession implements Serializable {
 	}
 
 	public Player getPartnerOfPlayer(Player player) {
-		return gameStartingPlayerOrder.getPartnerOfPlayer(player);
+		return gameStartingPlayingOrder.getPartnerOfPlayer(player);
 	}
 
 	public void startNewGame(Mode mode, boolean shifted) {
 		updateResult();
 
-		final PlayingOrder initialOrder = createOrderStartingFromPlayer(getPlayersInInitialPlayingOrder(), gameStartingPlayerOrder.getCurrentPlayer());
-		gameStartingPlayerOrder.moveToNextPlayer();
+		final PlayingOrder initialOrder = createOrderStartingFromPlayer(getPlayersInInitialPlayingOrder(), gameStartingPlayingOrder.getCurrentPlayer());
+		gameStartingPlayingOrder.moveToNextPlayer();
 
 		currentGame = Game.startGame(mode, initialOrder, teams, shifted);
 	}
@@ -89,15 +88,15 @@ public class GameSession implements Serializable {
 	}
 
 	public List<Player> getPlayersInInitialPlayingOrder() {
-		return gameStartingPlayerOrder.getPlayersInInitialPlayingOrder();
+		return gameStartingPlayingOrder.getPlayersInInitialPlayingOrder();
 	}
 
-	public PlayingOrder getGameStartingPlayerOrder() {
-		return gameStartingPlayerOrder;
+	public PlayingOrder getGameStartingPlayingOrder() {
+		return gameStartingPlayingOrder;
 	}
 
-	public Player getCurrentPlayer() {
-		return gameStartingPlayerOrder.getCurrentPlayer();
+	public Player getTrumpfSelectingPlayer() {
+		return gameStartingPlayingOrder.getCurrentPlayer();
 	}
 
 	public void makeMove(Move move) {
@@ -112,10 +111,25 @@ public class GameSession implements Serializable {
 		return result;
 	}
 
-	private void updateResult() {
+	public void updateResult() {
 		if (currentGame == null) return;
 
 		result.add(currentGame.getResult());
+	}
+
+	/**
+	 * Used in training simulations to reset
+	 */
+	public void resetResult() {
+		result.resetScores();
+	}
+
+	public void dealCards(List<Card> cards) {
+		int startIndex = 0;
+		for (Player player : gameStartingPlayingOrder.getPlayersInInitialPlayingOrder()) {
+			player.setCards(EnumSet.copyOf(cards.subList(startIndex, startIndex + 9)));
+			startIndex += 9;
+		}
 	}
 
 	@Override
@@ -124,21 +138,21 @@ public class GameSession implements Serializable {
 		if (o == null || getClass() != o.getClass()) return false;
 		GameSession that = (GameSession) o;
 		return Objects.equals(teams, that.teams) &&
-				Objects.equals(gameStartingPlayerOrder, that.gameStartingPlayerOrder) &&
+				Objects.equals(gameStartingPlayingOrder, that.gameStartingPlayingOrder) &&
 				Objects.equals(currentGame, that.currentGame) &&
 				Objects.equals(result, that.result);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(teams, gameStartingPlayerOrder, currentGame, result);
+		return Objects.hash(teams, gameStartingPlayingOrder, currentGame, result);
 	}
 
 	@Override
 	public String toString() {
 		return "GameSession{" +
 				"teams=" + teams +
-				", gameStartingPlayerOrder=" + gameStartingPlayerOrder +
+				", gameStartingPlayingOrder=" + gameStartingPlayingOrder +
 				", currentGame=" + currentGame +
 				", result=" + result +
 				'}';

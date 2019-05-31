@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
@@ -111,7 +112,7 @@ public class JassBoard implements Board, Serializable {
 		ArrayList<Move> moves = new ArrayList<>();
 
 		if (isChoosingTrumpf()) {
-			Player player = gameSession.getCurrentPlayer();
+			Player player = gameSession.getTrumpfSelectingPlayer();
 			if (shifted)
 				player = gameSession.getPartnerOfPlayer(player);
 
@@ -216,14 +217,18 @@ public class JassBoard implements Board, Serializable {
 
 	@Override
 	public int getCurrentPlayer() {
+		return currentPlayer().getSeatId();
+	}
+
+	private Player currentPlayer() {
 		if (isChoosingTrumpf()) {
-			Player currentPlayer = gameSession.getGameStartingPlayerOrder().getCurrentPlayer();
+			Player trumpfSelectingPlayer = gameSession.getTrumpfSelectingPlayer();
 			if (shifted)
-				return gameSession.getPartnerOfPlayer(currentPlayer).getSeatId();
-			return currentPlayer.getSeatId();
+				return gameSession.getPartnerOfPlayer(trumpfSelectingPlayer);
+			return trumpfSelectingPlayer;
 		}
 		assert game != null;
-		return game.getCurrentPlayer().getSeatId();
+		return game.getCurrentPlayer();
 	}
 
 	@Override
@@ -247,9 +252,8 @@ public class JassBoard implements Board, Serializable {
 	}
 
 	/*
-	 * This method is not used by this game, but at least
-	 * a function body is required to fulfill the Board
-	 * interface contract.
+	 * This method is not used by this game (we do not have any chance nodes),
+	 * but at least a function body is required to fulfill the Board interface contract.
 	 */
 	public double[] getMoveWeights() {
 		return new double[game.getCurrentPlayer().getCards().size()];
@@ -259,10 +263,39 @@ public class JassBoard implements Board, Serializable {
 	public Move getBestMove() {
 		if (isChoosingTrumpf()) {
 			final List<Move> moves = getMoves(CallLocation.playout); // This must only be called in playout!
-			return moves.get(new Random().nextInt(moves.size())); // return random trumpf move
+			final Mode mode = TrumpfSelectionHelper.predictTrumpf(currentPlayer().getCards(), shifted);
+			final Move move = new TrumpfMove(currentPlayer(), mode);
+			final int bestTrumpfIndex = moves.indexOf(move);
+			return moves.get(bestTrumpfIndex); // return top rated trumpf
 		}
 
 		return PerfectInformationGameSolver.getMove(game);
+	}
+
+	@Override
+	public boolean hasScoreEstimator() {
+		if (isChoosingTrumpf())
+			return false; // So far we only estimate the score during the card play
+
+		for (Player player : game.getPlayers()) {
+			if (player.isNetworkTrainable()) { // if at least one player's network is set to be trainable
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public double[] estimateScore() {
+		double value = JassTheRipperJassStrategy.getInstance().getNeuralNetwork(currentPlayer().isNetworkTrainable()).predictValue(game);
+		//logger.info("The neural network predicted a value of " + value);
+		double[] score = new double[getQuantityOfPlayers()];
+		for (Player player : game.getPlayers())
+			if (player.equals(game.getCurrentPlayer()) || player.equals(game.getPartnerOfPlayer(game.getCurrentPlayer())))
+				score[player.getSeatId()] = value;
+			else
+				score[player.getSeatId()] = Math.max(157.0 - value, 0);
+		return score;
 	}
 
 }

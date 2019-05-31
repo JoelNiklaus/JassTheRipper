@@ -18,7 +18,6 @@ class TrumpfColorMode extends Mode implements Serializable {
     private final Color trumpfColor;
 
     public TrumpfColorMode(Color trumpfColor) {
-
         this.trumpfColor = trumpfColor;
     }
 

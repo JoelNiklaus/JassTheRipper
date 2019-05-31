@@ -22,6 +22,10 @@ dependencies {
     compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.+'
 
 
+    // Deeplearning4J
+    compile 'org.deeplearning4j:deeplearning4j-core:1.0.0-beta4'
+    compile 'org.nd4j:nd4j-native-platform:1.0.0-beta4'
+    compile 'org.deeplearning4j:deeplearning4j-modelimport:1.0.0-beta'
 
     // Utilities
     compile 'com.google.guava:guava:27.1-jre'

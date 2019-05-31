@@ -36,7 +36,7 @@ public class CardKnowledgeBase {
 	 * @param gameSession
 	 */
 	public static void sampleCardDeterminizationToPlayers(GameSession gameSession, Set<Card> availableCards) {
-		Player currentPlayer = gameSession.getCurrentPlayer();
+		Player currentPlayer = gameSession.getTrumpfSelectingPlayer();
 		currentPlayer.setCards(EnumSet.copyOf(availableCards));
 
 		Set<Card> remainingCards = EnumSet.allOf(Card.class);

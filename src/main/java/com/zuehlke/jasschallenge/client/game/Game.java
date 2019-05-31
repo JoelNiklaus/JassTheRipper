@@ -75,8 +75,17 @@ public class Game implements Serializable {
 	public Set<Card> getAlreadyPlayedCards() {
 		Set<Card> cards = currentRound.getPlayedCards();
 		for (Round round : previousRounds) {
-			cards.addAll(round.getPlayedCards());
+			cards.addAll(round.getPlayedCardsInOrder());
 		}
+		return cards;
+	}
+
+	public List<Card> getAlreadyPlayedCardsInOrder() {
+		List<Card> cards = new ArrayList<>();
+		for (Round round : previousRounds) {
+			cards.addAll(round.getPlayedCardsInOrder());
+		}
+		cards.addAll(currentRound.getPlayedCardsInOrder());
 		return cards;
 	}
 

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class Round implements Serializable {
@@ -79,6 +80,12 @@ public class Round implements Serializable {
 		return moves.stream()
 				.map(Move::getPlayedCard)
 				.collect(toSet());
+	}
+
+	public List<Card> getPlayedCardsInOrder() {
+		return moves.stream()
+				.map(Move::getPlayedCard)
+				.collect(toList());
 	}
 
 	public Color getRoundColor() {

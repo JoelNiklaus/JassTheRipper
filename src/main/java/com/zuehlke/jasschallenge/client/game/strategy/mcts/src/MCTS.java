@@ -386,6 +386,10 @@ public class MCTS {
 	 * @return
 	 */
 	private double[] playout(Board oldBoard) {
+		// Do not simulate the playout but estimate the score directly with a neural network
+		if(oldBoard.hasScoreEstimator())
+			return oldBoard.estimateScore();
+
 		List<Move> moves;
 		Move move;
 		Board board = oldBoard.duplicate(false);

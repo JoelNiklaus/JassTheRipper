@@ -87,4 +87,19 @@ public interface Board {
 	 * @return
 	 */
 	Move getBestMove();
+
+	/**
+	 * returns true if the board uses an estimator for the score
+	 * (usually some kind of artificial neural network) and false otherwise
+	 *
+	 * @return
+	 */
+	boolean hasScoreEstimator();
+
+	/**
+	 * Estimates the score of the current state at the end of the game
+	 *
+	 * @return
+	 */
+	double[] estimateScore();
 }

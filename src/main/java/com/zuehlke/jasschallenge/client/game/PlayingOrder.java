@@ -41,10 +41,17 @@ public class PlayingOrder implements Serializable {
 		return playersInInitialPlayingOrder;
 	}
 
+	public List<Player> getPlayersInCurrentPlayingOrder() {
+		List<Player> playersInCurrentPlayingOrder = new ArrayList<>();
+		for (int i = currentPlayerIndex; i < 4; i++) {
+			playersInCurrentPlayingOrder.add(getPlayerByIndex(i));
+		}
+		return playersInCurrentPlayingOrder;
+	}
+
 	public Player getCurrentPlayer() {
 		return getPlayerByIndex(currentPlayerIndex);
 	}
-
 
 	public Player getPartnerOfPlayer(Player player) {
 		return getPlayerByIndex(playersInInitialPlayingOrder.indexOf(player) + 2);
