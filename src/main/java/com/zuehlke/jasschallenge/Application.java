@@ -19,7 +19,7 @@ public class Application {
 	//CHALLENGE2017: Set your bot name
 	private static final String BOT_NAME = "JassTheRipper";
 	//CHALLENGE2017: Set your own strategy
-	private static final JassTheRipperJassStrategy STRATEGY = new JassTheRipperJassStrategy();
+	private static final JassTheRipperJassStrategy STRATEGY = JassTheRipperJassStrategy.getInstance();
 
 	private static final String LOCAL_URL = "ws://127.0.0.1:3000";
 	private static final String SERVER_URL = "wss://jass.joeli.to";

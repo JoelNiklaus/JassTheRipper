@@ -1,5 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
+import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Move;
 import com.zuehlke.jasschallenge.client.game.PlayingOrder;
@@ -46,7 +47,7 @@ public class JassTheRipperStrategyTest {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.createGameSession();
 
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
+		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		Mode mode = strategy.chooseTrumpf(cards1, gameSession, false);
@@ -59,7 +60,7 @@ public class JassTheRipperStrategyTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
+		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		strategy.chooseCard(cards1, gameSession);
@@ -81,7 +82,7 @@ public class JassTheRipperStrategyTest {
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 
 
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
+		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		strategy.chooseCard(cards1, gameSession);
@@ -93,16 +94,18 @@ public class JassTheRipperStrategyTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
+		Game game = gameSession.getCurrentGame();
 
-
-		JassTheRipperJassStrategy strategy = new JassTheRipperJassStrategy(StrengthLevel.FAST);
+		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards1, gameSession)));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards2, gameSession)));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards3, gameSession)));
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), strategy.chooseCard(cards4, gameSession)));
+		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards1, gameSession)));
+		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards2, gameSession)));
+		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards3, gameSession)));
+		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards4, gameSession)));
+
+		gameSession.startNextRound();
+		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards4, gameSession)));
 
 
 	}

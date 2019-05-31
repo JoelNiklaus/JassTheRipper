@@ -23,7 +23,7 @@ public class ChooseTrumpfTest {
 	// TODO andere trümpfe testen
 
 	private GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
-	private JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy(StrengthLevel.TRUMPF);
+	private JassTheRipperJassStrategy jassStrategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.TEST);
 	private int shiftValue = TrumpfSelectionHelper.MAX_SHIFT_RATING_VAL;
 
 	private Set<Card> allClubs = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);

@@ -117,12 +117,54 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-	public JassTheRipperJassStrategy() {
+
+	private static JassTheRipperJassStrategy instance;
+
+	private JassTheRipperJassStrategy() {
 	}
 
-	public JassTheRipperJassStrategy(StrengthLevel strengthLevel) {
-		this.strengthLevel = strengthLevel;
+	/**
+	 * The JassStrategy is a singleton
+	 *
+	 * @return
+	 */
+	public static JassTheRipperJassStrategy getInstance() {
+		if (JassTheRipperJassStrategy.instance == null) {
+			JassTheRipperJassStrategy.instance = new JassTheRipperJassStrategy();
+		}
+		return JassTheRipperJassStrategy.instance;
 	}
+
+	/**
+	 * IMPORTANT: Returns the first instance created -> if there was an instance created with a different parametrization before, that one is returned.
+	 *
+	 * @param cardStrengthLevel
+	 * @return
+	 */
+	public static JassTheRipperJassStrategy getInstance(StrengthLevel cardStrengthLevel) {
+		if (JassTheRipperJassStrategy.instance == null) {
+			JassTheRipperJassStrategy.instance = new JassTheRipperJassStrategy();
+			JassTheRipperJassStrategy.instance.cardStrengthLevel = cardStrengthLevel;
+		}
+		return JassTheRipperJassStrategy.instance;
+	}
+
+	/**
+	 * IMPORTANT: Returns the first instance created -> if there was an instance created with a different parametrization before, that one is returned.
+	 *
+	 * @param cardStrengthLevel
+	 * @param trumpfStrengthLevel
+	 * @return
+	 */
+	public static JassTheRipperJassStrategy getInstance(StrengthLevel cardStrengthLevel, StrengthLevel trumpfStrengthLevel) {
+		if (JassTheRipperJassStrategy.instance == null) {
+			JassTheRipperJassStrategy.instance = new JassTheRipperJassStrategy();
+			JassTheRipperJassStrategy.instance.cardStrengthLevel = cardStrengthLevel;
+			JassTheRipperJassStrategy.instance.trumpfStrengthLevel = trumpfStrengthLevel;
+		}
+		return JassTheRipperJassStrategy.instance;
+	}
+
 
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {

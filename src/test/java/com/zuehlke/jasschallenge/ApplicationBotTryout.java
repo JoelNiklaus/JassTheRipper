@@ -32,7 +32,7 @@ class ApplicationBotTryout {
 	private final static String BOT_NAME = "JassTheRipper";
 
 	//CHALLENGE2017: Set your strategy
-	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy(StrengthLevel.STRONG);
+	private final static JassStrategy MY_STRATEGY = JassTheRipperJassStrategy.getInstance(StrengthLevel.STRONG);
 
 	//CHALLENGE2017: Set the number of opponent teams with random bots
 	private final static int NUMBER_OF_RANDOM_TEAMS = 0;
