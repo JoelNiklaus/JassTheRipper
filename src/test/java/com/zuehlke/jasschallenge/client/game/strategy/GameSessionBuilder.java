@@ -14,7 +14,7 @@ import static java.util.Arrays.asList;
 public class GameSessionBuilder {
 
     private Mode startedGameMode = null;
-    private JassStrategy jassStrategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST_TEST);
+    private JassStrategy jassStrategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST_TEST, StrengthLevel.FAST);
     private List<Player> playersInPlayingOrder = asList(
             new Player("Player 1", jassStrategy),
             new Player("Player 2", jassStrategy),

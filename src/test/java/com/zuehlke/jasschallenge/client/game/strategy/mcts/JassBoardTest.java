@@ -51,7 +51,7 @@ public class JassBoardTest {
 	@Test
 	public void testGetMoves() {
 		for (int i = 0; i < 100; i++) {
-			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, diamondsGame);
+			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, diamondsGame, null);
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 
 			assertFalse(jassBoard.getMoves(CallLocation.playout).isEmpty());
@@ -62,7 +62,7 @@ public class JassBoardTest {
 	@Test
 	public void testGetMovesObeAbe() {
 		for (int i = 0; i < 100; i++) {
-			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, obeAbeGame);
+			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, obeAbeGame, null);
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 			// should not get filtered
 			assertEquals(9, jassBoard.getMoves(CallLocation.playout).size());
@@ -73,10 +73,10 @@ public class JassBoardTest {
 	@Test
 	public void testGetMovesNeverReturnsEmptyArrayList() {
 		for (int i = 0; i < 100; i++) {
-			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, obeAbeGame);
+			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, obeAbeGame, null);
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 			// should not get filtered
-			JassBoard jassBoard2 = JassBoard.constructCardSelectionJassBoard(CardKnowledgeBase.pickRandomSubSet(allCards, 9), obeAbeGame);
+			JassBoard jassBoard2 = JassBoard.constructCardSelectionJassBoard(CardKnowledgeBase.pickRandomSubSet(allCards, 9), obeAbeGame, null);
 			jassBoard2.sampleCardDeterminizationToPlayersInCardPlay();
 			assertFalse(jassBoard2.getMoves(CallLocation.playout).isEmpty());
 			assertFalse(jassBoard2.getMoves(CallLocation.treePolicy).isEmpty());

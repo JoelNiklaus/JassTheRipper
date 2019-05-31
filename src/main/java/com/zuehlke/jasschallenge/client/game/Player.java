@@ -20,6 +20,9 @@ public class Player implements Serializable {
 	private int seatId;
 	private final Set<Card> cards;
 	private final JassStrategy currentJassStrategy;
+
+	private boolean mctsEnabled = true; // disable this for pitting only the networks against each other
+	private boolean valueEstimaterUsed; // This is used in Self Play Training
 	private boolean networkTrainable; // This is used in Self Play Training
 
 	public Player(String id, String name, int seatId) {
@@ -49,7 +52,9 @@ public class Player implements Serializable {
 		this.seatId = player.getSeatId();
 		this.cards = EnumSet.copyOf(player.getCards());
 		this.currentJassStrategy = player.getCurrentJassStrategy();
+		this.mctsEnabled = player.isMctsEnabled();
 		this.networkTrainable = player.isNetworkTrainable();
+		this.networkTrainable = player.isValueEstimaterUsed();
 	}
 
 	public boolean wasStartingPlayer(Round round) {
@@ -83,6 +88,22 @@ public class Player implements Serializable {
 
 	public String getName() {
 		return name;
+	}
+
+	public boolean isMctsEnabled() {
+		return mctsEnabled;
+	}
+
+	public void setMctsEnabled(boolean mctsEnabled) {
+		this.mctsEnabled = mctsEnabled;
+	}
+
+	public boolean isValueEstimaterUsed() {
+		return valueEstimaterUsed;
+	}
+
+	public void setValueEstimaterUsed(boolean valueEstimaterUsed) {
+		this.valueEstimaterUsed = valueEstimaterUsed;
 	}
 
 	public boolean isNetworkTrainable() {

@@ -1,11 +1,13 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.Player;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassPlayoutSelection;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
@@ -80,10 +82,16 @@ public class MCTSHelper implements Serializable {
 	 */
 	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, StrengthLevel strengthLevel) throws MCTSException {
 		Board jassBoard;
-		if (isChoosingTrumpf)
-			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted);
-		else
-			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame());
+		final JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance();
+		if (isChoosingTrumpf) {
+			final Player player = gameSession.getTrumpfSelectingPlayer();
+			NeuralNetwork network = player.isValueEstimaterUsed() ? strategy.getNeuralNetwork(player.isNetworkTrainable()) : null;
+			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, network);
+		} else {
+			final Player player = gameSession.getCurrentGame().getCurrentPlayer();
+			NeuralNetwork network = player.isValueEstimaterUsed() ? strategy.getNeuralNetwork(player.isNetworkTrainable()) : null;
+			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), network);
+		}
 		int roundMultiplier = 10;
 		if (!isChoosingTrumpf)
 			roundMultiplier = (9 - gameSession.getCurrentRound().getRoundNumber());

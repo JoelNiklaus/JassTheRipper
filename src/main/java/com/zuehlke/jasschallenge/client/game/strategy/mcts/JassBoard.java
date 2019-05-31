@@ -26,28 +26,32 @@ public class JassBoard implements Board, Serializable {
 	private boolean shifted;
 	private Game game;
 
+	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
+	private final NeuralNetwork neuralNetwork;
+
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game) {
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, NeuralNetwork neuralNetwork) {
 		this.availableCards = availableCards;
 		this.gameSession = gameSession;
 		this.shifted = shifted;
 		this.game = game;
+		this.neuralNetwork = neuralNetwork;
 	}
 
-	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted) {
-		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null);
+	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, NeuralNetwork neuralNetwork) {
+		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, neuralNetwork);
 		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
 		return jassBoard;
 	}
 
-	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game) {
+	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, NeuralNetwork neuralNetwork) {
 		// INFO: The version with copy constructors is almost factor 100 more efficient than the fastest other version
 		//this.game = (Game) DeepCopy.copy(game);
 		//this.game = (Game) new Cloner().deepClone(game);
 		//this.game = ObjectCloner.deepCopySerialization(game);
 		//this.game = SerializationUtils.clone(game);
-		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game));
+		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game), neuralNetwork);
 	}
 
 	/**
@@ -92,9 +96,9 @@ public class JassBoard implements Board, Serializable {
 	@Override
 	public Board duplicate(boolean newRandomCards) {
 		if (isChoosingTrumpf())
-			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted);
+			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, neuralNetwork);
 
-		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game);
+		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, neuralNetwork);
 		if (newRandomCards)
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 		return jassBoard;
@@ -277,24 +281,19 @@ public class JassBoard implements Board, Serializable {
 		if (isChoosingTrumpf())
 			return false; // So far we only estimate the score during the card play
 
-		for (Player player : game.getPlayers()) {
-			if (player.isNetworkTrainable()) { // if at least one player's network is set to be trainable
-				return true;
-			}
-		}
-		return false;
+		return neuralNetwork != null; // if there is a neural network set for the choosing player
 	}
 
 	@Override
 	public double[] estimateScore() {
-		double value = JassTheRipperJassStrategy.getInstance().getNeuralNetwork(currentPlayer().isNetworkTrainable()).predictValue(game);
+		double value = neuralNetwork.predictValue(game);
 		//logger.info("The neural network predicted a value of " + value);
 		double[] score = new double[getQuantityOfPlayers()];
 		for (Player player : game.getPlayers())
 			if (player.equals(game.getCurrentPlayer()) || player.equals(game.getPartnerOfPlayer(game.getCurrentPlayer())))
 				score[player.getSeatId()] = value;
 			else
-				score[player.getSeatId()] = Math.max(157.0 - value, 0);
+				score[player.getSeatId()] = Math.max(157.0 - value, 0); // Matchbonus disregarded for simplicity
 		return score;
 	}
 

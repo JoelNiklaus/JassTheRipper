@@ -98,8 +98,6 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	private NeuralNetwork learningNetwork = new NeuralNetwork();
 	private NeuralNetwork frozenNetwork = new NeuralNetwork(learningNetwork);
 
-	private boolean mctsEnabled = true; // disable this for pitting only the networks against each other
-
 	private MCTSHelper mctsHelper;
 
 	public StrengthLevel cardStrengthLevel = StrengthLevel.INSANE;
@@ -247,10 +245,9 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			Card card = CardSelectionHelper.getRandomCard(possibleCards, game);
 
 			// Choose the network's prediction directly, without the mcts policy enhancement
-			if (!isMctsEnabled()) {
-				return getNeuralNetwork(game.getCurrentPlayer().isNetworkTrainable()).predictMove(game).getPlayedCard();
-			}
-
+			final Player currentPlayer = game.getCurrentPlayer();
+			if (!currentPlayer.isMctsEnabled())
+				return getNeuralNetwork(currentPlayer.isNetworkTrainable()).predictMove(game).getPlayedCard();
 
 			logger.info("Thinking now...");
 			try {
@@ -280,7 +277,10 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	}
 
 	private void printCards(Set<Card> availableCards) {
-		logger.info("Hi there! I am JassTheRipper, these are my cards: {} and this is my strength level: {}", availableCards, cardStrengthLevel);
+		logger.info("Hi there! I am JassTheRipper, " +
+				"these are my cards: {} " +
+				"and this is my card strength level: {} " +
+				"and this is my trumpf strength level: {}", availableCards, cardStrengthLevel, trumpfStrengthLevel);
 	}
 
 	public NeuralNetwork getNeuralNetwork(boolean trainable) {
@@ -291,14 +291,6 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	public void updateNetworks() {
 		this.frozenNetwork = new NeuralNetwork(this.learningNetwork);
-	}
-
-	public boolean isMctsEnabled() {
-		return mctsEnabled;
-	}
-
-	public void setMctsEnabled(boolean mctsEnabled) {
-		this.mctsEnabled = mctsEnabled;
 	}
 
 	@Override
