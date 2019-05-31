@@ -58,8 +58,7 @@ public class TeamScore implements Serializable {
 	@Override
 	public String toString() {
 		return "TeamScore{" +
-				"team=" + team +
-				", score=" + score +
+				"score=" + score +
 				'}';
 	}
 }

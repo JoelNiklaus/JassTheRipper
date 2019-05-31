@@ -46,7 +46,7 @@ public class NeuralNetwork implements Serializable {
 	private MultiLayerNetwork model;
 
 	public static final String BASE_PATH = "src/main/resources/";
-	public static final String VALUE_ESTIMATOR_PATH = BASE_PATH + "ValueEstimator";
+	public static final String VALUE_ESTIMATOR_PATH = BASE_PATH + "ValueEstimator.zip"; // Can be opened externally
 
 
 	public NeuralNetwork() {

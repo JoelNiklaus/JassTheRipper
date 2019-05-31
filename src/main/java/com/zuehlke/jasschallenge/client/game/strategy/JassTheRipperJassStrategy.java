@@ -282,7 +282,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	private void printCards(Set<Card> availableCards) {
 		logger.info("Hi there! I am JassTheRipper, these are my cards: {} and this is my strength level: {}", availableCards, cardStrengthLevel);
 	}
-	
+
 	public NeuralNetwork getNeuralNetwork(boolean trainable) {
 		if (trainable)
 			return this.learningNetwork;

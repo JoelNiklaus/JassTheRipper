@@ -11,7 +11,7 @@ public class ArenaTest {
 	private static final double IMPROVEMENT_THRESHOLD_FACTOR = 1.05;
 	private static final int SEED = 42;
 
-	Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_FACTOR, SEED);
+	private Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_FACTOR, SEED);
 
 	@Test
 	public void train() {

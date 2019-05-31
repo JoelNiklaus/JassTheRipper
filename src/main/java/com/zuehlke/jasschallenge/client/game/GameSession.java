@@ -121,6 +121,7 @@ public class GameSession implements Serializable {
 	 * Used in training simulations to reset
 	 */
 	public void resetResult() {
+		currentGame = null;
 		result.resetScores();
 	}
 
