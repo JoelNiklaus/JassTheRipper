@@ -82,24 +82,35 @@ public class MCTSHelper implements Serializable {
 	 */
 	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, StrengthLevel strengthLevel) throws MCTSException {
 		Board jassBoard;
-		final JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance();
+		NeuralNetwork network;
 		if (isChoosingTrumpf) {
-			final Player player = gameSession.getTrumpfSelectingPlayer();
-			NeuralNetwork network = player.isValueEstimaterUsed() ? strategy.getNeuralNetwork(player.isNetworkTrainable()) : null;
+			network = getNetwork(gameSession.getTrumpfSelectingPlayer());
 			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, network);
 		} else {
-			final Player player = gameSession.getCurrentGame().getCurrentPlayer();
-			NeuralNetwork network = player.isValueEstimaterUsed() ? strategy.getNeuralNetwork(player.isNetworkTrainable()) : null;
+			network = getNetwork(gameSession.getCurrentGame().getCurrentPlayer());
 			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), network);
 		}
-		int roundMultiplier = 10;
-		if (!isChoosingTrumpf)
-			roundMultiplier = (9 - gameSession.getCurrentRound().getRoundNumber());
-		int numDeterminizations = roundMultiplier * numDeterminizationsFactor;
+		if (network != null)
+			logger.info("Using a value estimator network to determine the score");
+		else
+			logger.info("Using a random playout to determine the score");
+
+		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf);
 		if (runMode == RunMode.RUNS)
 			return mcts.runForRuns(jassBoard, numDeterminizations, strengthLevel.getNumRuns());
 		else if (runMode == RunMode.TIME)
 			return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.getMaxThinkingTime() - BUFFER_TIME_MILLIS);
 		return null;
+	}
+
+	private NeuralNetwork getNetwork(Player player) {
+		return player.isValueEstimaterUsed() ? JassTheRipperJassStrategy.getInstance().getNeuralNetwork(player.isNetworkTrainable()) : null;
+	}
+
+	private int computeNumDeterminizations(GameSession gameSession, boolean isChoosingTrumpf) {
+		int roundMultiplier = 10;
+		if (!isChoosingTrumpf)
+			roundMultiplier = (9 - gameSession.getCurrentRound().getRoundNumber());
+		return roundMultiplier * numDeterminizationsFactor;
 	}
 }

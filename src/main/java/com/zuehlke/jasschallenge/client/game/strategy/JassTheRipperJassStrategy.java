@@ -100,8 +100,8 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private MCTSHelper mctsHelper;
 
-	public StrengthLevel cardStrengthLevel = StrengthLevel.INSANE;
-	public StrengthLevel trumpfStrengthLevel = StrengthLevel.TRUMPF;
+	private StrengthLevel cardStrengthLevel = StrengthLevel.INSANE;
+	private StrengthLevel trumpfStrengthLevel = StrengthLevel.TRUMPF;
 
 	// TODO MCTS still does not like to shift by itself. It is forced to shift now because of the rule-based pruning
 	//  --> Investigate why MCTS without pruning does not like shifting
@@ -180,17 +180,15 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			if (trumpfSelectionMethod == TrumpfSelectionMethod.MCTS)
 				try {
 					assert mctsHelper != null;
-					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe, StrengthLevel.TRUMPF);
+					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe, trumpfStrengthLevel);
 					mode = ((TrumpfMove) move).getChosenTrumpf();
 				} catch (MCTSException e) {
 					logger.debug("{}", e);
 					logger.error("Something went wrong. Had to choose random trumpf, damn it!");
 				}
 
-			final long endTime = System.currentTimeMillis() - startTime;
-			logger.info("Total time for move: {}ms", endTime);
+			logger.info("Total time for move: {}ms", System.currentTimeMillis() - startTime);
 			logger.info("Chose Trumpf {}", mode);
-
 			return mode;
 		} catch (Exception e) {
 			logger.debug("{}", e);
@@ -202,20 +200,51 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	@Override
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
-		final long startTime = System.currentTimeMillis();
-		long time = cardStrengthLevel.getMaxThinkingTime();
-		final long endingTime = startTime + time;
-		printCards(availableCards);
+		final Game game = session.getCurrentGame();
+		try {
+			final long startTime = System.currentTimeMillis();
+			printCards(availableCards);
 
-		Card card = calculateCard(availableCards, session);
+			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, game);
+			Card card = CardSelectionHelper.getRandomCard(possibleCards, game);
 
-		// INFO: Even if there is only one card: wait for maxThinkingTime because opponents might detect patterns otherwise
-		if (!session.getCurrentRound().isLastRound())
-			waitUntilTimeIsUp(endingTime);
+			if (possibleCards.isEmpty())
+				logger.error("We have a serious problem! No possible card to play!");
 
-		final long endTime = System.currentTimeMillis() - startTime;
-		logger.info("Total time for move: {}ms", endTime);
-		return card;
+			if (possibleCards.size() == 1) {
+				card = Iterables.getOnlyElement(possibleCards);
+				logger.info("Only one possible card to play: {}", card);
+			} else { // Start searching for a good card
+				final Player currentPlayer = game.getCurrentPlayer();
+				if (currentPlayer.isMctsEnabled()) {
+					try {
+						assert mctsHelper != null;
+						Move move = mctsHelper.predictMove(availableCards, session, false, false, cardStrengthLevel);
+						card = ((CardMove) move).getPlayedCard();
+						logger.info("Chose Card based on MCTS, Hurra!");
+					} catch (MCTSException e) {
+						logger.debug("{}", e);
+						logger.error("Something went wrong. Had to choose random card, damn it!");
+					}
+				} else { // Choose the network's prediction directly, without the mcts policy enhancement
+					card = getNeuralNetwork(currentPlayer.isNetworkTrainable()).predictMove(game).getPlayedCard();
+					logger.info("Chose card based only on value estimator network.");
+				}
+			}
+
+			// INFO: Even if there is only one card: wait for maxThinkingTime because opponents might detect patterns otherwise
+			// INFO: Commented out for machine only play. Only needed for humans
+			//if (!session.getCurrentRound().isLastRound())
+			//	waitUntilTimeIsUp(endingTime);
+
+			logger.info("Total time for move: {}ms", System.currentTimeMillis() - startTime);
+			logger.info("Chose card {} out of possible cards {} out of available cards {}", card, possibleCards, availableCards);
+			return card;
+		} catch (Exception e) {
+			logger.debug("{}", e);
+			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random card now.");
+			return CardSelectionHelper.getRandomCard(availableCards, game);
+		}
 	}
 
 	private void waitUntilTimeIsUp(long endingTime) {
@@ -225,54 +254,6 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 			} catch (InterruptedException e) {
 				logger.debug("{}", e);
 			}
-		}
-	}
-
-	private Card calculateCard(Set<Card> availableCards, GameSession gameSession) {
-		final Game game = gameSession.getCurrentGame();
-		try {
-			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, game);
-
-			if (possibleCards.isEmpty())
-				logger.error("We have a serious problem! No possible card to play!");
-
-			if (possibleCards.size() == 1) {
-				Card card = Iterables.getOnlyElement(possibleCards);
-				logger.info("Only one possible card to play: {}", card);
-				return card;
-			}
-
-			Card card = CardSelectionHelper.getRandomCard(possibleCards, game);
-
-			// Choose the network's prediction directly, without the mcts policy enhancement
-			final Player currentPlayer = game.getCurrentPlayer();
-			if (!currentPlayer.isMctsEnabled())
-				return getNeuralNetwork(currentPlayer.isNetworkTrainable()).predictMove(game).getPlayedCard();
-
-			logger.info("Thinking now...");
-			try {
-				assert mctsHelper != null;
-				final Card mctsCard = ((CardMove) mctsHelper.predictMove(availableCards, gameSession, false, false, cardStrengthLevel)).getPlayedCard();
-				if (possibleCards.contains(card)) {
-					logger.info("Chose Card based on MCTS, Hurra!");
-					card = mctsCard;
-				} else
-					logger.error("Card chosen not in possible cards. Had to choose random card, damn it!");
-			} catch (MCTSException e) {
-				logger.debug("{}", e);
-				logger.error("Something went wrong. Had to choose random card, damn it!");
-			}
-
-			//final long endTime = System.currentTimeMillis() - startTime;
-			//logger.info("Total time for move: {}ms", endTime);
-			logger.info("Played {} out of possible Cards {} out of available Cards {}", card, possibleCards, availableCards);
-			assert card != null;
-			assert possibleCards.contains(card);
-			return card;
-		} catch (Exception e) {
-			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random card now.");
-			logger.debug("{}", e);
-			return CardSelectionHelper.getRandomCard(availableCards, game);
 		}
 	}
 
@@ -291,6 +272,30 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	public void updateNetworks() {
 		this.frozenNetwork = new NeuralNetwork(this.learningNetwork);
+	}
+
+	public StrengthLevel getCardStrengthLevel() {
+		return cardStrengthLevel;
+	}
+
+	public void setCardStrengthLevel(StrengthLevel cardStrengthLevel) {
+		this.cardStrengthLevel = cardStrengthLevel;
+	}
+
+	public StrengthLevel getTrumpfStrengthLevel() {
+		return trumpfStrengthLevel;
+	}
+
+	public void setTrumpfStrengthLevel(StrengthLevel trumpfStrengthLevel) {
+		this.trumpfStrengthLevel = trumpfStrengthLevel;
+	}
+
+	public TrumpfSelectionMethod getTrumpfSelectionMethod() {
+		return trumpfSelectionMethod;
+	}
+
+	public void setTrumpfSelectionMethod(TrumpfSelectionMethod trumpfSelectionMethod) {
+		this.trumpfSelectionMethod = trumpfSelectionMethod;
 	}
 
 	@Override

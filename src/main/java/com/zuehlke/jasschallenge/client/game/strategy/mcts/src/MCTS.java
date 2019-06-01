@@ -97,7 +97,7 @@ public class MCTS {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < runs; i++)
 			select(startingBoard, rootNode);
-		logger.debug("Run for {} ms.", System.currentTimeMillis() - startTime);
+		logger.debug("Ran {} runs in {}ms.", runs, System.currentTimeMillis() - startTime);
 		return finalMoveSelection(rootNode);
 	}
 
@@ -110,6 +110,7 @@ public class MCTS {
 	 */
 	private Move executeByTime(Board startingBoard, long endingTime) {
 		Node rootNode = new Node(startingBoard);
+		long startTime = System.currentTimeMillis();
 		long runCounter = 0;
 		while ((System.currentTimeMillis() < endingTime)) {
 			// Start new path from root node
@@ -119,7 +120,7 @@ public class MCTS {
 		if (runCounter == 0) {
 			rootNode.invalidate();
 		}
-		logger.debug("Run {} times.", runCounter);
+		logger.debug("Ran {} runs in {}ms.", runCounter, System.currentTimeMillis() - startTime);
 		return finalMoveSelection(rootNode);
 	}
 
@@ -387,7 +388,7 @@ public class MCTS {
 	 */
 	private double[] playout(Board oldBoard) {
 		// Do not simulate the playout but estimate the score directly with a neural network
-		if(oldBoard.hasScoreEstimator())
+		if (oldBoard.hasScoreEstimator())
 			return oldBoard.estimateScore();
 
 		List<Move> moves;

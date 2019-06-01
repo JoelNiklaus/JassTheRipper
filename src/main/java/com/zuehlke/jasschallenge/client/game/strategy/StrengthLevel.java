@@ -4,6 +4,7 @@ package com.zuehlke.jasschallenge.client.game.strategy;
  * Describes the strength of the strategy. More configurations can be added when needed.
  */
 public enum StrengthLevel {
+	// NOTE: When using a value estimator much fewer runs are needed than when using random playouts
 	FAST_TEST(1, 50, 10),
 	TEST(2, 100, 20),
 	FAST(4, 200, 40),
@@ -26,7 +27,7 @@ public enum StrengthLevel {
 	// the maximal number of milliseconds per choose card move
 	private final long maxThinkingTime;
 
-	// IMPORTANT: This is a hyperparameter.
+	// IMPORTANT: This is a hyperparameter. Determines how many nodes should be explored in one mcts tree.
 	private final long numRuns;
 
 	StrengthLevel(int numDeterminizationsFactor, long maxThinkingTime, long numRuns) {

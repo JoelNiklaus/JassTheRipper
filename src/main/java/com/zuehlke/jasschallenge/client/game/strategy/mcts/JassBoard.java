@@ -287,7 +287,7 @@ public class JassBoard implements Board, Serializable {
 	@Override
 	public double[] estimateScore() {
 		double value = neuralNetwork.predictValue(game);
-		//logger.info("The neural network predicted a value of " + value);
+		// logger.info("The neural network predicted a value of " + value);
 		double[] score = new double[getQuantityOfPlayers()];
 		for (Player player : game.getPlayers())
 			if (player.equals(game.getCurrentPlayer()) || player.equals(game.getPartnerOfPlayer(game.getCurrentPlayer())))

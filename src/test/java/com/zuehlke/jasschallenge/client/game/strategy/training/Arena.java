@@ -7,6 +7,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
@@ -34,6 +35,8 @@ public class Arena {
 
 
 	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
+		CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
+
 		this.numTrainingGames = numTrainingGames;
 		this.numTestingGames = numTestingGames;
 		this.improvementThresholdPercentage = improvementThresholdPercentage;
@@ -46,7 +49,7 @@ public class Arena {
 		for (int i = 0; i < numEpisodes; i++) {
 			logger.info("Running episode #{}\n", i);
 			final double performance = runEpisode();
-			logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts", i, performance);
+			logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts\n", i, performance);
 		}
 
 		tearDown();
