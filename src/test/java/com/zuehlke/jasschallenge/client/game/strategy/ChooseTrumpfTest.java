@@ -1,11 +1,14 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -33,6 +36,11 @@ public class ChooseTrumpfTest {
 	private Set<Card> definitelyShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_QUEEN, Card.DIAMOND_EIGHT, Card.DIAMOND_QUEEN, Card.HEART_EIGHT, Card.HEART_QUEEN, Card.SPADE_EIGHT, Card.SPADE_TEN);
 	private Set<Card> maybeShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_KING, Card.DIAMOND_NINE, Card.DIAMOND_KING, Card.HEART_SIX, Card.HEART_JACK, Card.SPADE_EIGHT, Card.SPADE_KING);
 
+	@Before
+	public void setUp() {
+		// IMPORTANT: Because the strategy is a singleton, this might affect later tests. Resetting at the end of this test
+		jassStrategy.setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
+	}
 
 	@Test
 	public void testChooseTrumpfDiamondWithGreatDiamondCards() {
@@ -56,44 +64,50 @@ public class ChooseTrumpfTest {
 
 	@Test
 	public void testRateUndeUfeBestWithGreatUndeUfeCards() {
-		Set<Card> cards = veryGoodUndeUfe;
-		int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
-		int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);
-		int spades = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.SPADES);
-		int clubs = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.CLUBS);
-		int obeAbe = TrumpfSelectionHelper.rateObeabe(cards);
-		int undeUfe = TrumpfSelectionHelper.rateUndeufe(cards);
-		System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
-		System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
-		assertTrue(undeUfe > obeAbe);
-		assertTrue(undeUfe > hearts);
-		assertTrue(undeUfe > spades);
-		assertTrue(undeUfe > clubs);
-		assertTrue(undeUfe > diamonds);
-		jassStrategy.onSessionStarted(gameSession);
-		assertEquals(Mode.bottomUp(), jassStrategy.chooseTrumpf(cards, gameSession, false));
+		// NOTE: Only run when all trumpfs are enabled
+		if (TrumpfSelectionHelper.ALL_TRUMPFS) {
+			Set<Card> cards = veryGoodUndeUfe;
+			int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+			int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);
+			int spades = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.SPADES);
+			int clubs = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.CLUBS);
+			int obeAbe = TrumpfSelectionHelper.rateObeabe(cards);
+			int undeUfe = TrumpfSelectionHelper.rateUndeufe(cards);
+			System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
+			System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
+			assertTrue(undeUfe > obeAbe);
+			assertTrue(undeUfe > hearts);
+			assertTrue(undeUfe > spades);
+			assertTrue(undeUfe > clubs);
+			assertTrue(undeUfe > diamonds);
+			jassStrategy.onSessionStarted(gameSession);
+			assertEquals(Mode.bottomUp(), jassStrategy.chooseTrumpf(cards, gameSession, false));
+		}
 	}
 
 	@Test
 	public void testShiftOrBottomUp() {
-		Set<Card> cards = shiftOrBottomUp;
-		int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
-		int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);
-		int spades = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.SPADES);
-		int clubs = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.CLUBS);
-		int obeAbe = TrumpfSelectionHelper.rateObeabe(cards);
-		int undeUfe = TrumpfSelectionHelper.rateUndeufe(cards);
-		System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
-		System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
-		assertTrue(undeUfe < shiftValue);
-		assertTrue(obeAbe < shiftValue);
-		assertTrue(diamonds < shiftValue);
-		assertTrue(hearts < shiftValue);
-		assertTrue(spades < shiftValue);
-		assertTrue(clubs < shiftValue);
-		List<Mode> possibleTrumpfs = Arrays.asList(Mode.bottomUp(), Mode.shift());
-		jassStrategy.onSessionStarted(gameSession);
-		assertTrue(possibleTrumpfs.contains(jassStrategy.chooseTrumpf(cards, gameSession, false)));
+		// NOTE: Only run when all trumpfs are enabled
+		if (TrumpfSelectionHelper.ALL_TRUMPFS) {
+			Set<Card> cards = shiftOrBottomUp;
+			int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+			int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);
+			int spades = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.SPADES);
+			int clubs = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.CLUBS);
+			int obeAbe = TrumpfSelectionHelper.rateObeabe(cards);
+			int undeUfe = TrumpfSelectionHelper.rateUndeufe(cards);
+			System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
+			System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
+			assertTrue(undeUfe < shiftValue);
+			assertTrue(obeAbe < shiftValue);
+			assertTrue(diamonds < shiftValue);
+			assertTrue(hearts < shiftValue);
+			assertTrue(spades < shiftValue);
+			assertTrue(clubs < shiftValue);
+			List<Mode> possibleTrumpfs = Arrays.asList(Mode.bottomUp(), Mode.shift());
+			jassStrategy.onSessionStarted(gameSession);
+			assertTrue(possibleTrumpfs.contains(jassStrategy.chooseTrumpf(cards, gameSession, false)));
+		}
 	}
 
 	@Test
@@ -135,7 +149,7 @@ public class ChooseTrumpfTest {
 		assertTrue(spades < shiftValue);
 		assertTrue(clubs < shiftValue);
 		jassStrategy.onSessionStarted(gameSession);
-		assertEquals(Mode.from(Trumpf.TRUMPF, Color.HEARTS), jassStrategy.chooseTrumpf(cards, gameSession, false));
+		assertEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, false));
 	}
 
 	@Test
@@ -178,5 +192,11 @@ public class ChooseTrumpfTest {
 		assertTrue(clubs < shiftValue);
 		jassStrategy.onSessionStarted(gameSession);
 		assertNotEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, true));
+	}
+
+	@After
+	public void tearDown() {
+		// Reset to standard behaviour
+		jassStrategy.setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 	}
 }

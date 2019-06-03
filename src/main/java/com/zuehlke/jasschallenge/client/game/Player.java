@@ -41,6 +41,14 @@ public class Player implements Serializable {
 		this.currentJassStrategy = strategy;
 	}
 
+	public Player(String id, String name, int seatId, Set<Card> cards, JassStrategy currentJassStrategy) {
+		this.id = id;
+		this.name = name;
+		this.seatId = seatId;
+		this.cards = cards;
+		this.currentJassStrategy = currentJassStrategy;
+	}
+
 	/**
 	 * Copy constructor for deep copy
 	 *

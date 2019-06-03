@@ -20,11 +20,6 @@ import static org.junit.Assert.assertTrue;
 public class CardSelectionHelperTest {
 
 	private Player firstPlayer = new Player("0", "firstPlayer", 0);
-	private Player secondPlayer = new Player("1", "secondPlayer", 1);
-	private Player thirdPlayer = new Player("2", "thirdPlayer", 2);
-	private Player lastPlayer = new Player("3", "lastPlayer", 3);
-	private PlayingOrder order = PlayingOrder.createOrder(asList(firstPlayer, secondPlayer, thirdPlayer, lastPlayer));
-
 
 	/* Test refineCardsWithJassKnowledge
 	 * Test Stechen
@@ -32,7 +27,6 @@ public class CardSelectionHelperTest {
 	@Test
 	public void testRefineCardsWithJassKnowledgeStechen() {
 		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
 				.withStartedGame(Mode.topDown())
 				.createGameSession();
 		Game game = gameSession.getCurrentGame();
@@ -50,7 +44,6 @@ public class CardSelectionHelperTest {
 	@Test
 	public void testRefineCardsStechenWithoutTrumpfIfPossible() {
 		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
 				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
 				.createGameSession();
 		Game game = gameSession.getCurrentGame();
@@ -68,7 +61,6 @@ public class CardSelectionHelperTest {
 	@Test
 	public void testRefineCardsStechenWithTrumpfIfNotPossibleOtherwiseAndScoreHigherThan10() {
 		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
 				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
 				.createGameSession();
 		Game game = gameSession.getCurrentGame();
@@ -87,7 +79,6 @@ public class CardSelectionHelperTest {
 	@Test
 	public void testRefineCardsNotStechenWithTrumpfIfNotPossibleOtherwiseAndScoreLowerThan10() {
 		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
 				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
 				.createGameSession();
 		Game game = gameSession.getCurrentGame();
@@ -109,12 +100,9 @@ public class CardSelectionHelperTest {
 	@Test
 	public void testAlsoAustrumpfenWhenNotHavingHighTrumpfs() {
 		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
 				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
 				.createGameSession();
 		Game game = gameSession.getCurrentGame();
-		PlayingOrder order = game.getCurrentRound().getPlayingOrder();
-
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.DIAMOND_EIGHT);
 		Player player = firstPlayer;
@@ -127,7 +115,6 @@ public class CardSelectionHelperTest {
 	@Test
 	public void testNotAustrumpfenHavingHighTrumpfs() {
 		GameSession gameSession = GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
 				.withStartedGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS))
 				.createGameSession();
 		Game game = gameSession.getCurrentGame();

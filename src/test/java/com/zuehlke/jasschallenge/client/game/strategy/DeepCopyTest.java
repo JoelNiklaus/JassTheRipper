@@ -7,13 +7,11 @@ import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.ObjectCloner;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 /**
@@ -25,31 +23,14 @@ public class DeepCopyTest {
 	private static final int NUMBER_OF_RUNS = 1000;
 
 	private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
-	private Set<Card> cards2 = EnumSet.of(Card.HEART_ACE, Card.HEART_EIGHT, Card.HEART_JACK, Card.CLUB_SIX, Card.CLUB_SEVEN, Card.DIAMOND_QUEEN, Card.SPADE_TEN, Card.DIAMOND_NINE, Card.DIAMOND_JACK);
-	private Set<Card> cards3 = EnumSet.of(Card.SPADE_ACE, Card.SPADE_EIGHT, Card.SPADE_JACK, Card.HEART_SIX, Card.HEART_SEVEN, Card.CLUB_QUEEN, Card.DIAMOND_TEN, Card.CLUB_NINE, Card.CLUB_JACK);
-	private Set<Card> cards4 = EnumSet.of(Card.DIAMOND_ACE, Card.DIAMOND_EIGHT, Card.DIAMOND_JACK, Card.SPADE_SIX, Card.SPADE_SEVEN, Card.HEART_QUEEN, Card.CLUB_TEN, Card.HEART_NINE, Card.HEART_JACK);
-	private Player firstPlayer = new Player("0", "Player 1", 0);
-	private Player secondPlayer = new Player("1", "Player 2", 1);
-	private Player thirdPlayer = new Player("2", "Player 3", 2);
-	private Player lastPlayer = new Player("3", "Player 4", 3);
-	private PlayingOrder order = PlayingOrder.createOrder(asList(firstPlayer, secondPlayer, thirdPlayer, lastPlayer));
-	private GameSession gameSession;
 
-	@Before
-	public void setUp() {
-		firstPlayer.setCards(cards1);
-		secondPlayer.setCards(cards2);
-		thirdPlayer.setCards(cards3);
-		lastPlayer.setCards(cards4);
+	private GameSession gameSession = GameSessionBuilder.newSession().withStartedGame(Mode.topDown()).createGameSession();
 
-		gameSession = com.zuehlke.jasschallenge.client.game.GameSessionBuilder.newSession()
-				.withPlayersInPlayingOrder(order.getPlayersInInitialPlayingOrder())
-				.withStartedGame(Mode.topDown())
-				.createGameSession();
-	}
 
 	@Test
 	public void testFastestCopyMechanism() {
+		// NOTE: Not necessary anymore. The fastest and most robust version is the system with the copy constructors.
+		/*
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
@@ -82,6 +63,7 @@ public class DeepCopyTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	@Test
@@ -130,6 +112,8 @@ public class DeepCopyTest {
 
 	@Test
 	public void testMostRobustCopyMechanism() {
+		// NOTE: Not necessary anymore. The fastest and most robust version is the system with the copy constructors.
+		/*
 		for (int i = 0; i < NUMBER_OF_RUNS; i++) {
 			try {
 				long startTime = System.nanoTime();
@@ -165,6 +149,7 @@ public class DeepCopyTest {
 				e.printStackTrace();
 			}
 		}
+		*/
 	}
 
 	@Test

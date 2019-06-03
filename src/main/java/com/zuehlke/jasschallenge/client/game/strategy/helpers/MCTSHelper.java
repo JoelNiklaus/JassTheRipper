@@ -28,7 +28,7 @@ public class MCTSHelper implements Serializable {
 
 	private final int numDeterminizationsFactor; // determines how many determinizations we create
 	private final RunMode runMode;
-	private static final int BUFFER_TIME_MILLIS = 25; // INFO Makes sure, that the bot really finishes before the thinking time is up.
+	private static final int BUFFER_TIME_MILLIS = 10; // INFO Makes sure, that the bot really finishes before the thinking time is up.
 
 
 	private final MCTS mcts = new MCTS();
@@ -90,14 +90,19 @@ public class MCTSHelper implements Serializable {
 			network = getNetwork(gameSession.getCurrentGame().getCurrentPlayer());
 			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), network);
 		}
-		if (network != null)
+		long numRuns = strengthLevel.getNumRuns();
+		if (network != null) {
 			logger.info("Using a value estimator network to determine the score");
-		else
+			if (runMode == RunMode.RUNS) {
+				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random playout
+				logger.info("Running only {} runs per determinization.", numRuns);
+			}
+		} else
 			logger.info("Using a random playout to determine the score");
 
 		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf);
 		if (runMode == RunMode.RUNS)
-			return mcts.runForRuns(jassBoard, numDeterminizations, strengthLevel.getNumRuns());
+			return mcts.runForRuns(jassBoard, numDeterminizations, numRuns);
 		else if (runMode == RunMode.TIME)
 			return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.getMaxThinkingTime() - BUFFER_TIME_MILLIS);
 		return null;

@@ -11,115 +11,115 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class GameSessionTest {
-    @Test
-    public void newGameSession_withoutStartedGame() {
+	@Test
+	public void newGameSession_withoutStartedGame() {
 
-        final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
 
-        assertThat(gameSession.getCurrentRound(), is(nullValue()));
-    }
+		assertThat(gameSession.getCurrentRound(), is(nullValue()));
+	}
 
-    @Test
-    public void startNewGame_whenNoGameWasStarted_firstRoundIsStarted() {
+	@Test
+	public void startNewGame_whenNoGameWasStarted_firstRoundIsStarted() {
 
-        final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
 
-        gameSession.startNewGame(Mode.topDown(), false);
+		gameSession.startNewGame(Mode.topDown(), false);
 
-        assertThat(gameSession.getCurrentRound(), is(not(nullValue())));
-    }
+		assertThat(gameSession.getCurrentRound(), is(not(nullValue())));
+	}
 
-    @Test
-    public void startNewGame_aGameWasPlayed() {
+	@Test
+	public void startNewGame_aGameWasPlayed() {
 
-        final GameSession gameSession = GameSessionBuilder.newSession()
-                .withStartedGame(Mode.bottomUp())
-                .createGameSession();
-        gameSession.makeMove(new Move(new Player("Player 1"), Card.CLUB_TEN));
-        gameSession.startNextRound();
-        gameSession.startNewGame(Mode.topDown(), false);
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.bottomUp())
+				.createGameSession();
+		gameSession.makeMove(new Move(gameSession.getPlayersInInitialPlayingOrder().get(0), Card.CLUB_TEN));
+		gameSession.startNextRound();
+		gameSession.startNewGame(Mode.topDown(), false);
 
-        assertThat(gameSession.getResult().getTeamScore(new Player("Player 1")), equalTo(10));
-    }
+		assertThat(gameSession.getResult().getTeamScore(gameSession.getPlayersInInitialPlayingOrder().get(0)), equalTo(10));
+	}
 
-    @Test
-    public void startNextRound_aRoundIsAlreadyPlayed_resultPointsAreUpdated() {
+	@Test
+	public void startNextRound_aRoundIsAlreadyPlayed_resultPointsAreUpdated() {
 
-        final Player playerA = new Player("Player 1");
-        final Player playerB = new Player("Player 2");
-        final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
-        gameSession.startNewGame(Mode.bottomUp(), false);
-        gameSession.makeMove(new Move(playerA, Card.CLUB_TEN));
-        gameSession.makeMove(new Move(playerB, Card.CLUB_SIX));
+		final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		final Player playerA = gameSession.getPlayersInInitialPlayingOrder().get(0);
+		final Player playerB = gameSession.getPlayersInInitialPlayingOrder().get(1);
+		gameSession.startNewGame(Mode.bottomUp(), false);
+		gameSession.makeMove(new Move(playerA, Card.CLUB_TEN));
+		gameSession.makeMove(new Move(playerB, Card.CLUB_SIX));
 
-        gameSession.startNextRound();
+		gameSession.startNextRound();
 
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerA), equalTo(0));
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerB), equalTo(21));
-    }
+		assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerA), equalTo(0));
+		assertThat(gameSession.getCurrentGame().getResult().getTeamScore(playerB), equalTo(21));
+	}
 
-    @Test
-    public void startNextRound_multipleRoundsArePlayed_resultsAreCombined() {
+	@Test
+	public void startNextRound_multipleRoundsArePlayed_resultsAreCombined() {
 
-        final Player player = new Player("Player 1");
-        final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
-        gameSession.startNewGame(Mode.topDown(), false);
-        gameSession.makeMove(new Move(player, Card.CLUB_TEN));
-        gameSession.startNextRound();
-        gameSession.makeMove(new Move(player, Card.HEART_ACE));
+		final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		final Player player = gameSession.getPlayersInInitialPlayingOrder().get(0);
+		gameSession.startNewGame(Mode.topDown(), false);
+		gameSession.makeMove(new Move(player, Card.CLUB_TEN));
+		gameSession.startNextRound();
+		gameSession.makeMove(new Move(player, Card.HEART_ACE));
 
-        gameSession.startNextRound();
+		gameSession.startNextRound();
 
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(21));
-    }
+		assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(21));
+	}
 
-    @Test
-    public void startNextRound_multipleRoundsArePlayed_matchBonusIsAdded() {
+	@Test
+	public void startNextRound_multipleRoundsArePlayed_matchBonusIsAdded() {
 
-        final Player player = new Player("Player 1");
-        final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
-        gameSession.startNewGame(Mode.topDown(), false);
-        for(int i = 0 ; i <= Game.LAST_ROUND_NUMBER; i++) {
-            gameSession.makeMove(new Move(player, Card.CLUB_TEN));
-            gameSession.startNextRound();
-        }
-        gameSession.startNextRound();
+		final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		final Player player = gameSession.getPlayersInInitialPlayingOrder().get(0);
+		gameSession.startNewGame(Mode.topDown(), false);
+		for (int i = 0; i <= Game.LAST_ROUND_NUMBER; i++) {
+			gameSession.makeMove(new Move(player, Card.CLUB_TEN));
+			gameSession.startNextRound();
+		}
+		gameSession.startNextRound();
 
-        assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10) * 9 + 5+ 100 ));
-    }
+		assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10) * 9 + 5 + 100));
+	}
 
-    @Test
-    public void startNextRound_afterAPlayedRound_roundNumberIsIncreased() {
+	@Test
+	public void startNextRound_afterAPlayedRound_roundNumberIsIncreased() {
 
-        final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		final GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
 
-        gameSession.startNewGame(Mode.topDown(), false);
-        Round secondRound = gameSession.startNextRound();
+		gameSession.startNewGame(Mode.topDown(), false);
+		Round secondRound = gameSession.startNextRound();
 
-        assertThat(secondRound.getRoundNumber(), is(1));
-    }
+		assertThat(secondRound.getRoundNumber(), is(1));
+	}
 
-    @Test
-    public void makeMove_inANewGame_storesMoveOnRound() {
+	@Test
+	public void makeMove_inANewGame_storesMoveOnRound() {
 
-        final GameSession gameSession = GameSessionBuilder.newSession()
-                .withStartedGame(Mode.topDown())
-                .createGameSession();
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.topDown())
+				.createGameSession();
 
-        gameSession.makeMove(new Move(new Player("Player 1"), Card.CLUB_ACE));
+		gameSession.makeMove(new Move(gameSession.getPlayersInInitialPlayingOrder().get(0), Card.CLUB_ACE));
 
-        assertThat(gameSession.getCurrentRound().getMoves().size(), is(1));
-    }
+		assertThat(gameSession.getCurrentRound().getMoves().size(), is(1));
+	}
 
-    @Test
-    public void makeMove_inANewGame_advancesToNextPlayer() {
-        final GameSession gameSession = GameSessionBuilder.newSession()
-                .withStartedGame(Mode.topDown())
-                .createGameSession();
+	@Test
+	public void makeMove_inANewGame_advancesToNextPlayer() {
+		final GameSession gameSession = GameSessionBuilder.newSession()
+				.withStartedGame(Mode.topDown())
+				.createGameSession();
 
-        gameSession.makeMove(new Move(new Player("Player 1"), Card.CLUB_ACE));
+		gameSession.makeMove(new Move(gameSession.getPlayersInInitialPlayingOrder().get(0), Card.CLUB_ACE));
 
-        assertThat(gameSession.getCurrentRound().getPlayingOrder().getCurrentPlayer(), is(new Player("Player 2")));
-    }
+		assertThat(gameSession.getCurrentRound().getPlayingOrder().getCurrentPlayer(), is(gameSession.getPlayersInInitialPlayingOrder().get(1)));
+	}
 
 }

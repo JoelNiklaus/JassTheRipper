@@ -1,7 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
@@ -25,7 +24,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testExecutorServiceShutsDownCorrectly() throws MCTSException {
-		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
+		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
@@ -44,7 +43,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testMCTSTrumpf() throws MCTSException {
-		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
+		final GameSession gameSession = GameSessionBuilder.newSession()
 				.createGameSession();
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
@@ -55,7 +54,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testMCTSStart() throws MCTSException {
-		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
+		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
@@ -70,7 +69,7 @@ public class MCTSHelperTest {
 
 	@Test
 	public void testMCTSDuringFirstRound() throws MCTSException {
-		final GameSession gameSession = com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder.newSession()
+		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 

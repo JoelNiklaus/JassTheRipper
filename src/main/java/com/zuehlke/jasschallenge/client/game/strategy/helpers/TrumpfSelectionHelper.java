@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 public class TrumpfSelectionHelper {
 
+	public static final boolean ALL_TRUMPFS = false;
+
 	public static final Logger logger = LoggerFactory.getLogger(TrumpfSelectionHelper.class);
 
 
@@ -85,14 +87,15 @@ public class TrumpfSelectionHelper {
 		for (Color color : Color.values())
 			trumpfRatings.put(Mode.from(Trumpf.TRUMPF, color), rateColorForTrumpf(availableCards, color));
 
-		/* // TODO IMPORTANT: This filters out obeabe and undeufe for easier training of the neural network
-		// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
-		float noTrumpfWeight = 0.8f; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
-		if (isGschobe)
-			noTrumpfWeight -= 0.1f; // INFO: make obeae and undeufe just a little bit more unlikely
-		trumpfRatings.put(Mode.topDown(), Math.round(noTrumpfWeight * rateObeabe(availableCards)));
-		trumpfRatings.put(Mode.bottomUp(), Math.round(noTrumpfWeight * rateUndeufe(availableCards)));
-		*/
+		//  IMPORTANT: This filters out obeabe and undeufe for easier training of the neural network
+		if (!ALL_TRUMPFS) {
+			// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
+			float noTrumpfWeight = 0.8f; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
+			if (isGschobe)
+				noTrumpfWeight -= 0.1f; // INFO: make obeae and undeufe just a little bit more unlikely
+			trumpfRatings.put(Mode.topDown(), Math.round(noTrumpfWeight * rateObeabe(availableCards)));
+			trumpfRatings.put(Mode.bottomUp(), Math.round(noTrumpfWeight * rateUndeufe(availableCards)));
+		}
 
 		if (!isGschobe)
 			trumpfRatings.put(Mode.shift(), MAX_SHIFT_RATING_VAL);

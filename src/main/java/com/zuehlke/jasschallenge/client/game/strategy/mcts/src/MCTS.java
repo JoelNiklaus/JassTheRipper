@@ -153,9 +153,11 @@ public class MCTS {
 		}
 	}
 
-	private Move vote(ArrayList<Move> moves) {
+	private Move vote(ArrayList<Move> moves) throws MCTSException {
 		HashMap<Move, Integer> numberOfSelections = new HashMap<>();
-		assert !moves.isEmpty();
+		if (moves.isEmpty())
+			throw new MCTSException("There are no moves to vote from. Maybe there was not enough time to explore the tree.");
+
 		for (Move move : moves) {
 			int number = 1;
 			if (numberOfSelections.containsKey(move)) {

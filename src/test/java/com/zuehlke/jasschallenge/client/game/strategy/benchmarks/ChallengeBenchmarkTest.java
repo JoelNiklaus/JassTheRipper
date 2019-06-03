@@ -4,7 +4,6 @@ import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import org.json.JSONException;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -24,11 +23,6 @@ public class ChallengeBenchmarkTest {
 	private final static int TOURNAMENT_ROUNDS = 1;
 	private final static int MAX_POINTS = 2500;
 	private final static int SEED = 42;
-
-	@BeforeClass
-	public static void setUp() {
-
-	}
 
 	@Test
 	public void testWinsAgainstChallengeWithChallengeAsTeam1() throws JSONException, InterruptedException {

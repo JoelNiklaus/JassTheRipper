@@ -107,7 +107,6 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	//  --> Investigate why MCTS without pruning does not like shifting
 	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.MCTS;
 
-	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
 	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards -> not planned at the moment
@@ -117,8 +116,9 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-
 	private static JassTheRipperJassStrategy instance;
+
+	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
 	private JassTheRipperJassStrategy() {
 	}
@@ -305,7 +305,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	@Override
 	public void onSessionStarted(GameSession gameSession) {
-		mctsHelper = new MCTSHelper(cardStrengthLevel.getNumDeterminizationsFactor(), RunMode.RUNS);
+		mctsHelper = new MCTSHelper(cardStrengthLevel.getNumDeterminizationsFactor(), RunMode.TIME);
 	}
 
 	@Override
