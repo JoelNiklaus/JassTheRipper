@@ -1,12 +1,9 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
-import com.rits.cloning.Cloner;
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.DeepCopy;
-import com.zuehlke.jasschallenge.client.game.strategy.deepcopy.ObjectCloner;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
-import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 import java.util.EnumSet;

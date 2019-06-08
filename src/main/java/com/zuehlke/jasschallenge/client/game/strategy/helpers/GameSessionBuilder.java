@@ -1,5 +1,9 @@
-package com.zuehlke.jasschallenge.client.game;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
+import com.zuehlke.jasschallenge.client.game.GameSession;
+import com.zuehlke.jasschallenge.client.game.Move;
+import com.zuehlke.jasschallenge.client.game.Player;
+import com.zuehlke.jasschallenge.client.game.Team;
 import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;

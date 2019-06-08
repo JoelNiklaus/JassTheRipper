@@ -1,7 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.GameSessionBuilder;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
