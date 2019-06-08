@@ -7,8 +7,8 @@ apply plugin: 'application'
 mainClassName = "com.zuehlke.jasschallenge.Application"
 
 compileJava {
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    sourceCompatibility = 1.8
+    targetCompatibility = 12 // TODO Update to 13 in September 2019
 }
 
 repositories {
