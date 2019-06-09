@@ -99,12 +99,14 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	private MCTSHelper mctsHelper;
 
-	private StrengthLevel cardStrengthLevel = StrengthLevel.INSANE;
-	private StrengthLevel trumpfStrengthLevel = StrengthLevel.TRUMPF;
+	private StrengthLevel cardStrengthLevel = StrengthLevel.POWERFUL;
+	private StrengthLevel trumpfStrengthLevel = StrengthLevel.INSANE;
 
 	// TODO MCTS still does not like to shift by itself. It is forced to shift now because of the rule-based pruning
 	//  --> Investigate why MCTS without pruning does not like shifting
-	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.MCTS;
+	// NOTE: In Situations where shifting is good, MCTS is inferior.
+	// In other situations they seem to be comparable
+	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED;
 
 
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
