@@ -2,13 +2,13 @@ package com.zuehlke.jasschallenge.client.game.strategy.training;
 
 import com.google.common.collect.EvictingQueue;
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
-import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +19,29 @@ public class Arena {
 
 	// The bigger, the bigger the datasets are, and the longer the training takes
 	// If it is 4: each experience will be used 4 times.
-	private static final int REPLAY_MEMORY_SIZE_FACTOR = 4;
+	private static int REPLAY_MEMORY_SIZE_FACTOR = 4;
+	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
+	private static final String BASE_PATH = "src/main/resources/";
+	private static final String EXPERIMENT_FOLDER = "DOES-IT-LEARN?_"
+			+ NeuralNetwork.NUM_NEURONS + "-neurons" + // TODO experiment with num neurons first (128, 256, 512)
+			"_3-hidden-layers" + // TODO experiment with num hidden layers later 2, 3, 4, 5,6
+			"_lr=" + NeuralNetwork.LEARNING_RATE +
+			"_dropout=" + NeuralNetwork.DROPOUT +
+			"_weight-decay=" + NeuralNetwork.WEIGHT_DECAY +
+			"_seed=" + NeuralNetwork.SEED;
+	public static final String VALUE_ESTIMATOR_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/ValueEstimator.zip"; // Can be opened externally
+	public static final String DATASET_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/random_playout_start.dataset";// TODO what are the typical file extensions?
+	private static final int NUM_EPISODES = 100; // TEST: 1
+	private static final int NUM_TRAINING_GAMES = 100; // Should be an even number, TEST: 2
+	private static final int NUM_TESTING_GAMES = 100; // Should be an even number, TEST: 2
+	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
+	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
+	public static final int SEED = 42;
 
+	private final int SAVE_DATASET_FREQUENCY = 10;
+
+
+	private String valueEstimatorFilePath;
 	private final int numTrainingGames;
 	private final int numTestingGames;
 	private final double improvementThresholdPercentage;
@@ -33,40 +54,77 @@ public class Arena {
 
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 
+	/**
+	 * @param args 0: "CollectDataSet" or "PretrainNetwork" or null
+	 */
+	public static void main(String[] args) {
+		final Arena arena = new Arena(VALUE_ESTIMATOR_PATH, NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+		if ("CollectDataSet".equals(args[0]))
+			arena.collectDataSetRandomPlayouts(DATASET_PATH);
+		else if ("PretrainNetwork".equals(args[0]))
+			arena.pretrainNetwork(DATASET_PATH);
+		else
+			arena.trainForNumEpisodes(NUM_EPISODES);
+	}
 
-	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
-		CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
+	public Arena(String valueEstimatorFilePath, int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
+		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
 
+		this.valueEstimatorFilePath = valueEstimatorFilePath;
 		this.numTrainingGames = numTrainingGames;
 		this.numTestingGames = numTestingGames;
 		this.improvementThresholdPercentage = improvementThresholdPercentage;
 		random = new Random(seed);
 	}
 
-	public void train(int numEpisodes) {
-		setUp();
+	public void trainForNumEpisodes(int numEpisodes) {
+		setUp(false);
 
+		List<Double> history = Arrays.asList(0.0);
 		for (int i = 0; i < numEpisodes; i++) {
-			logger.info("Running episode #{}\n", i);
-			final double performance = runEpisode();
-			logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts\n", i, performance);
+			history.set(i, runEpisode(i));
 		}
+		logger.info("Performance over the episodes:\n{}", history.toString());
 
 		tearDown();
 	}
 
 	public void trainUntilBetterThanRandomPlayouts() {
-		setUp();
+		setUp(false);
 
-		double performance = 0;
-		for (int i = 0; performance < 100; i++) {
-			logger.info("Running episode #{}\n", i);
-			performance = runEpisode();
-			logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts", i, performance);
+		List<Double> history = Arrays.asList(0.0);
+		for (int i = 0; history.get(i) < 100; i++) {
+			history.set(i, runEpisode(i));
 		}
+		logger.info("Performance over the episodes:\n{}", history.toString());
 
 		tearDown();
 	}
+
+	public void collectDataSetRandomPlayouts(String dataSetFilePath) {
+		setUp(true);
+
+		logger.info("Collecting a dataset of games played with random playouts\n");
+		double performance = performMatch(random, numTrainingGames, true, dataSetFilePath,
+				new boolean[]{true, true}, new boolean[]{false, false}, new boolean[]{false, false});
+
+		tearDown();
+	}
+
+	public void pretrainNetwork(String dataSetFilePath) {
+		final JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance();
+		final NeuralNetwork network = strategy.getNeuralNetwork(true);
+		try {
+			final DataSet dataSet = NeuralNetwork.loadDataSet(dataSetFilePath);
+			network.train(dataSet, 500);
+			strategy.updateNetworks();
+			saveNetwork();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			logger.error("Could not find dataset to train model with. Starting with random initialization now.");
+		}
+	}
+
 
 	/**
 	 * Runs an episode with the following parts:
@@ -78,28 +136,32 @@ public class Arena {
 	 *
 	 * @return the performance of mcts with value estimation against mcts with random playouts
 	 */
-	private double runEpisode() {
-		final JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance();
+	private double runEpisode(int episodeNumber) {
+		logger.info("Running episode #{}\n", episodeNumber);
 
 		logger.info("Collecting training examples by self play with MCTS policy improvement\n");
-		performMatch(numTrainingGames, true,
+		performMatch(random, numTrainingGames, true, null,
 				new boolean[]{true, true}, new boolean[]{true, true}, new boolean[]{true, false});
 
 		logger.info("Training the network with the collected examples\n");
-		strategy.getNeuralNetwork(true).train(new ArrayList<>(observations), new ArrayList<>(labels));
+		JassTheRipperJassStrategy.getInstance().getNeuralNetwork(true).train(observations, labels, 1);
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
 				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
-		final double improvement = performMatch(numTestingGames, false,
+		final double improvement = performMatch(random, numTestingGames, false, null,
 				new boolean[]{false, false}, new boolean[]{true, true}, new boolean[]{true, false});
 		if (improvement > improvementThresholdPercentage) { // if the learning network is significantly better
-			strategy.updateNetworks(); // set the frozen network to a copy of the learning network.
+			JassTheRipperJassStrategy.getInstance().updateNetworks(); // set the frozen network to a copy of the learning network.
+			saveNetwork(); // NOTE: Checkpoint so we don't lose any training progress
 			logger.info("The learning network outperformed the frozen network. Updated the frozen network\n");
 		}
 
 		logger.info("Testing MCTS with a value estimator against MCTS with random playouts\n");
-		return performMatch(numTestingGames, true,
+		double performance = performMatch(random, numTestingGames, true, null,
 				new boolean[]{true, true}, new boolean[]{true, false}, new boolean[]{true, false});
+
+		logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts", episodeNumber, performance);
+		return performance;
 	}
 
 	/**
@@ -107,12 +169,13 @@ public class Arena {
 	 *
 	 * @param numGames
 	 * @param collectExperiences
+	 * @param dataSetFilePath
 	 * @param mctsEnabled
 	 * @param valueEstimatorUsed
 	 * @param networkTrainable
 	 * @return
 	 */
-	private double performMatch(int numGames, boolean collectExperiences, boolean[] mctsEnabled, boolean[] valueEstimatorUsed, boolean[] networkTrainable) {
+	private double performMatch(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, boolean[] mctsEnabled, boolean[] valueEstimatorUsed, boolean[] networkTrainable) {
 		// MCTS enabled for policy improvement
 		gameSession.getTeams().get(0).getPlayers().forEach(player -> player.setMctsEnabled(mctsEnabled[0]));
 		gameSession.getTeams().get(1).getPlayers().forEach(player -> player.setMctsEnabled(mctsEnabled[1]));
@@ -125,10 +188,10 @@ public class Arena {
 		gameSession.getTeams().get(0).getPlayers().forEach(player -> player.setNetworkTrainable(networkTrainable[0]));
 		gameSession.getTeams().get(1).getPlayers().forEach(player -> player.setNetworkTrainable(networkTrainable[1]));
 
-		return playGames(numGames, collectExperiences);
+		return playGames(random, numGames, collectExperiences, dataSetFilePath);
 	}
 
-	private double playGames(int numGames, boolean collectExperiences) {
+	private double playGames(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
@@ -141,6 +204,11 @@ public class Arena {
 			Result result = playGame(collectExperiences);
 
 			logger.info("Result of game #{}: {}\n", i, result);
+
+			if (dataSetFilePath != null && i % SAVE_DATASET_FREQUENCY == 0) {
+				final DataSet dataSet = NeuralNetwork.buildDataSet(observations, labels);
+				NeuralNetwork.saveDataSet(dataSet, dataSetFilePath);
+			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
 		final Result result = gameSession.getResult();
@@ -225,7 +293,7 @@ public class Arena {
 		gameSession.startNewGame(mode, shifted);
 	}
 
-	private void setUp() {
+	private void setUp(boolean collectingDataSet) {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
@@ -233,17 +301,38 @@ public class Arena {
 			player.onSessionStarted(gameSession);
 		}
 
+		if (collectingDataSet)
+			REPLAY_MEMORY_SIZE_FACTOR = 1000000; // Enough for a lot of games...
 		int size = numTrainingGames * REPLAY_MEMORY_SIZE_FACTOR;
 		// When a new element is added and the queue is full, the head is removed.
 		observations = EvictingQueue.create(size);
 		labels = EvictingQueue.create(size);
+
+		// NOTE: give the training a head start by using a pretrained network
+		if (SUPERVISED_PRETRAINING_ENABLED)
+			loadNetwork();
 	}
 
 	private void tearDown() {
 		for (Player player : gameSession.getPlayersInInitialPlayingOrder()) {
 			player.onSessionFinished();
 		}
-		JassTheRipperJassStrategy.getInstance().getNeuralNetwork(true).save(); // Serialize and save the trained network for later evaluation
+		saveNetwork();
 		logger.info("Successfully terminated the training process\n");
 	}
+
+	/**
+	 * Serialize and save the trained network for later evaluation
+	 */
+	private void saveNetwork() {
+		JassTheRipperJassStrategy.getInstance().getNeuralNetwork(true).saveModel(valueEstimatorFilePath);
+	}
+
+	/**
+	 * Load a saved network so we can do with less training
+	 */
+	private void loadNetwork() {
+		JassTheRipperJassStrategy.getInstance().getNeuralNetwork(true).loadModel(valueEstimatorFilePath);
+	}
+
 }

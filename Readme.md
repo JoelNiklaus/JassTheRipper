@@ -5,6 +5,11 @@ It is a fork of the [challenge java client](https://github.com/webplatformz/chal
 
 We use Monte Carlo Tree Search (MCTS) with determinization and domain knowledge to beat the best machine and humand Jass players in the Schieber variant.
 
+Build the app with 
+```bash
+./gradlew build
+```
+Make sure gradle is installed.
 
 Run this app either with docker:
 ```bash
@@ -17,7 +22,20 @@ or gradle:
 ./gradlew run -Pmyargs=ws://127.0.0.1:3000,1 --no-daemon # change the websocket host and port if needed. The value after the comma is the chosenTeamIndex of the bot to be started
 ```
 
+Connect to server:
+```bash
+ssh -i ~/.ssh/diufpc29 joel@diufpc29
+```
 
+Run specific test
+```bash
+./gradlew test --tests com.zuehlke.jasschallenge.client.game.strategy.training.ArenaTest.train
+```
+
+Run experiment
+```bash
+./gradlew runExperiment
+```
 
 
 This client allows you to easily develop a bot for the Jass challenge.

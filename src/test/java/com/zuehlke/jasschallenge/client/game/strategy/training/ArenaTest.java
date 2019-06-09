@@ -2,24 +2,22 @@ package com.zuehlke.jasschallenge.client.game.strategy.training;
 
 import org.junit.Test;
 
+import static com.zuehlke.jasschallenge.client.game.strategy.training.Arena.IMPROVEMENT_THRESHOLD_PERCENTAGE;
+
 public class ArenaTest {
 
-	private final int NUM_EPISODES = 1;
-	private final int NUM_TRAINING_GAMES = 2; // Should be an even number
-	private final int NUM_TESTING_GAMES = 2; // Should be an even number
-	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
-	private static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
-	private static final int SEED = 42;
 
-	private Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+	private Arena arena = new Arena(Arena.VALUE_ESTIMATOR_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+
 
 	@Test
 	public void train() {
-		arena.train(NUM_EPISODES);
+		arena.trainForNumEpisodes(1);
 	}
 
 	@Test
 	public void trainUntilBetterThanRandomPlayouts() {
-		arena.trainUntilBetterThanRandomPlayouts();
+		// NOTE: Do not run for normal tests. Takes way too much time.
+		// arena.trainUntilBetterThanRandomPlayouts();
 	}
 }

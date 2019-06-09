@@ -11,6 +11,13 @@ compileJava {
     targetCompatibility = 12 // TODO Update to 13 in September 2019
 }
 
+task(runExperiment, dependsOn: 'classes', type: JavaExec) {
+    main = 'com.zuehlke.jasschallenge.client.game.strategy.training.Arena'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'CollectDataSet' // Retrieve with args[0]
+    systemProperty 'simple.message', 'Hello ' // Retrieve with System.getProperty("simple.message")
+}
+
 repositories {
     mavenCentral()
 }
@@ -28,6 +35,7 @@ dependencies {
     // Deeplearning4J
     compile 'org.deeplearning4j:deeplearning4j-core:1.0.0-beta4'
     compile 'org.deeplearning4j:deeplearning4j-modelimport:1.0.0-beta'
+    // compile 'org.deeplearning4j:deeplearning4j-ui_2.11:1.0.0-beta4' // Does not work!
     compile 'org.nd4j:nd4j-native-platform:1.0.0-beta4' // for local machine
     compile 'org.nd4j:nd4j-cuda-9.2:1.0.0-beta4' // for server
 

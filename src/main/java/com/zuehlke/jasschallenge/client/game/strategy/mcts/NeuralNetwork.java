@@ -23,12 +23,13 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.io.ClassPathResource;
-import org.nd4j.linalg.learning.config.Adam;
+import org.nd4j.linalg.learning.config.Nadam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -36,50 +37,43 @@ import java.util.*;
 import static java.util.Arrays.asList;
 
 public class NeuralNetwork implements Serializable {
-
-	public static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
-
-
 	public static final int NUM_INPUT_ROWS = 72; // 36 + 9 + 9 + 9 + 9
 	public static final int THREE_HOT_ENCODING_LENGTH = 14; // 4 + 9 + 1
 	public static final int INPUT_DIM = NUM_INPUT_ROWS * THREE_HOT_ENCODING_LENGTH;
+	public static final int NUM_NEURONS = 128;
+	public static final double LEARNING_RATE = 1e-3;
+	public static final double WEIGHT_DECAY = 1e-3;
+	public static final double DROPOUT = 0.5;
+	public static final int SEED = 42;
+
 	private MultiLayerNetwork model;
 
-	public static final String BASE_PATH = "src/main/resources/";
-	public static final String VALUE_ESTIMATOR_PATH = BASE_PATH + "ValueEstimator.zip"; // Can be opened externally
-
+	public static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
 	public NeuralNetwork() {
-		try {
-			model = ModelSerializer.restoreMultiLayerNetwork((VALUE_ESTIMATOR_PATH));
-			logger.info("Loaded saved model from " + VALUE_ESTIMATOR_PATH);
-		} catch (IOException e) {
-			e.printStackTrace();
-			logger.info("Cannot load saved neural network. Building new one now...");
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+				.seed(SEED)
+				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+				.updater(new Nadam(LEARNING_RATE)) // NOTE: Also try AmsGrad, Adam
+				.activation(Activation.RELU)
+				.weightInit(WeightInit.XAVIER)
+				.dropOut(DROPOUT)
+				.weightDecay(WEIGHT_DECAY)
+				.gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
+				.list()
+				.layer(new DenseLayer.Builder().nIn(INPUT_DIM).nOut(NUM_NEURONS).build())
+				.layer(new DenseLayer.Builder().nIn(NUM_NEURONS).nOut(NUM_NEURONS).build())
+				.layer(new DenseLayer.Builder().nIn(NUM_NEURONS).nOut(NUM_NEURONS).build())
+				.layer(new DenseLayer.Builder().nIn(NUM_NEURONS).nOut(NUM_NEURONS).build())
+				.layer(new OutputLayer.Builder(LossFunctions.LossFunction.MEAN_ABSOLUTE_ERROR)
+						.activation(Activation.SIGMOID)
+						.nIn(NUM_NEURONS).nOut(1).build())
+				.build();
 
-			MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-					.seed(42)
-					.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-					.updater(new Adam(0.01))
-					.activation(Activation.LEAKYRELU)
-					.weightInit(WeightInit.XAVIER)
-					.dropOut(0.5)
-					.l2(0.0001)
-					.gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
-					.list()
-					.layer(0, new DenseLayer.Builder().nIn(INPUT_DIM).nOut(128).build())
-					.layer(1, new DenseLayer.Builder().nIn(128).nOut(128).build())
-					.layer(2, new DenseLayer.Builder().nIn(128).nOut(128).build())
-					.layer(3, new DenseLayer.Builder().nIn(128).nOut(128).build())
-					.layer(4, new OutputLayer.Builder(LossFunctions.LossFunction.MEAN_ABSOLUTE_ERROR)
-							.activation(Activation.SIGMOID)
-							.nIn(128).nOut(1).build())
-					.build();
-
-			model = new MultiLayerNetwork(conf);
-			model.init();
-		}
+		model = new MultiLayerNetwork(conf);
+		model.init();
 	}
+
 
 	public NeuralNetwork(NeuralNetwork neuralNetwork) {
 		model = neuralNetwork.model.clone();
@@ -134,32 +128,87 @@ public class NeuralNetwork implements Serializable {
 		return output.toDoubleVector();
 	}
 
-	private INDArray buildInput(List<INDArray> observations) {
-		INDArray input = Nd4j.create(observations.size(), observations.get(0).length());
-		for (int i = 0; i < observations.size(); i++) {
-			input.putRow(i, observations.get(i));
+	private static INDArray buildInput(Collection<INDArray> collection) {
+		List<INDArray> list = new ArrayList<>(collection);
+		INDArray input = Nd4j.create(list.size(), list.get(0).length());
+		for (int i = 0; i < list.size(); i++) {
+			input.putRow(i, list.get(i));
 		}
 		return input;
 	}
 
-	public void train(List<INDArray> observations, List<INDArray> labels) {
+	public static DataSet buildDataSet(Collection<INDArray> observations, Collection<INDArray> labels) {
 		DataSet dataSet = new DataSet();
 		dataSet.setFeatures(buildInput(observations));
 		dataSet.setLabels(buildInput(labels));
+		return dataSet;
+	}
+
+	public void train(Collection<INDArray> observations, Collection<INDArray> labels, int numEpochs) {
+		train(buildDataSet(observations, labels), numEpochs);
+	}
+
+	public void train(DataSet dataSet, int numEpochs) {
+		dataSet.shuffle(); // NOTE: can be used to remove bias in the training set.
 
 		// TODO check if this really works
 		//dataSet.normalize();
 
-		model.fit(dataSet);
+		for (int i = 0; i < numEpochs; i++) {
+			logger.info("Epoch #{}", i);
+			model.fit(dataSet);
+		}
 	}
 
-	public void save() {
+	private static boolean createIfNotExists(File directory) {
+		if (directory.isDirectory())
+			return true;
+		return directory.mkdirs();
+	}
+
+	public static boolean saveDataSet(DataSet dataSet, String filePath) {
+		final File file = new File(filePath);
+		if (createIfNotExists(file.getParentFile())) {
+			dataSet.save(file);
+			logger.info("Saved dataset to {}", filePath);
+			return true;
+		} else {
+			logger.error("Could not save the file {}", filePath);
+			return false;
+		}
+	}
+
+	public static DataSet loadDataSet(String filePath) {
+		DataSet dataSet = new DataSet();
+		dataSet.load(new File(filePath));
+		return dataSet;
+	}
+
+	public boolean saveModel(String filePath) {
 		try {
-			ModelSerializer.writeModel(model, VALUE_ESTIMATOR_PATH, true);
-			logger.info("Saved model to " + VALUE_ESTIMATOR_PATH);
+			if (createIfNotExists(new File(filePath).getParentFile())) {
+				ModelSerializer.writeModel(model, filePath, true);
+				logger.info("Saved model to {}", filePath);
+				return true;
+			} else {
+				logger.error("Could not save the file {}", filePath);
+				return false;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public MultiLayerNetwork loadModel(String filePath) {
+		try {
+			model = ModelSerializer.restoreMultiLayerNetwork((filePath));
+			logger.info("Loaded saved model from {}", filePath);
+			return model;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
 	public static INDArray getObservation(Game game) {
