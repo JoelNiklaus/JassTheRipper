@@ -30,7 +30,7 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumDeterminizationsFactor(), RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
 		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
 
 		assertFalse(mctsHelper.isShutDown());
@@ -48,7 +48,7 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumDeterminizationsFactor(), RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
 		mctsHelper.predictMove(cards, gameSession, true, false, STRENGTH_LEVEL);
 	}
 
@@ -60,7 +60,7 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumDeterminizationsFactor(), RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
 		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
 	}
 
@@ -79,7 +79,7 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumDeterminizationsFactor(), RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
 		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
 
 	}
@@ -109,7 +109,7 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_QUEEN, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE);
 
-		MCTSHelper mctsHelper = new MCTSHelper(STRENGTH_LEVEL.getNumDeterminizationsFactor(), RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
 		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
 
 	}

@@ -16,9 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -26,17 +23,15 @@ import java.util.Set;
  */
 public class MCTSHelper implements Serializable {
 
-	private final int numDeterminizationsFactor; // determines how many determinizations we create
 	private final RunMode runMode;
 	private static final int BUFFER_TIME_MILLIS = 10; // INFO Makes sure, that the bot really finishes before the thinking time is up.
-
+	private static final int ROUND_MULTIPLIER = 10;
 
 	private final MCTS mcts = new MCTS();
 
 	public static final Logger logger = LoggerFactory.getLogger(MCTSHelper.class);
 
-	public MCTSHelper(int numDeterminizationsFactor, RunMode runMode) {
-		this.numDeterminizationsFactor = numDeterminizationsFactor;
+	public MCTSHelper(RunMode runMode) {
 		this.runMode = runMode;
 
 		// TODO tune parameters
@@ -52,7 +47,7 @@ public class MCTSHelper implements Serializable {
 			mcts.enableRootParallelisation(Runtime.getRuntime().availableProcessors());
 		// if we run by time we want the threadpool to have enough threads to have all determinizations running at the same time
 		if (runMode == RunMode.TIME)
-			mcts.enableRootParallelisation(10 * numDeterminizationsFactor);
+			mcts.enableRootParallelisation(ROUND_MULTIPLIER * StrengthLevel.TRUMPF.getNumDeterminizationsFactor()); // NOTE: It creates A LOT of threads here now!
 	}
 
 	/**
@@ -100,7 +95,7 @@ public class MCTSHelper implements Serializable {
 		} else
 			logger.info("Using a random playout to determine the score");
 
-		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf);
+		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.getNumDeterminizationsFactor());
 		if (runMode == RunMode.RUNS)
 			return mcts.runForRuns(jassBoard, numDeterminizations, numRuns);
 		else if (runMode == RunMode.TIME)
@@ -112,10 +107,9 @@ public class MCTSHelper implements Serializable {
 		return player.isValueEstimaterUsed() ? JassTheRipperJassStrategy.getInstance().getNeuralNetwork(player.isNetworkTrainable()) : null;
 	}
 
-	private int computeNumDeterminizations(GameSession gameSession, boolean isChoosingTrumpf) {
-		int roundMultiplier = 10;
+	private int computeNumDeterminizations(GameSession gameSession, boolean isChoosingTrumpf, int numDeterminizationsFactor) {
 		if (!isChoosingTrumpf)
-			roundMultiplier = (9 - gameSession.getCurrentRound().getRoundNumber());
-		return roundMultiplier * numDeterminizationsFactor;
+			return (9 - gameSession.getCurrentRound().getRoundNumber()) * numDeterminizationsFactor;
+		return ROUND_MULTIPLIER * numDeterminizationsFactor;
 	}
 }

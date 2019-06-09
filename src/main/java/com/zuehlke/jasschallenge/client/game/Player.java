@@ -1,7 +1,6 @@
 package com.zuehlke.jasschallenge.client.game;
 
-import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.*;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
@@ -24,6 +23,9 @@ public class Player implements Serializable {
 	private boolean mctsEnabled = true; // disable this for pitting only the networks against each other
 	private boolean valueEstimaterUsed; // This is used in Self Play Training
 	private boolean networkTrainable; // This is used in Self Play Training
+	private StrengthLevel cardStrengthLevel; // This is used in benchmarks
+	private StrengthLevel trumpfStrengthLevel; // This is used in benchmarks
+	private TrumpfSelectionMethod trumpfSelectionMethod; // This is used in benchmarks
 
 	public Player(String id, String name, int seatId) {
 		this(name);
@@ -60,9 +62,13 @@ public class Player implements Serializable {
 		this.seatId = player.getSeatId();
 		this.cards = EnumSet.copyOf(player.getCards());
 		this.currentJassStrategy = player.getCurrentJassStrategy();
+
 		this.mctsEnabled = player.isMctsEnabled();
+		this.valueEstimaterUsed = player.isValueEstimaterUsed();
 		this.networkTrainable = player.isNetworkTrainable();
-		this.networkTrainable = player.isValueEstimaterUsed();
+		this.cardStrengthLevel = player.getCardStrengthLevel();
+		this.trumpfStrengthLevel = player.getTrumpfStrengthLevel();
+		this.trumpfSelectionMethod = player.getTrumpfSelectionMethod();
 	}
 
 	public boolean wasStartingPlayer(Round round) {
@@ -122,6 +128,30 @@ public class Player implements Serializable {
 		this.networkTrainable = networkTrainable;
 	}
 
+	public StrengthLevel getCardStrengthLevel() {
+		return cardStrengthLevel;
+	}
+
+	public void setCardStrengthLevel(StrengthLevel cardStrengthLevel) {
+		this.cardStrengthLevel = cardStrengthLevel;
+	}
+
+	public StrengthLevel getTrumpfStrengthLevel() {
+		return trumpfStrengthLevel;
+	}
+
+	public void setTrumpfStrengthLevel(StrengthLevel trumpfStrengthLevel) {
+		this.trumpfStrengthLevel = trumpfStrengthLevel;
+	}
+
+	public TrumpfSelectionMethod getTrumpfSelectionMethod() {
+		return trumpfSelectionMethod;
+	}
+
+	public void setTrumpfSelectionMethod(TrumpfSelectionMethod trumpfSelectionMethod) {
+		this.trumpfSelectionMethod = trumpfSelectionMethod;
+	}
+
 	public Set<Card> getCards() {
 		return cards;
 	}
@@ -138,6 +168,15 @@ public class Player implements Serializable {
 	}
 
 	private Card chooseCardWithFallback(GameSession session) {
+		// NOTE: This is used in benchmarks (to see if a higher strength level is really worth it)
+		// It is a bit of a hack but only used for tests
+		if (currentJassStrategy instanceof JassTheRipperJassStrategy) {
+			if (cardStrengthLevel != null)
+				((JassTheRipperJassStrategy) currentJassStrategy).setCardStrengthLevel(cardStrengthLevel);
+			if (trumpfStrengthLevel != null)
+				((JassTheRipperJassStrategy) currentJassStrategy).setTrumpfStrengthLevel(trumpfStrengthLevel);
+		}
+
 		final Card cardToPlay = currentJassStrategy.chooseCard(cards, session);
 		final boolean cardIsInvalid = !session.getCurrentRound().getMode().canPlayCard(
 				cardToPlay,
@@ -152,6 +191,13 @@ public class Player implements Serializable {
 	}
 
 	public Mode chooseTrumpf(GameSession session, boolean shifted) {
+		// NOTE: This is used in benchmarks (to see if the MCTS trumpf selection is really better)
+		// It is a bit of a hack but only used for tests
+		if (currentJassStrategy instanceof JassTheRipperJassStrategy) {
+			if (trumpfSelectionMethod != null) {
+				((JassTheRipperJassStrategy) currentJassStrategy).setTrumpfSelectionMethod(trumpfSelectionMethod);
+			}
+		}
 		return currentJassStrategy.chooseTrumpf(cards, session, shifted);
 	}
 

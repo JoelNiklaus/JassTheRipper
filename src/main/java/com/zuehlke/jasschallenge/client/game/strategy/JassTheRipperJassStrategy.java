@@ -11,7 +11,6 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -305,7 +304,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 	@Override
 	public void onSessionStarted(GameSession gameSession) {
-		mctsHelper = new MCTSHelper(cardStrengthLevel.getNumDeterminizationsFactor(), RunMode.TIME);
+		mctsHelper = new MCTSHelper(RunMode.TIME);
 	}
 
 	@Override

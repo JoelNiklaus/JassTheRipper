@@ -3,6 +3,8 @@ package com.zuehlke.jasschallenge.client.game.strategy.training;
 import com.google.common.collect.EvictingQueue;
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
+import com.zuehlke.jasschallenge.client.game.strategy.TrumpfSelectionMethod;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
@@ -105,8 +107,7 @@ public class Arena {
 		setUp(true);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		double performance = performMatch(random, numTrainingGames, true, dataSetFilePath,
-				new boolean[]{true, true}, new boolean[]{false, false}, new boolean[]{false, false});
+		runMCTSWithRandomPlayout(random, numTrainingGames, true, dataSetFilePath);
 
 		tearDown();
 	}
@@ -140,16 +141,15 @@ public class Arena {
 		logger.info("Running episode #{}\n", episodeNumber);
 
 		logger.info("Collecting training examples by self play with MCTS policy improvement\n");
-		performMatch(random, numTrainingGames, true, null,
-				new boolean[]{true, true}, new boolean[]{true, true}, new boolean[]{true, false});
+		runMCTSWithValueEstimators(random, numTrainingGames, true, null);
+
 
 		logger.info("Training the network with the collected examples\n");
-		JassTheRipperJassStrategy.getInstance().getNeuralNetwork(true).train(observations, labels, 1);
+		JassTheRipperJassStrategy.getInstance().getNeuralNetwork(true).train(observations, labels, 10);
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
 				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
-		final double improvement = performMatch(random, numTestingGames, false, null,
-				new boolean[]{false, false}, new boolean[]{true, true}, new boolean[]{true, false});
+		final double improvement = runOnlyNetworks(random, numTestingGames, false, null);
 		if (improvement > improvementThresholdPercentage) { // if the learning network is significantly better
 			JassTheRipperJassStrategy.getInstance().updateNetworks(); // set the frozen network to a copy of the learning network.
 			saveNetwork(); // NOTE: Checkpoint so we don't lose any training progress
@@ -157,11 +157,58 @@ public class Arena {
 		}
 
 		logger.info("Testing MCTS with a value estimator against MCTS with random playouts\n");
-		double performance = performMatch(random, numTestingGames, true, null,
-				new boolean[]{true, true}, new boolean[]{true, false}, new boolean[]{true, false});
+		final double performance = runValueEstimatorAgainstRandomPlayout(random, numTestingGames, true, null);
 
 		logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts", episodeNumber, performance);
 		return performance;
+	}
+
+	public double runMCTSWithRandomPlayoutDifferentStrengthLevels(Random random, int numGames, StrengthLevel[] cardStrengthLevels, StrengthLevel[] trumpfStrengthLevels) {
+		setUp(false);
+
+		gameSession.getTeams().get(0).getPlayers().forEach(player -> player.setCardStrengthLevel(cardStrengthLevels[0]));
+		gameSession.getTeams().get(1).getPlayers().forEach(player -> player.setCardStrengthLevel(cardStrengthLevels[1]));
+
+		gameSession.getTeams().get(0).getPlayers().forEach(player -> player.setTrumpfStrengthLevel(trumpfStrengthLevels[0]));
+		gameSession.getTeams().get(1).getPlayers().forEach(player -> player.setTrumpfStrengthLevel(trumpfStrengthLevels[1]));
+
+		final double performance = runMCTSWithRandomPlayout(random, numGames, false, null);
+
+		tearDown();
+		return performance;
+	}
+
+	public double runMCTSWithRandomPlayoutDifferentTrumpfSelectionMethods(Random random, int numGames, TrumpfSelectionMethod[] trumpfSelectionMethods) {
+		setUp(false);
+
+		gameSession.getTeams().get(0).getPlayers().forEach(player -> player.setTrumpfSelectionMethod(trumpfSelectionMethods[0]));
+		gameSession.getTeams().get(1).getPlayers().forEach(player -> player.setTrumpfSelectionMethod(trumpfSelectionMethods[1]));
+
+		final double performance = runMCTSWithRandomPlayout(random, numGames, false, null);
+
+		tearDown();
+		return performance;
+	}
+
+
+	private double runMCTSWithRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath,
+				new boolean[]{true, true}, new boolean[]{false, false}, new boolean[]{false, false});
+	}
+
+	private double runMCTSWithValueEstimators(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath,
+				new boolean[]{true, true}, new boolean[]{true, true}, new boolean[]{true, false});
+	}
+
+	private double runOnlyNetworks(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath,
+				new boolean[]{false, false}, new boolean[]{true, true}, new boolean[]{true, false});
+	}
+
+	private double runValueEstimatorAgainstRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath,
+				new boolean[]{true, true}, new boolean[]{true, false}, new boolean[]{true, false});
 	}
 
 	/**
