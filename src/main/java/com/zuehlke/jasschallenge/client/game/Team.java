@@ -2,7 +2,6 @@ package com.zuehlke.jasschallenge.client.game;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Team implements Serializable {

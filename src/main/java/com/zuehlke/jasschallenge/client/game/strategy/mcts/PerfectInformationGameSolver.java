@@ -12,6 +12,10 @@ import java.util.*;
  * But the goal would be to use rules for good play in a perfect information game scenario.
  */
 public class PerfectInformationGameSolver {
+
+	private PerfectInformationGameSolver() {
+	}
+
 	public static CardMove getMove(Game game) {
 		final Player player = game.getCurrentPlayer();
 

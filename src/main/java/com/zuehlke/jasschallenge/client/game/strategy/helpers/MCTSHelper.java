@@ -38,7 +38,7 @@ public class MCTSHelper implements Serializable {
 		mcts.setExplorationConstant(1.4);
 		mcts.setOptimisticBias(0);
 		mcts.setPessimisticBias(0);
-		// mcts.setMoveSelectionPolicy(FinalSelectionPolicy.maxChild);
+		// mcts.setMoveSelectionPolicy(FinalSelectionPolicy.MAX_CHILD);
 		// mcts.setHeuristicFunction(new JassHeuristic());
 		// mcts.setPlayoutSelection(new JassPlayoutSelection());
 
@@ -89,7 +89,7 @@ public class MCTSHelper implements Serializable {
 		if (network != null) {
 			logger.info("Using a value estimator network to determine the score");
 			if (runMode == RunMode.RUNS) {
-				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random playout
+				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random PLAYOUT
 				logger.info("Running only {} runs per determinization.", numRuns);
 			}
 		} else

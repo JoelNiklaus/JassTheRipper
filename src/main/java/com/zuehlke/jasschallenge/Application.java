@@ -4,6 +4,8 @@ import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
@@ -24,19 +26,23 @@ public class Application {
 	private static final String LOCAL_URL = "ws://127.0.0.1:3000";
 	private static final String SERVER_URL = "wss://jass.joeli.to";
 
-	public static void main(String[] args) throws Exception {
+	public static final Logger logger = LoggerFactory.getLogger(Application.class);
+
+
+	public static void main(String[] args) {
 		// Competition
 		String websocketUrl = parseWebsocketUrlOrDefault(args);
 		String sessionName = parseSessionNameOrDefault(args);
 		Integer chosenTeamIndex = parseChosenTeamIndexOrDefault(args);
 		String advisedPlayerName = parseAdvisedPlayerNameOrDefault(args);
 		String botName = parseBotNameOrDefault(args);
-		System.out.println("Arguments: " + Arrays.toString(args));
+		logger.info("Arguments: {}", Arrays.toString(args));
 
-		System.out.println("Connecting... Server socket URL: " + websocketUrl);
+		logger.info("Connecting... Server socket URL: {}", websocketUrl);
 
 		Player player = new Player(botName, STRATEGY);
-		startGame(websocketUrl, player, SessionType.SINGLE_GAME, sessionName, chosenTeamIndex, advisedPlayerName);
+
+		new RemoteGame(websocketUrl, player, SessionType.SINGLE_GAME, sessionName, chosenTeamIndex, advisedPlayerName).start();
 	}
 
 	private static String parseWebsocketUrlOrDefault(String[] args) {
@@ -76,10 +82,5 @@ public class Application {
 			return !args[4].equals("null") ? args[4] : null;
 		}
 		return BOT_NAME;
-	}
-
-	private static void startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType, String sessionName, Integer chosenTeamIndex, String advisedPlayerName) throws Exception {
-		RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType, sessionName, chosenTeamIndex, advisedPlayerName);
-		remoteGame.start();
 	}
 }

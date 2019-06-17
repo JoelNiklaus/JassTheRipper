@@ -19,7 +19,7 @@ public interface Board {
 	 * calls this to know what actions are possible at that point.
 	 * <p>
 	 * The location parameter indicates from where in the algorithm
-	 * the method was called. Can be either treePolicy or playout.
+	 * the method was called. Can be either TREE_POLICY or PLAYOUT.
 	 *
 	 * @param location
 	 * @return
@@ -78,9 +78,9 @@ public interface Board {
 	/**
 	 * Returns the best possible move considering the
 	 * information from the determinization.
-	 * This method should only be invoked in the playout phase!
+	 * This method should only be invoked in the PLAYOUT phase!
 	 * Here we assume that we are in a Perfect information game
-	 * determinization. If we invoke this method outside the playout,
+	 * determinization. If we invoke this method outside the PLAYOUT,
 	 * it would be cheating, because we are not supposed to
 	 * have access to the hidden information there!
 	 *

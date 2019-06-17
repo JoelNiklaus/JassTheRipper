@@ -54,8 +54,8 @@ public class JassBoardTest {
 			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, diamondsGame, null);
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 
-			assertFalse(jassBoard.getMoves(CallLocation.playout).isEmpty());
-			assertFalse(jassBoard.getMoves(CallLocation.treePolicy).isEmpty());
+			assertFalse(jassBoard.getMoves(CallLocation.PLAYOUT).isEmpty());
+			assertFalse(jassBoard.getMoves(CallLocation.TREE_POLICY).isEmpty());
 		}
 	}
 
@@ -65,8 +65,8 @@ public class JassBoardTest {
 			JassBoard jassBoard = JassBoard.constructCardSelectionJassBoard(cards1, obeAbeGame, null);
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 			// should not get filtered
-			assertEquals(9, jassBoard.getMoves(CallLocation.playout).size());
-			assertEquals(9, jassBoard.getMoves(CallLocation.treePolicy).size());
+			assertEquals(9, jassBoard.getMoves(CallLocation.PLAYOUT).size());
+			assertEquals(9, jassBoard.getMoves(CallLocation.TREE_POLICY).size());
 		}
 	}
 
@@ -78,8 +78,8 @@ public class JassBoardTest {
 			// should not get filtered
 			JassBoard jassBoard2 = JassBoard.constructCardSelectionJassBoard(CardKnowledgeBase.pickRandomSubSet(allCards, 9), obeAbeGame, null);
 			jassBoard2.sampleCardDeterminizationToPlayersInCardPlay();
-			assertFalse(jassBoard2.getMoves(CallLocation.playout).isEmpty());
-			assertFalse(jassBoard2.getMoves(CallLocation.treePolicy).isEmpty());
+			assertFalse(jassBoard2.getMoves(CallLocation.PLAYOUT).isEmpty());
+			assertFalse(jassBoard2.getMoves(CallLocation.TREE_POLICY).isEmpty());
 		}
 	}
 

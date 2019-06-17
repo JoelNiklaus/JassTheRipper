@@ -10,15 +10,15 @@ import java.util.Optional;
 
 public class PlayedCards implements Message {
 
-    private final List<RemoteCard> playedCards;
+    private final List<RemoteCard> cards;
 
     public PlayedCards(@JsonProperty(value = "data",required = true) List<RemoteCard> data) {
-        this.playedCards = data;
+        this.cards = data;
     }
 
     @Override
     public Optional<Response> dispatch(GameHandler handler) {
-        handler.onPlayedCards(playedCards);
+        handler.onPlayedCards(cards);
         return Optional.empty();
     }
 }

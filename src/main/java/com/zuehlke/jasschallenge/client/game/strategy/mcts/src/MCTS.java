@@ -26,7 +26,7 @@ public class MCTS {
 	private double pessimisticBias = 0.0;
 	private double optimisticBias = 0.0;
 	private boolean rootParallelisation;
-	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.robustChild;
+	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD;
 	private HeuristicFunction heuristicFunction;
 	private PlayoutSelection playoutPolicy;
 
@@ -219,8 +219,8 @@ public class MCTS {
 	/**
 	 * This represents the select stage, or default policy, of the algorithm.
 	 * Traverse down to the bottom of the tree using the selection strategy
-	 * until you find an unexpanded child node. Expand it. Run a random playout.
-	 * Backpropagate results of the playout.
+	 * until you find an unexpanded child node. Expand it. Run a random PLAYOUT.
+	 * Backpropagate results of the PLAYOUT.
 	 *
 	 * @param currentNode  Node from which to start selection
 	 * @param currentBoard Board state to work from.
@@ -228,10 +228,10 @@ public class MCTS {
 	private void select(Board currentBoard, Node currentNode) {
 		BoardNodePair boardNodePair = treePolicy(currentBoard, currentNode);
 
-		// Run a random playout until the end of the game.
+		// Run a random PLAYOUT until the end of the game.
 		double[] score = playout(boardNodePair.getBoard());
 
-		// Backpropagate results of playout.
+		// Backpropagate results of PLAYOUT.
 		Node node = boardNodePair.getNode();
 		node.backPropagateScore(score);
 		if (scoreBounds) {
@@ -317,10 +317,10 @@ public class MCTS {
 
 		Node finalMove;
 		switch (finalSelectionPolicy) {
-			case maxChild:
+			case MAX_CHILD:
 				finalMove = maxChild(node);
 				break;
-			case robustChild:
+			case ROBUST_CHILD:
 				finalMove = robustChild(node);
 				break;
 			default:
@@ -389,7 +389,7 @@ public class MCTS {
 	 * @return
 	 */
 	private double[] playout(Board oldBoard) {
-		// Do not simulate the playout but estimate the score directly with a neural network
+		// Do not simulate the PLAYOUT but estimate the score directly with a neural network
 		if (oldBoard.hasScoreEstimator())
 			return oldBoard.estimateScore();
 
@@ -400,7 +400,7 @@ public class MCTS {
 		// Start playing random moves until the game is over
 		while (!board.gameOver()) {
 			if (playoutPolicy == null) {
-				moves = board.getMoves(CallLocation.playout); // NOTE: Originally it used CallLocation.treePolicy here
+				moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
 				assert !moves.isEmpty();
 				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally

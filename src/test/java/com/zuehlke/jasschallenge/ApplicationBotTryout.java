@@ -37,7 +37,7 @@ class ApplicationBotTryout {
 	//CHALLENGE2017: Set the number of opponent teams with random bots
 	private final static int NUMBER_OF_RANDOM_TEAMS = 0;
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		String url = LOCAL_URL;
 		SessionType sessionType = SessionType.SINGLE_GAME;
 		boolean TEST_HUMAN = false;
@@ -76,7 +76,7 @@ class ApplicationBotTryout {
 		}
 	}
 
-	private static RemoteGame startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType) throws Exception {
+	private static RemoteGame startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType) {
 
 		final RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType);
 		remoteGame.start();

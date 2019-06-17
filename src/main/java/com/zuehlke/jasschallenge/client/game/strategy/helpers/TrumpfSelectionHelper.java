@@ -269,7 +269,7 @@ public class TrumpfSelectionHelper {
 		float rating = safety * 20;
 		// remove the last card tested
 		sortedCardOfColor.remove(lastCard);
-		while (sortedCardOfColor.size() > 0) {
+		while (!sortedCardOfColor.isEmpty()) {
 			// The next card to be tested
 			Card nextCard = sortedCardOfColor.get(0);
 			// Estimate how safe you Stich with that card

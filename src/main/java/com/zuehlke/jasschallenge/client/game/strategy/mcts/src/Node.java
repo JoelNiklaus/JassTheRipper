@@ -8,8 +8,8 @@ public class Node {
 	private double[] score;
 	private double games;
 	private Move move;
-	private ArrayList<Node> unvisitedChildren;
-	private ArrayList<Node> children;
+	private List<Node> unvisitedChildren;
+	private List<Node> children;
 	private Set<Integer> rVisited;
 	private Node parent;
 	private int player;
@@ -86,7 +86,7 @@ public class Node {
 	 * @param currentBoard
 	 */
 	public void expandNode(Board currentBoard) {
-		List<Move> legalMoves = currentBoard.getMoves(CallLocation.treePolicy);
+		List<Move> legalMoves = currentBoard.getMoves(CallLocation.TREE_POLICY);
 		unvisitedChildren = new ArrayList<>();
 		for (Move legalMove : legalMoves) {
 			Node tempState = new Node(currentBoard, legalMove, this);
@@ -195,19 +195,19 @@ public class Node {
 		this.move = move;
 	}
 
-	public ArrayList<Node> getUnvisitedChildren() {
+	public List<Node> getUnvisitedChildren() {
 		return unvisitedChildren;
 	}
 
-	public void setUnvisitedChildren(ArrayList<Node> unvisitedChildren) {
+	public void setUnvisitedChildren(List<Node> unvisitedChildren) {
 		this.unvisitedChildren = unvisitedChildren;
 	}
 
-	public ArrayList<Node> getChildren() {
+	public List<Node> getChildren() {
 		return children;
 	}
 
-	public void setChildren(ArrayList<Node> children) {
+	public void setChildren(List<Node> children) {
 		this.children = children;
 	}
 

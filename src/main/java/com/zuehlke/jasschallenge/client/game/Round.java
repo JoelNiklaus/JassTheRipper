@@ -89,7 +89,7 @@ public class Round implements Serializable {
 	}
 
 	public Color getRoundColor() {
-		if (moves.size() == 0) return null;
+		if (moves.isEmpty()) return null;
 
 		return moves.get(0).getPlayedCard().getColor();
 	}

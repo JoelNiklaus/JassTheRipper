@@ -182,7 +182,7 @@ public class GameHandler {
 	}
 
 	public void onRejectCard(RemoteCard rejectCard) {
-		throw new RuntimeException("Card was rejected");
+		throw new RuntimeException(String.format("Card %s was rejected", rejectCard));
 	}
 
 	private List<Team> mapTeams(List<RemoteTeam> remoteTeams) {
@@ -209,7 +209,7 @@ public class GameHandler {
 	private static void checkEquals(Object a, Object b, String errorMessage) {
 		if (!a.equals(b)) {
 			logger.warn("Expected {} to be equal to {}: {}", a, b, errorMessage);
-			//throw new RuntimeException(errorMessage);
+			throw new RuntimeException(errorMessage);
 		}
 	}
 

@@ -1,7 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
@@ -26,7 +25,7 @@ public class JassBoard implements Board, Serializable {
 	private boolean shifted;
 	private Game game;
 
-	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
+	// The neural network of the player choosing the move at the beginning. If null -> use random PLAYOUT instead
 	private final NeuralNetwork neuralNetwork;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
@@ -130,7 +129,7 @@ public class JassBoard implements Board, Serializable {
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 
-			assert (possibleCards.size() > 0);
+			assert !possibleCards.isEmpty();
 
 			// INFO: This would be pruning for cards. At the moment we do not want to do this.
 			// It could be a possiblity later on if we see that the bot still plays badly in the first 1-3 moves of a game.
@@ -266,7 +265,7 @@ public class JassBoard implements Board, Serializable {
 	@Override
 	public Move getBestMove() {
 		if (isChoosingTrumpf()) {
-			final List<Move> moves = getMoves(CallLocation.playout); // This must only be called in playout!
+			final List<Move> moves = getMoves(CallLocation.PLAYOUT); // This must only be called in playout!
 			final Mode mode = TrumpfSelectionHelper.predictTrumpf(currentPlayer().getCards(), shifted);
 			final Move move = new TrumpfMove(currentPlayer(), mode);
 			final int bestTrumpfIndex = moves.indexOf(move);

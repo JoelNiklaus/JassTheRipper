@@ -70,7 +70,7 @@ public class TrumpfSelectionHelperTest {
 	public void testCalculateInitialSafety() {
 		List<Card> sortedClubs = JassHelper.sortCardsOfColorDescending(cards1, Color.CLUBS);
 		List<Card> sortedSpades = JassHelper.sortCardsOfColorDescending(cards1, Color.SPADES);
-		assertEquals(TrumpfSelectionHelper.calculateInitialSafetyObeabe(sortedClubs), 1.0, 0.05);
+		assertEquals(1.0, TrumpfSelectionHelper.calculateInitialSafetyObeabe(sortedClubs), 0.05);
 		assertTrue(TrumpfSelectionHelper.calculateInitialSafetyObeabe(sortedSpades) > 0.33);
 		assertTrue(TrumpfSelectionHelper.calculateInitialSafetyObeabe(sortedSpades) < 0.34);
 	}

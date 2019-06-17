@@ -38,7 +38,7 @@ public class RemoteGame implements Game {
 	}
 
 	@Override
-	public void start() throws Exception {
+	public void start() {
 		WebSocketClient client;
 		if (targetUrl.contains("wss")) {
 			final SslContextFactory sslContextFactory = new SslContextFactory();
@@ -59,7 +59,12 @@ public class RemoteGame implements Game {
 		} catch (Exception e) {
 			logger.debug("{}", e);
 		} finally {
-			client.stop();
+			try {
+				client.stop();
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("Could not stop the websocket client.");
+			}
 		}
 	}
 

@@ -24,18 +24,18 @@ public class JassHelperTest {
 		List<Card> playedClubs = JassHelper.sortCardsOfColorDescending(EnumSet.of(Card.CLUB_KING, Card.CLUB_QUEEN, Card.SPADE_QUEEN), Color.CLUBS);
 		List<Card> sortedSpades = JassHelper.sortCardsOfColorDescending(cards1, Color.SPADES);
 		List<Card> playedSpades = JassHelper.sortCardsOfColorDescending(EnumSet.of(Card.SPADE_ACE, Card.SPADE_NINE, Card.CLUB_QUEEN), Color.SPADES);
-		assertEquals(JassHelper.calculateInitialSafetyObeabeRespectingPlayedCards(sortedSpades, playedSpades), 1.0, 0.05);
-		assertEquals(JassHelper.calculateInitialSafetyObeabeRespectingPlayedCards(sortedClubs, playedClubs), 1f / 9, 0.05);
+		assertEquals(1.0, JassHelper.calculateInitialSafetyObeabeRespectingPlayedCards(sortedSpades, playedSpades), 0.05);
+		assertEquals(1f / 9, JassHelper.calculateInitialSafetyObeabeRespectingPlayedCards(sortedClubs, playedClubs), 0.05);
 		List<Card> sortedClubsUndeUfe = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_EIGHT, Card.CLUB_NINE, Card.SPADE_QUEEN), Color.CLUBS);
 		List<Card> playedClubsUndeUfe = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_QUEEN, Card.SPADE_QUEEN), Color.CLUBS);
-		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe, playedClubsUndeUfe), 1f / 3, 0.05);
+		assertEquals(1f / 3, JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe, playedClubsUndeUfe), 0.05);
 		List<Card> sortedClubsUndeUfe1 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_TEN, Card.CLUB_NINE, Card.SPADE_QUEEN), Color.CLUBS);
 		List<Card> playedClubsUndeUfe1 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_SIX, Card.CLUB_QUEEN, Card.SPADE_KING), Color.CLUBS);
-		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe1, playedClubsUndeUfe1), 1f / 9, 0.05);
+		assertEquals(1f / 9, JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe1, playedClubsUndeUfe1), 0.05);
 		List<Card> sortedClubsUndeUfe2 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_TEN, Card.CLUB_EIGHT, Card.SPADE_QUEEN), Color.CLUBS);
 		List<Card> playedClubsUndeUfe2 = JassHelper.sortCardsOfColorAscending(EnumSet.of(Card.CLUB_QUEEN, Card.SPADE_KING), Color.CLUBS);
-		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe2, playedClubsUndeUfe2), 1f / 9, 0.05);
-		assertEquals(JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe2, playedClubsUndeUfe2), TrumpfSelectionHelper.calculateInitialSafetyUndeUfe(sortedClubsUndeUfe2), 0.05);
+		assertEquals(1f / 9, JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe2, playedClubsUndeUfe2), 0.05);
+		assertEquals(TrumpfSelectionHelper.calculateInitialSafetyUndeUfe(sortedClubsUndeUfe2), JassHelper.calculateInitialSafetyUndeUfeRespectingPlayedCards(sortedClubsUndeUfe2, playedClubsUndeUfe2), 0.05);
 
 	}
 

@@ -162,7 +162,7 @@ public class Player implements Serializable {
 	}
 
 	public Move makeMove(GameSession session) {
-		if (cards.size() == 0) throw new RuntimeException("Cannot play a card without cards in deck");
+		if (cards.isEmpty()) throw new RuntimeException("Cannot play a card without cards in deck");
 		final Card cardToPlay = chooseCardWithFallback(session);
 		return new Move(this, cardToPlay);
 	}
@@ -170,12 +170,7 @@ public class Player implements Serializable {
 	private Card chooseCardWithFallback(GameSession session) {
 		// NOTE: This is used in benchmarks (to see if a higher strength level is really worth it)
 		// It is a bit of a hack but only used for tests
-		if (currentJassStrategy instanceof JassTheRipperJassStrategy) {
-			if (cardStrengthLevel != null)
-				((JassTheRipperJassStrategy) currentJassStrategy).setCardStrengthLevel(cardStrengthLevel);
-			if (trumpfStrengthLevel != null)
-				((JassTheRipperJassStrategy) currentJassStrategy).setTrumpfStrengthLevel(trumpfStrengthLevel);
-		}
+		setStrengthLevels();
 
 		final Card cardToPlay = currentJassStrategy.chooseCard(cards, session);
 		final boolean cardIsInvalid = !session.getCurrentRound().getMode().canPlayCard(
@@ -190,14 +185,17 @@ public class Player implements Serializable {
 		return cardToPlay;
 	}
 
-	public Mode chooseTrumpf(GameSession session, boolean shifted) {
-		// NOTE: This is used in benchmarks (to see if the MCTS trumpf selection is really better)
-		// It is a bit of a hack but only used for tests
+	private void setStrengthLevels() {
 		if (currentJassStrategy instanceof JassTheRipperJassStrategy) {
-			if (trumpfSelectionMethod != null) {
-				((JassTheRipperJassStrategy) currentJassStrategy).setTrumpfSelectionMethod(trumpfSelectionMethod);
-			}
+			if (cardStrengthLevel != null)
+				((JassTheRipperJassStrategy) currentJassStrategy).setCardStrengthLevel(cardStrengthLevel);
+			if (trumpfStrengthLevel != null)
+				((JassTheRipperJassStrategy) currentJassStrategy).setTrumpfStrengthLevel(trumpfStrengthLevel);
 		}
+	}
+
+	public Mode chooseTrumpf(GameSession session, boolean shifted) {
+		setStrengthLevels();
 		return currentJassStrategy.chooseTrumpf(cards, session, shifted);
 	}
 

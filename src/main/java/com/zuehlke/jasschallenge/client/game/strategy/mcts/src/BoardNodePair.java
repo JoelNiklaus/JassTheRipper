@@ -1,20 +1,20 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
 public class BoardNodePair {
-	private Board b;
-	private Node p;
+	private Board board;
+	private Node node;
 
-	public BoardNodePair(Board _b, Node _n) {
-		b = _b;
-		p = _n;
+	public BoardNodePair(Board board, Node node) {
+		this.board = board;
+		this.node = node;
 	}
 
 	public Board getBoard() {
-		return b;
+		return board;
 	}
 
 	public Node getNode() {
-		return p;
+		return node;
 	}
 
 }

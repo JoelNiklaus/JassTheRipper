@@ -297,7 +297,7 @@ public class BenchmarkRunner {
 		}
 	}
 
-	private static RemoteGame startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType) throws Exception {
+	private static RemoteGame startGame(String targetUrl, Player myLocalPlayer, SessionType sessionType) {
 		final RemoteGame remoteGame = new RemoteGame(targetUrl, myLocalPlayer, sessionType);
 		remoteGame.start();
 		return remoteGame;

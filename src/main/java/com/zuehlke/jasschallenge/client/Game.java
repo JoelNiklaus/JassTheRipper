@@ -1,5 +1,5 @@
 package com.zuehlke.jasschallenge.client;
 
 interface Game {
-    void start() throws Exception;
+	void start();
 }
