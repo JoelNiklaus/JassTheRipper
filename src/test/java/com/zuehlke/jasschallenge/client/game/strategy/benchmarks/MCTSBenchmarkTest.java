@@ -34,10 +34,30 @@ public class MCTSBenchmarkTest {
 		}
 	}
 
+	/**
+	 * Tests if it is worthwile to use more search time
+	 */
 	@Test
-	public void testHigherCardStrengthLevelIsWorthwile() {
+	public void testHigherCardStrengthLevelTimeIsWorthwile() {
 		if (RUN_BENCHMARKS) {
-			StrengthLevel[] cardStrengthLevels = {StrengthLevel.POWERFUL, StrengthLevel.FAST_TEST};
+			StrengthLevel[] cardStrengthLevels = {StrengthLevel.TEST_STRONG_TIME, StrengthLevel.TEST_WEAK_TIME};
+			StrengthLevel[] trumpfStrengthLevels = {null, null};
+
+			final double performance = arena.runMCTSWithRandomPlayoutDifferentStrengthLevels(new Random(SEED), NUM_GAMES, cardStrengthLevels, trumpfStrengthLevels);
+
+			assertTrue(performance > 100);
+			System.out.println(performance);
+		}
+	}
+
+
+	/**
+	 * Tests if it is worthwile to use more determinizations
+	 */
+	@Test
+	public void testHigherCardStrengthLevelNumDeterminizationsIsWorthwile() {
+		if (RUN_BENCHMARKS) {
+			StrengthLevel[] cardStrengthLevels = {StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS, StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS};
 			StrengthLevel[] trumpfStrengthLevels = {null, null};
 
 			final double performance = arena.runMCTSWithRandomPlayoutDifferentStrengthLevels(new Random(SEED), NUM_GAMES, cardStrengthLevels, trumpfStrengthLevels);

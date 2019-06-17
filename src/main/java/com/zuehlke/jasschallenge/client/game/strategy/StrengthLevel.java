@@ -15,6 +15,12 @@ public enum StrengthLevel {
 	SUPERMAN(32, 5000, 1000),
 	IRONMAN(32, 10000, 2000),
 	TRUMPF(64, 10000, 2000),
+
+	TEST_WEAK_TIME(1, 50, 10),
+	TEST_STRONG_TIME(1, 250, 10),
+	TEST_WEAK_NUM_DETERMINIZATIONS(1, 250, 10),
+	TEST_STRONG_NUM_DETERMINIZATIONS(5, 250, 10),
+
 	;
 
 	// NOTE that a number higher than 1 means that the MCTS is run parallelised! If does not work properly, try setting it to 1
