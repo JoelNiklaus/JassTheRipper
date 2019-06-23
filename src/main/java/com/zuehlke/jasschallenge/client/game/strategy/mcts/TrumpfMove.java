@@ -46,4 +46,9 @@ public class TrumpfMove implements Move {
 	public int hashCode() {
 		return chosenTrumpf.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return getChosenTrumpf().toString();
+	}
 }

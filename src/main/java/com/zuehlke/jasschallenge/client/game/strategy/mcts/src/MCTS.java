@@ -166,16 +166,8 @@ public class MCTS {
 			numberOfSelections.put(move, number);
 		}
 		// Print statistics so we can get insights into the decision process of the algorithm
-		// TODO get rid of instanceof codesmell
-		numberOfSelections.forEach((move, numTimesSelected) -> {
-			String moveDisplay = "";
-			if (move instanceof CardMove)
-				moveDisplay = ((CardMove) move).getPlayedCard().toString();
-			if (move instanceof TrumpfMove)
-				moveDisplay = ((TrumpfMove) move).getChosenTrumpf().toString();
-			logger.info("{} selected {} times.", moveDisplay, numTimesSelected);
-		});
-		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder())).findFirst();
+		numberOfSelections.forEach((move, numTimesSelected) -> logger.info("{} selected {} times.", move, numTimesSelected));
+		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().stream().min(Map.Entry.comparingByValue(Collections.reverseOrder()));
 
 		assert entryOptional.isPresent();
 		return entryOptional.get().getKey();
