@@ -26,6 +26,11 @@ class BottomUpMode extends Mode implements Serializable {
     }
 
     @Override
+    public int getCode() {
+        return 5;
+    }
+
+    @Override
     public int calculateRoundScore(int roundNumber, Set<Card> playedCards) {
         if(roundNumber == Game.LAST_ROUND_NUMBER) {
             return calculateLastRoundBonus(FACTOR) + calculateScore(playedCards);

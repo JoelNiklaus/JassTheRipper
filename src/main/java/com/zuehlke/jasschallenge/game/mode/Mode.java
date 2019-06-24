@@ -45,6 +45,8 @@ public abstract class Mode implements Serializable {
         return modes;
     }
 
+    public abstract int getCode(); // INFO: Used for neural networks (number between 0 and 7)
+
     public abstract int calculateRoundScore(int roundNumber, Set<Card> playedCards);
 
     public abstract Trumpf getTrumpfName();

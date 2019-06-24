@@ -25,6 +25,11 @@ class TopDownMode extends Mode implements Serializable {
 	}
 
 	@Override
+	public int getCode() {
+		return 4;
+	}
+
+	@Override
 	public int calculateRoundScore(int roundNumber, Set<Card> playedCards) {
 		if (roundNumber == Game.LAST_ROUND_NUMBER) {
 			return GeneralRules.calculateLastRoundBonus(FACTOR) + calculateScore(playedCards);

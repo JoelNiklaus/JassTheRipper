@@ -15,6 +15,13 @@ import static java.lang.String.valueOf;
 public class ShiftMode extends Mode implements Serializable {
 
 	@Override
+	public int getCode() {
+		// Dummy return value. This should never be called!
+		System.err.println("Do not call this method for the shift mode!");
+		return 7;
+	}
+
+	@Override
 	public int calculateRoundScore(int roundNumber, Set<Card> playedCards) {
 		return 0;
 	}

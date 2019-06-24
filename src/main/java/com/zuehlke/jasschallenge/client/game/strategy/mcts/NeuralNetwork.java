@@ -240,6 +240,9 @@ public class NeuralNetwork implements Serializable {
 		// NOTE: adding the trumpf as another row would be an additional option
 		// observation[72] = toBinary(game.getMode().getCode(), THREE_HOT_ENCODING_LENGTH);
 
+		// TODO: Somehow add information if game is shifted or not -> may be important for card estimation network
+		// observation[72] = toBinary(game.isShifted() ? 1 : 0, THREE_HOT_ENCODING_LENGTH);
+
 		return observation;
 	}
 
