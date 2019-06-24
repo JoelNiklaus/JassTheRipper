@@ -209,7 +209,8 @@ public class GameHandler {
 	private static void checkEquals(Object a, Object b, String errorMessage) {
 		if (!a.equals(b)) {
 			logger.warn("Expected {} to be equal to {}: {}", a, b, errorMessage);
-			throw new RuntimeException(errorMessage);
+			// IMPORTANT: This is disabled because at the moment we do not care if tournament counting is enabled or not
+			// throw new RuntimeException(errorMessage);
 		}
 	}
 

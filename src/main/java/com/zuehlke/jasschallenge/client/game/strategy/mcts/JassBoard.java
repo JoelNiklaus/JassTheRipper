@@ -25,7 +25,7 @@ public class JassBoard implements Board, Serializable {
 	private boolean shifted;
 	private Game game;
 
-	// The neural network of the player choosing the move at the beginning. If null -> use random PLAYOUT instead
+	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
 	private final NeuralNetwork neuralNetwork;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);

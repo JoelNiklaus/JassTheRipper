@@ -78,9 +78,9 @@ public interface Board {
 	/**
 	 * Returns the best possible move considering the
 	 * information from the determinization.
-	 * This method should only be invoked in the PLAYOUT phase!
+	 * This method should only be invoked in the playout phase!
 	 * Here we assume that we are in a Perfect information game
-	 * determinization. If we invoke this method outside the PLAYOUT,
+	 * determinization. If we invoke this method outside the playout,
 	 * it would be cheating, because we are not supposed to
 	 * have access to the hidden information there!
 	 *

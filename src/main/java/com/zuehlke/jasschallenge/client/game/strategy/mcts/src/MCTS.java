@@ -220,10 +220,10 @@ public class MCTS {
 	private void select(Board currentBoard, Node currentNode) {
 		BoardNodePair boardNodePair = treePolicy(currentBoard, currentNode);
 
-		// Run a random PLAYOUT until the end of the game.
+		// Run a random playout until the end of the game.
 		double[] score = playout(boardNodePair.getBoard());
 
-		// Backpropagate results of PLAYOUT.
+		// Backpropagate results of playout.
 		Node node = boardNodePair.getNode();
 		node.backPropagateScore(score);
 		if (scoreBounds) {
@@ -381,7 +381,7 @@ public class MCTS {
 	 * @return
 	 */
 	private double[] playout(Board oldBoard) {
-		// Do not simulate the PLAYOUT but estimate the score directly with a neural network
+		// Do not simulate the playout but estimate the score directly with a neural network
 		if (oldBoard.hasScoreEstimator())
 			return oldBoard.estimateScore();
 
