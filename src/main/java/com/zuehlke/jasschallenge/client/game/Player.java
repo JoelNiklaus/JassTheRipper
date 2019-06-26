@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game;
 
 import com.zuehlke.jasschallenge.client.game.strategy.*;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
@@ -18,14 +19,7 @@ public class Player implements Serializable {
 	private final String name;
 	private int seatId;
 	private final Set<Card> cards;
-	private final JassStrategy currentJassStrategy;
-
-	private boolean mctsEnabled = true; // disable this for pitting only the networks against each other
-	private boolean valueEstimaterUsed; // This is used in Self Play Training
-	private boolean networkTrainable; // This is used in Self Play Training
-	private StrengthLevel cardStrengthLevel; // This is used in benchmarks
-	private StrengthLevel trumpfStrengthLevel; // This is used in benchmarks
-	private TrumpfSelectionMethod trumpfSelectionMethod; // This is used in benchmarks
+	private final JassStrategy jassStrategy;
 
 	public Player(String id, String name, int seatId) {
 		this(name);
@@ -37,18 +31,18 @@ public class Player implements Serializable {
 		this(name, new RandomJassStrategy());
 	}
 
-	public Player(String name, JassStrategy strategy) {
+	public Player(String name, JassStrategy jassStrategy) {
 		this.name = name;
 		this.cards = EnumSet.noneOf(Card.class);
-		this.currentJassStrategy = strategy;
+		this.jassStrategy = jassStrategy;
 	}
 
-	public Player(String id, String name, int seatId, Set<Card> cards, JassStrategy currentJassStrategy) {
+	public Player(String id, String name, int seatId, Set<Card> cards, JassStrategy jassStrategy) {
 		this.id = id;
 		this.name = name;
 		this.seatId = seatId;
 		this.cards = cards;
-		this.currentJassStrategy = currentJassStrategy;
+		this.jassStrategy = jassStrategy;
 	}
 
 	/**
@@ -61,14 +55,7 @@ public class Player implements Serializable {
 		this.name = player.getName();
 		this.seatId = player.getSeatId();
 		this.cards = EnumSet.copyOf(player.getCards());
-		this.currentJassStrategy = player.getCurrentJassStrategy();
-
-		this.mctsEnabled = player.isMctsEnabled();
-		this.valueEstimaterUsed = player.isValueEstimaterUsed();
-		this.networkTrainable = player.isNetworkTrainable();
-		this.cardStrengthLevel = player.getCardStrengthLevel();
-		this.trumpfStrengthLevel = player.getTrumpfStrengthLevel();
-		this.trumpfSelectionMethod = player.getTrumpfSelectionMethod();
+		this.jassStrategy = player.getJassStrategy();
 	}
 
 	public boolean wasStartingPlayer(Round round) {
@@ -80,8 +67,8 @@ public class Player implements Serializable {
 		return !this.equals(other) && (getSeatId() + other.getSeatId()) % 2 == 0;
 	}
 
-	public JassStrategy getCurrentJassStrategy() {
-		return currentJassStrategy;
+	public JassStrategy getJassStrategy() {
+		return jassStrategy;
 	}
 
 	public String getId() {
@@ -104,54 +91,6 @@ public class Player implements Serializable {
 		return name;
 	}
 
-	public boolean isMctsEnabled() {
-		return mctsEnabled;
-	}
-
-	public void setMctsEnabled(boolean mctsEnabled) {
-		this.mctsEnabled = mctsEnabled;
-	}
-
-	public boolean isValueEstimaterUsed() {
-		return valueEstimaterUsed;
-	}
-
-	public void setValueEstimaterUsed(boolean valueEstimaterUsed) {
-		this.valueEstimaterUsed = valueEstimaterUsed;
-	}
-
-	public boolean isNetworkTrainable() {
-		return networkTrainable;
-	}
-
-	public void setNetworkTrainable(boolean networkTrainable) {
-		this.networkTrainable = networkTrainable;
-	}
-
-	public StrengthLevel getCardStrengthLevel() {
-		return cardStrengthLevel;
-	}
-
-	public void setCardStrengthLevel(StrengthLevel cardStrengthLevel) {
-		this.cardStrengthLevel = cardStrengthLevel;
-	}
-
-	public StrengthLevel getTrumpfStrengthLevel() {
-		return trumpfStrengthLevel;
-	}
-
-	public void setTrumpfStrengthLevel(StrengthLevel trumpfStrengthLevel) {
-		this.trumpfStrengthLevel = trumpfStrengthLevel;
-	}
-
-	public TrumpfSelectionMethod getTrumpfSelectionMethod() {
-		return trumpfSelectionMethod;
-	}
-
-	public void setTrumpfSelectionMethod(TrumpfSelectionMethod trumpfSelectionMethod) {
-		this.trumpfSelectionMethod = trumpfSelectionMethod;
-	}
-
 	public Set<Card> getCards() {
 		return cards;
 	}
@@ -161,6 +100,26 @@ public class Player implements Serializable {
 		this.cards.addAll(cards);
 	}
 
+	public void setConfig(Config config) {
+		((JassTheRipperJassStrategy) jassStrategy).setConfig(config);
+	}
+
+	public NeuralNetwork getScoreEstimationNetwork() {
+		return ((JassTheRipperJassStrategy) jassStrategy).getScoreEstimationNetwork();
+	}
+
+	public void setScoreEstimationNetwork(NeuralNetwork scoreEstimationNetwork) {
+		((JassTheRipperJassStrategy) jassStrategy).setScoreEstimationNetwork(scoreEstimationNetwork);
+	}
+
+	public NeuralNetwork getCardsEstimationNetwork() {
+		return ((JassTheRipperJassStrategy) jassStrategy).getCardsEstimationNetwork();
+	}
+
+	public void setCardsEstimationNetwork(NeuralNetwork cardsEstimationNetwork) {
+		((JassTheRipperJassStrategy) jassStrategy).setCardsEstimationNetwork(cardsEstimationNetwork);
+	}
+
 	public Move makeMove(GameSession session) {
 		if (cards.isEmpty()) throw new RuntimeException("Cannot play a card without cards in deck");
 		final Card cardToPlay = chooseCardWithFallback(session);
@@ -168,11 +127,7 @@ public class Player implements Serializable {
 	}
 
 	private Card chooseCardWithFallback(GameSession session) {
-		// NOTE: This is used in benchmarks (to see if a higher strength level is really worth it)
-		// It is a bit of a hack but only used for tests
-		setStrengthLevels();
-
-		final Card cardToPlay = currentJassStrategy.chooseCard(cards, session);
+		final Card cardToPlay = jassStrategy.chooseCard(cards, session);
 		final boolean cardIsInvalid = !session.getCurrentRound().getMode().canPlayCard(
 				cardToPlay,
 				session.getCurrentRound().getPlayedCards(),
@@ -185,39 +140,29 @@ public class Player implements Serializable {
 		return cardToPlay;
 	}
 
-	private void setStrengthLevels() {
-		if (currentJassStrategy instanceof JassTheRipperJassStrategy) {
-			if (cardStrengthLevel != null)
-				((JassTheRipperJassStrategy) currentJassStrategy).setCardStrengthLevel(cardStrengthLevel);
-			if (trumpfStrengthLevel != null)
-				((JassTheRipperJassStrategy) currentJassStrategy).setTrumpfStrengthLevel(trumpfStrengthLevel);
-		}
-	}
-
 	public Mode chooseTrumpf(GameSession session, boolean shifted) {
-		setStrengthLevels();
-		return currentJassStrategy.chooseTrumpf(cards, session, shifted);
+		return jassStrategy.chooseTrumpf(cards, session, shifted);
 	}
 
 	public void onMoveMade(Move move, GameSession session) {
 		cards.remove(move.getPlayedCard());
-		currentJassStrategy.onMoveMade(move, session);
+		jassStrategy.onMoveMade(move, session);
 	}
 
 	public void onSessionFinished() {
-		currentJassStrategy.onSessionFinished();
+		jassStrategy.onSessionFinished();
 	}
 
 	public void onGameFinished() {
-		currentJassStrategy.onGameFinished();
+		jassStrategy.onGameFinished();
 	}
 
 	public void onGameStarted(GameSession session) {
-		currentJassStrategy.onGameStarted(session);
+		jassStrategy.onGameStarted(session);
 	}
 
 	public void onSessionStarted(GameSession session) {
-		currentJassStrategy.onSessionStarted(session);
+		jassStrategy.onSessionStarted(session);
 	}
 
 	@Override
@@ -245,7 +190,8 @@ public class Player implements Serializable {
 				", id=" + id +
 				", seatId=" + seatId +
 				", cards=" + cards +
-				//", currentJassStrategy=" + currentJassStrategy +
+				//", jassStrategy=" + jassStrategy +
 				'}';
 	}
+
 }

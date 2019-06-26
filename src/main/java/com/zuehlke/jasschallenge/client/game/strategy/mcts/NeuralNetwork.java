@@ -17,7 +17,9 @@ import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurat
 import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -86,8 +88,16 @@ public class NeuralNetwork implements Serializable {
 		INDArray input = Nd4j.create(256, 100);
 		INDArray output = model.output(input);
 		System.out.println(output);
+
 	}
 
+	public void evaluate(DataSet dataSet) {
+		RegressionEvaluation evaluation = new RegressionEvaluation();
+		final INDArray predictions = model.output(dataSet.getFeatures());
+		System.out.println(predictions);
+		evaluation.eval(dataSet.getLabels(), predictions);
+		System.out.println(evaluation.stats());
+	}
 
 	public CardMove predictMove(Game game) {
 		final Player player = game.getCurrentPlayer();
@@ -149,6 +159,8 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	public void train(DataSet dataSet, int numEpochs) {
+		model.setListeners(new ScoreIterationListener(1));
+
 		dataSet.shuffle(); // NOTE: can be used to remove bias in the training set.
 
 		// TODO check if this really works

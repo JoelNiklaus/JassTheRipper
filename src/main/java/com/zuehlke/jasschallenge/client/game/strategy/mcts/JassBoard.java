@@ -26,16 +26,16 @@ public class JassBoard implements Board, Serializable {
 	private Game game;
 
 	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
-	private final NeuralNetwork neuralNetwork;
+	private final NeuralNetwork scoreEstimatorNetwork;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, NeuralNetwork neuralNetwork) {
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, NeuralNetwork scoreEstimatorNetwork) {
 		this.availableCards = availableCards;
 		this.gameSession = gameSession;
 		this.shifted = shifted;
 		this.game = game;
-		this.neuralNetwork = neuralNetwork;
+		this.scoreEstimatorNetwork = scoreEstimatorNetwork;
 	}
 
 	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, NeuralNetwork neuralNetwork) {
@@ -95,9 +95,9 @@ public class JassBoard implements Board, Serializable {
 	@Override
 	public Board duplicate(boolean newRandomCards) {
 		if (isChoosingTrumpf())
-			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, neuralNetwork);
+			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimatorNetwork);
 
-		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, neuralNetwork);
+		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, scoreEstimatorNetwork);
 		if (newRandomCards)
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 		return jassBoard;
@@ -280,12 +280,12 @@ public class JassBoard implements Board, Serializable {
 		if (isChoosingTrumpf())
 			return false; // So far we only estimate the score during the card play
 
-		return neuralNetwork != null; // if there is a neural network set for the choosing player
+		return scoreEstimatorNetwork != null; // if there is a neural network set for the choosing player
 	}
 
 	@Override
 	public double[] estimateScore() {
-		double value = neuralNetwork.predictValue(game);
+		double value = scoreEstimatorNetwork.predictValue(game);
 		// logger.info("The neural network predicted a value of " + value);
 		double[] score = new double[getQuantityOfPlayers()];
 		for (Player player : game.getPlayers())

@@ -24,6 +24,8 @@ public class JassTheRipperStrategyTest {
 	private Set<Card> cards3 = EnumSet.of(Card.CLUB_KING, Card.CLUB_EIGHT, Card.HEART_SEVEN, Card.HEART_QUEEN, Card.DIAMOND_JACK, Card.DIAMOND_KING, Card.SPADE_SEVEN, Card.SPADE_JACK, Card.SPADE_ACE);
 	private Set<Card> cards4 = EnumSet.of(Card.CLUB_SIX, Card.CLUB_TEN, Card.CLUB_SEVEN, Card.HEART_TEN, Card.HEART_ACE, Card.DIAMOND_SIX, Card.DIAMOND_ACE, Card.SPADE_SIX, Card.SPADE_NINE);
 
+	private JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getTestInstance();
+
 	@Before
 	public void setUp() {
 		assertEquals(9, cards1.size());
@@ -43,7 +45,6 @@ public class JassTheRipperStrategyTest {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.createGameSession();
 
-		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		strategy.chooseTrumpf(cards1, gameSession, false);
@@ -55,7 +56,6 @@ public class JassTheRipperStrategyTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		strategy.chooseCard(cards1, gameSession);
@@ -77,7 +77,6 @@ public class JassTheRipperStrategyTest {
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 
 
-		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		strategy.chooseCard(cards1, gameSession);
@@ -91,7 +90,6 @@ public class JassTheRipperStrategyTest {
 
 		Game game = gameSession.getCurrentGame();
 
-		JassTheRipperJassStrategy strategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.FAST);
 		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards1, gameSession)));

@@ -90,82 +90,42 @@ Partnerbot hat gegner ein ass geschmiert obwohl er ein brettli hätte spielen k�
 Gegner hat es 10i vo mir (höchsti charte) als zweitletzte nid gno (9i hetter ge), obwohl er ass und könig gha hett
 gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bzw het müesse ageh)
 
+
+TODO Make new experiments with the improvements so far:
+ -> NOTES FROM PLAY AGAINST JASS THE RIPPER 25/06/2018:
+
  */
 
 	// IDEA: only one stateless jasstheripper computation container which provides an api to be called
 
-	private NeuralNetwork learningNetwork = new NeuralNetwork();
-	private NeuralNetwork frozenNetwork = new NeuralNetwork(learningNetwork);
-
-	private MCTSHelper mctsHelper;
-
-	private StrengthLevel cardStrengthLevel = StrengthLevel.POWERFUL;
-	private StrengthLevel trumpfStrengthLevel = StrengthLevel.INSANE;
-
-	// TODO MCTS still does not like to shift by itself. It is forced to shift now because of the rule-based pruning
-	//  --> Investigate why MCTS without pruning does not like shifting
-	// NOTE: In Situations where shifting is good, MCTS is inferior.
-	// In other situations they seem to be comparable
-	private TrumpfSelectionMethod trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED;
-
-
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
 	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards -> not planned at the moment
 	// TODO find a way to visualize the MCTS tree
-	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler
+	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler -> neural network (CardsEstimator)
 	// TODO add exceptions to code!!!
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-	private static JassTheRipperJassStrategy instance;
+	private NeuralNetwork scoreEstimationNetwork;
+	private NeuralNetwork cardsEstimationNetwork;
+
+	private Config config;
+
+	private MCTSHelper mctsHelper;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
-	private JassTheRipperJassStrategy() {
+	public static JassTheRipperJassStrategy getTestInstance() {
+		return new JassTheRipperJassStrategy(new Config(new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST)));
 	}
 
-	/**
-	 * The JassStrategy is a singleton
-	 *
-	 * @return
-	 */
-	public static JassTheRipperJassStrategy getInstance() {
-		if (JassTheRipperJassStrategy.instance == null) {
-			JassTheRipperJassStrategy.instance = new JassTheRipperJassStrategy();
-		}
-		return JassTheRipperJassStrategy.instance;
+	public  JassTheRipperJassStrategy() {
+		setConfig(new Config());
 	}
 
-	/**
-	 * IMPORTANT: Returns the first instance created -> if there was an instance created with a different parametrization before, that one is returned.
-	 *
-	 * @param cardStrengthLevel
-	 * @return
-	 */
-	public static JassTheRipperJassStrategy getInstance(StrengthLevel cardStrengthLevel) {
-		if (JassTheRipperJassStrategy.instance == null) {
-			JassTheRipperJassStrategy.instance = new JassTheRipperJassStrategy();
-			JassTheRipperJassStrategy.instance.cardStrengthLevel = cardStrengthLevel;
-		}
-		return JassTheRipperJassStrategy.instance;
+	public JassTheRipperJassStrategy(Config config) {
+		setConfig(config);
 	}
-
-	/**
-	 * IMPORTANT: Returns the first instance created -> if there was an instance created with a different parametrization before, that one is returned.
-	 *
-	 * @param cardStrengthLevel
-	 * @param trumpfStrengthLevel
-	 * @return
-	 */
-	public static JassTheRipperJassStrategy getInstance(StrengthLevel cardStrengthLevel, StrengthLevel trumpfStrengthLevel) {
-		if (JassTheRipperJassStrategy.instance == null) {
-			JassTheRipperJassStrategy.instance = new JassTheRipperJassStrategy();
-			JassTheRipperJassStrategy.instance.cardStrengthLevel = cardStrengthLevel;
-			JassTheRipperJassStrategy.instance.trumpfStrengthLevel = trumpfStrengthLevel;
-		}
-		return JassTheRipperJassStrategy.instance;
-	}
-
 
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
@@ -175,13 +135,13 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 
 			Mode mode = TrumpfSelectionHelper.getRandomMode(isGschobe);
 
-			if (trumpfSelectionMethod == TrumpfSelectionMethod.RULE_BASED)
+			if (config.getTrumpfSelectionMethod() == TrumpfSelectionMethod.RULE_BASED)
 				mode = TrumpfSelectionHelper.predictTrumpf(availableCards, isGschobe);
 
-			if (trumpfSelectionMethod == TrumpfSelectionMethod.MCTS)
+			if (config.getTrumpfSelectionMethod() == TrumpfSelectionMethod.MCTS)
 				try {
 					assert mctsHelper != null;
-					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe, trumpfStrengthLevel);
+					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe);
 					mode = ((TrumpfMove) move).getChosenTrumpf();
 				} catch (MCTSException e) {
 					logger.debug("{}", e);
@@ -216,11 +176,10 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 				card = Iterables.getOnlyElement(possibleCards);
 				logger.info("Only one possible card to play: {}", card);
 			} else { // Start searching for a good card
-				final Player currentPlayer = game.getCurrentPlayer();
-				if (currentPlayer.isMctsEnabled()) {
+				if (config.isMctsEnabled()) {
 					try {
 						assert mctsHelper != null;
-						Move move = mctsHelper.predictMove(availableCards, session, false, false, cardStrengthLevel);
+						Move move = mctsHelper.predictMove(availableCards, session, false, game.isShifted());
 						card = ((CardMove) move).getPlayedCard();
 						logger.info("Chose Card based on MCTS, Hurra!");
 					} catch (MCTSException e) {
@@ -228,7 +187,7 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 						logger.error("Something went wrong. Had to choose random card, damn it!");
 					}
 				} else { // Choose the network's prediction directly, without the mcts policy enhancement
-					card = getNeuralNetwork(currentPlayer.isNetworkTrainable()).predictMove(game).getPlayedCard();
+					card = scoreEstimationNetwork.predictMove(game).getPlayedCard();
 					logger.info("Chose card based only on value estimator network.");
 				}
 			}
@@ -259,44 +218,33 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	}
 
 	private void printCards(Set<Card> availableCards) {
-		logger.info("Hi there! I am JassTheRipper, " +
-				"these are my cards: {} " +
-				"and this is my card strength level: {} " +
-				"and this is my trumpf strength level: {}", availableCards, cardStrengthLevel, trumpfStrengthLevel);
+		logger.info("Hi there! I am JassTheRipper and these are my cards: {} ", availableCards);
 	}
 
-	public NeuralNetwork getNeuralNetwork(boolean trainable) {
-		if (trainable)
-			return this.learningNetwork;
-		return this.frozenNetwork;
+	public NeuralNetwork getScoreEstimationNetwork() {
+		return scoreEstimationNetwork;
 	}
 
-	public void updateNetworks() {
-		this.frozenNetwork = new NeuralNetwork(this.learningNetwork);
+	public void setScoreEstimationNetwork(NeuralNetwork scoreEstimationNetwork) {
+		this.scoreEstimationNetwork = scoreEstimationNetwork;
 	}
 
-	public StrengthLevel getCardStrengthLevel() {
-		return cardStrengthLevel;
+	public NeuralNetwork getCardsEstimationNetwork() {
+		return cardsEstimationNetwork;
 	}
 
-	public void setCardStrengthLevel(StrengthLevel cardStrengthLevel) {
-		this.cardStrengthLevel = cardStrengthLevel;
+	public void setCardsEstimationNetwork(NeuralNetwork cardsEstimationNetwork) {
+		this.cardsEstimationNetwork = cardsEstimationNetwork;
 	}
 
-	public StrengthLevel getTrumpfStrengthLevel() {
-		return trumpfStrengthLevel;
-	}
-
-	public void setTrumpfStrengthLevel(StrengthLevel trumpfStrengthLevel) {
-		this.trumpfStrengthLevel = trumpfStrengthLevel;
-	}
-
-	public TrumpfSelectionMethod getTrumpfSelectionMethod() {
-		return trumpfSelectionMethod;
-	}
-
-	public void setTrumpfSelectionMethod(TrumpfSelectionMethod trumpfSelectionMethod) {
-		this.trumpfSelectionMethod = trumpfSelectionMethod;
+	public void setConfig(Config config) {
+		this.config = config;
+		// Because config is used in MCTSHelper, we have to restart it.
+		if (this.mctsHelper != null)
+			this.mctsHelper.shutDown();
+		this.mctsHelper = new MCTSHelper(config.getMctsConfig());
+		if(config.isScoreEstimaterUsed())
+			scoreEstimationNetwork = new NeuralNetwork();
 	}
 
 	@Override
@@ -305,15 +253,8 @@ gegner hat trumpf als 3.-4. charte usgspilt obwohl niemer meh trumpf gha het (bz
 	}
 
 	@Override
-	public void onSessionStarted(GameSession gameSession) {
-		mctsHelper = new MCTSHelper(RunMode.TIME);
-	}
-
-	@Override
 	public String toString() {
 		return "JassTheRipperJassStrategy{" +
-				"cardStrengthLevel=" + cardStrengthLevel +
-				"trumpfStrengthLevel=" + trumpfStrengthLevel +
-				'}';
+				"config=" + config + "}";
 	}
 }

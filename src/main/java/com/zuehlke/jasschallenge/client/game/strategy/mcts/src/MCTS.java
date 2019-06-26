@@ -14,18 +14,21 @@ import java.util.concurrent.*;
 
 // TODO calculate how big the tree gets at each point in the game
 
+// TODO try out score bounds
+
 
 /**
  * The main class responsible for the Monte Carlo Tree Search Method.
  */
 public class MCTS {
-	private final Random random = new Random();
+	private final int seed = 42;
+	private final Random random = new Random(seed);
 
-	private boolean scoreBounds = false;
+	private boolean rootParallelisation;
+	private boolean scoreBounds;
 	private double explorationConstant = Math.sqrt(2.0);
 	private double pessimisticBias = 0.0;
 	private double optimisticBias = 0.0;
-	private boolean rootParallelisation;
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD;
 	private HeuristicFunction heuristicFunction;
 	private PlayoutSelection playoutPolicy;
@@ -211,8 +214,8 @@ public class MCTS {
 	/**
 	 * This represents the select stage, or default policy, of the algorithm.
 	 * Traverse down to the bottom of the tree using the selection strategy
-	 * until you find an unexpanded child node. Expand it. Run a random PLAYOUT.
-	 * Backpropagate results of the PLAYOUT.
+	 * until you find an unexpanded child node. Expand it. Run a random playout.
+	 * Backpropagate results of the playout.
 	 *
 	 * @param currentNode  Node from which to start selection
 	 * @param currentBoard Board state to work from.

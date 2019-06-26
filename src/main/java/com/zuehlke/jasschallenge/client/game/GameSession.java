@@ -54,6 +54,10 @@ public class GameSession implements Serializable {
 		return teams;
 	}
 
+	public List<Player> getPlayersOfTeam(int teamIndex) {
+		return teams.get(teamIndex).getPlayers();
+	}
+
 	public Team getTeamOfPlayer(Player player) {
 		for (Team team : teams) {
 			if (team.getPlayers().contains(player))

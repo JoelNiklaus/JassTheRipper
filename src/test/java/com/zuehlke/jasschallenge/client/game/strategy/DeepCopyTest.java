@@ -247,7 +247,7 @@ public class DeepCopyTest {
 		assertFalse(player.getCards().contains(Card.CLUB_ACE));
 
 		assertEquals(originalPlayer.getName(), player.getName());
-		assertEquals(originalPlayer.getCurrentJassStrategy(), player.getCurrentJassStrategy());
+		assertEquals(originalPlayer.getJassStrategy(), player.getJassStrategy());
 	}
 
 	@Test

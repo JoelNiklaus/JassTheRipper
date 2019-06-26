@@ -1,8 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.benchmarks;
 
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
-import com.zuehlke.jasschallenge.client.game.strategy.TrumpfSelectionMethod;
+import com.zuehlke.jasschallenge.client.game.strategy.*;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import org.junit.Test;
 
@@ -15,19 +13,27 @@ public class MCTSBenchmarkTest {
 	private static final long SEED = 40;
 	private static final int NUM_GAMES = 4;
 
-	private Arena arena = new Arena(Arena.VALUE_ESTIMATOR_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+	private Arena arena = new Arena(Arena.SCORE_ESTIMATOR_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
 	private static final boolean RUN_BENCHMARKS = false;
 
+	/**
+	 * Tests if it is worthwhile to use the MCTS trumpf selection method
+	 */
 	@Test
 	public void testRuleBasedTrumpfAgainstMCTSTrumpf() {
 		// NOTE: Because the MCTS Trumpf Selection almost never shifts, it is inferior to the rule-based one!
 		if (RUN_BENCHMARKS) {
-			JassTheRipperJassStrategy.getInstance().setTrumpfStrengthLevel(StrengthLevel.TRUMPF);
-			JassTheRipperJassStrategy.getInstance().setCardStrengthLevel(StrengthLevel.TEST);
-			TrumpfSelectionMethod[] trumpfSelectionMethods = {TrumpfSelectionMethod.MCTS, TrumpfSelectionMethod.RULE_BASED};
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST));
+			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST));
+			configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
+			configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
-			final double performance = arena.runMCTSWithRandomPlayoutDifferentTrumpfSelectionMethods(new Random(SEED), NUM_GAMES, trumpfSelectionMethods);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
 			assertTrue(performance > 100);
 			System.out.println(performance);
@@ -35,15 +41,19 @@ public class MCTSBenchmarkTest {
 	}
 
 	/**
-	 * Tests if it is worthwile to use more search time
+	 * Tests if it is worthwhile to use more search time
 	 */
 	@Test
 	public void testHigherCardStrengthLevelTimeIsWorthwile() {
 		if (RUN_BENCHMARKS) {
-			StrengthLevel[] cardStrengthLevels = {StrengthLevel.TEST_STRONG_TIME, StrengthLevel.TEST_WEAK_TIME};
-			StrengthLevel[] trumpfStrengthLevels = {null, null};
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_STRONG_TIME));
+			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_WEAK_TIME));
 
-			final double performance = arena.runMCTSWithRandomPlayoutDifferentStrengthLevels(new Random(SEED), NUM_GAMES, cardStrengthLevels, trumpfStrengthLevels);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
 			assertTrue(performance > 100);
 			System.out.println(performance);
@@ -52,15 +62,19 @@ public class MCTSBenchmarkTest {
 
 
 	/**
-	 * Tests if it is worthwile to use more determinizations
+	 * Tests if it is worthwhile to use more determinizations
 	 */
 	@Test
 	public void testHigherCardStrengthLevelNumDeterminizationsIsWorthwile() {
 		if (RUN_BENCHMARKS) {
-			StrengthLevel[] cardStrengthLevels = {StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS, StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS};
-			StrengthLevel[] trumpfStrengthLevels = {null, null};
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS));
+			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS));
 
-			final double performance = arena.runMCTSWithRandomPlayoutDifferentStrengthLevels(new Random(SEED), NUM_GAMES, cardStrengthLevels, trumpfStrengthLevels);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
 			assertTrue(performance > 100);
 			System.out.println(performance);
@@ -72,11 +86,16 @@ public class MCTSBenchmarkTest {
 	public void testHigherTrumpfStrengthLevelIsWorthwile() {
 		// NOTE: This makes only sense when the MCTS TrumpfSelectionMethod is used.
 		if (RUN_BENCHMARKS) {
-			JassTheRipperJassStrategy.getInstance().setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
-			StrengthLevel[] cardStrengthLevels = {null, null};
-			StrengthLevel[] trumpfStrengthLevels = {StrengthLevel.STRONG, StrengthLevel.FAST};
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.STRONG, StrengthLevel.TEST));
+			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.FAST, StrengthLevel.TEST));
+			configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
+			configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
-			final double performance = arena.runMCTSWithRandomPlayoutDifferentStrengthLevels(new Random(SEED), NUM_GAMES, cardStrengthLevels, trumpfStrengthLevels);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
 			assertTrue(performance > 100);
 			System.out.println(performance);

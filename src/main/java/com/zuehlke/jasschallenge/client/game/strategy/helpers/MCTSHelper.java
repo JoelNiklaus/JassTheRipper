@@ -3,6 +3,7 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.MCTSConfig;
 import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
@@ -23,7 +24,8 @@ import java.util.Set;
  */
 public class MCTSHelper implements Serializable {
 
-	private final RunMode runMode;
+	private final MCTSConfig mctsConfig;
+
 	private static final int BUFFER_TIME_MILLIS = 10; // INFO Makes sure, that the bot really finishes before the thinking time is up.
 	private static final int ROUND_MULTIPLIER = 10;
 
@@ -31,23 +33,23 @@ public class MCTSHelper implements Serializable {
 
 	public static final Logger logger = LoggerFactory.getLogger(MCTSHelper.class);
 
-	public MCTSHelper(RunMode runMode) {
-		this.runMode = runMode;
+	public MCTSHelper(MCTSConfig mctsConfig) {
+		this.mctsConfig = mctsConfig;
 
 		// TODO tune parameters
-		mcts.setExplorationConstant(1.4);
-		mcts.setOptimisticBias(0);
-		mcts.setPessimisticBias(0);
-		// mcts.setMoveSelectionPolicy(FinalSelectionPolicy.MAX_CHILD);
-		// mcts.setHeuristicFunction(new JassHeuristic());
-		// mcts.setPlayoutSelection(new JassPlayoutSelection());
+		mcts.setExplorationConstant(mctsConfig.getExplorationConstant());
+		mcts.setOptimisticBias(mctsConfig.getOptimisticBias());
+		mcts.setPessimisticBias(mctsConfig.getPessimisticBias());
+		mcts.setMoveSelectionPolicy(mctsConfig.getFinalSelectionPolicy());
+		mcts.setHeuristicFunction(mctsConfig.getHeuristicFunction());
+		mcts.setPlayoutSelection(mctsConfig.getPlayoutPolicy());
 
 		// if we run by runs we want the threadPool to only have as many threads as there are cores available for maximal efficiency (no unnecessary scheduling overhead)
-		if (runMode == RunMode.RUNS)
+		if (mctsConfig.getRunMode() == RunMode.RUNS)
 			mcts.enableRootParallelisation(Runtime.getRuntime().availableProcessors());
-		// if we run by time we want the threadpool to have enough threads to have all determinizations running at the same time
-		if (runMode == RunMode.TIME)
-			mcts.enableRootParallelisation(ROUND_MULTIPLIER * StrengthLevel.TRUMPF.getNumDeterminizationsFactor()); // NOTE: It creates A LOT of threads here now!
+		// if we run by time we want the threadPool to have enough threads to have all determinizations running at the same time
+		if (mctsConfig.getRunMode() == RunMode.TIME)
+			mcts.enableRootParallelisation(ROUND_MULTIPLIER * mctsConfig.getTrumpfStrengthLevel().getNumDeterminizationsFactor()); // NOTE: It creates A LOT of threads here now!
 	}
 
 	/**
@@ -58,7 +60,7 @@ public class MCTSHelper implements Serializable {
 	}
 
 	/**
-	 * Checks whether the threadpool in the mcts object has been shut down.
+	 * Checks whether the thread pool in the mcts object has been shut down.
 	 *
 	 * @return
 	 */
@@ -72,39 +74,37 @@ public class MCTSHelper implements Serializable {
 	 *
 	 * @param availableCards
 	 * @param gameSession
-	 * @param strengthLevel
 	 * @return
 	 */
-	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted, StrengthLevel strengthLevel) throws MCTSException {
+	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted) throws MCTSException {
 		Board jassBoard;
 		NeuralNetwork network;
+		StrengthLevel strengthLevel;
 		if (isChoosingTrumpf) {
-			network = getNetwork(gameSession.getTrumpfSelectingPlayer());
+			network = gameSession.getTrumpfSelectingPlayer().getScoreEstimationNetwork();
 			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, network);
+			strengthLevel = mctsConfig.getTrumpfStrengthLevel();
 		} else {
-			network = getNetwork(gameSession.getCurrentGame().getCurrentPlayer());
+			network = gameSession.getCurrentGame().getCurrentPlayer().getScoreEstimationNetwork();
 			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), network);
+			strengthLevel = mctsConfig.getCardStrengthLevel();
 		}
 		long numRuns = strengthLevel.getNumRuns();
 		if (network != null) {
 			logger.info("Using a value estimator network to determine the score");
-			if (runMode == RunMode.RUNS) {
-				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random PLAYOUT
+			if (mctsConfig.getRunMode() == RunMode.RUNS) {
+				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random playout
 				logger.info("Running only {} runs per determinization.", numRuns);
 			}
 		} else
 			logger.info("Using a random playout to determine the score");
 
 		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.getNumDeterminizationsFactor());
-		if (runMode == RunMode.RUNS)
+		if (mctsConfig.getRunMode() == RunMode.RUNS)
 			return mcts.runForRuns(jassBoard, numDeterminizations, numRuns);
-		else if (runMode == RunMode.TIME)
+		else if (mctsConfig.getRunMode() == RunMode.TIME)
 			return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.getMaxThinkingTime() - BUFFER_TIME_MILLIS);
 		return null;
-	}
-
-	private NeuralNetwork getNetwork(Player player) {
-		return player.isValueEstimaterUsed() ? JassTheRipperJassStrategy.getInstance().getNeuralNetwork(player.isNetworkTrainable()) : null;
 	}
 
 	private int computeNumDeterminizations(GameSession gameSession, boolean isChoosingTrumpf, int numDeterminizationsFactor) {

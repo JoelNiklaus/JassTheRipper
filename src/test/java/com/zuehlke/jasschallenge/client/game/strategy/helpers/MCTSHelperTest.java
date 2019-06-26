@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.MCTSConfig;
 import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
@@ -18,10 +19,6 @@ import static org.junit.Assert.assertTrue;
  * Created by joelniklaus on 06.05.17.
  */
 public class MCTSHelperTest {
-
-	private static final StrengthLevel STRENGTH_LEVEL = StrengthLevel.FAST;
-
-
 	@Test
 	public void testExecutorServiceShutsDownCorrectly() throws MCTSException {
 		final GameSession gameSession = GameSessionBuilder.newSession()
@@ -30,8 +27,10 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
-		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
+		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
+		mctsConfig.setRunMode(RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(mctsConfig);
+		mctsHelper.predictMove(cards, gameSession, false, false);
 
 		assertFalse(mctsHelper.isShutDown());
 
@@ -48,8 +47,10 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
-		mctsHelper.predictMove(cards, gameSession, true, false, STRENGTH_LEVEL);
+		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
+		mctsConfig.setRunMode(RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(mctsConfig);
+		mctsHelper.predictMove(cards, gameSession, true, false);
 	}
 
 	@Test
@@ -60,8 +61,10 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
-		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
+		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
+		mctsConfig.setRunMode(RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(mctsConfig);
+		mctsHelper.predictMove(cards, gameSession, false, false);
 	}
 
 	// TODO spätere runden testen
@@ -79,8 +82,10 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_JACK);
 
-		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
-		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
+		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
+		mctsConfig.setRunMode(RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(mctsConfig);
+		mctsHelper.predictMove(cards, gameSession, false, false);
 
 	}
 
@@ -109,8 +114,10 @@ public class MCTSHelperTest {
 
 		Set<Card> cards = EnumSet.of(Card.CLUB_QUEEN, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_EIGHT, Card.DIAMOND_SEVEN, Card.SPADE_EIGHT, Card.HEART_TEN, Card.SPADE_NINE);
 
-		MCTSHelper mctsHelper = new MCTSHelper(RunMode.RUNS);
-		mctsHelper.predictMove(cards, gameSession, false, false, STRENGTH_LEVEL);
+		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
+		mctsConfig.setRunMode(RunMode.RUNS);
+		MCTSHelper mctsHelper = new MCTSHelper(mctsConfig);
+		mctsHelper.predictMove(cards, gameSession, false, false);
 
 	}
 

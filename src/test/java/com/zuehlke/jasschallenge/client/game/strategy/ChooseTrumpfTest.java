@@ -26,7 +26,7 @@ public class ChooseTrumpfTest {
 	// TODO andere trümpfe testen
 
 	private GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
-	private JassTheRipperJassStrategy jassStrategy = JassTheRipperJassStrategy.getInstance(StrengthLevel.TEST);
+	private JassTheRipperJassStrategy jassStrategy = JassTheRipperJassStrategy.getTestInstance();
 	private int shiftValue = TrumpfSelectionHelper.MAX_SHIFT_RATING_VAL;
 
 	private Set<Card> allClubs = EnumSet.of(Card.CLUB_ACE, Card.CLUB_KING, Card.CLUB_QUEEN, Card.CLUB_JACK, Card.CLUB_TEN, Card.CLUB_NINE, Card.CLUB_EIGHT, Card.CLUB_SEVEN, Card.CLUB_SIX);
@@ -35,12 +35,6 @@ public class ChooseTrumpfTest {
 	private Set<Card> shiftOrBottomUp = EnumSet.of(Card.CLUB_SIX, Card.CLUB_EIGHT, Card.CLUB_NINE, Card.DIAMOND_SEVEN, Card.DIAMOND_EIGHT, Card.HEART_JACK, Card.HEART_SEVEN, Card.SPADE_EIGHT, Card.SPADE_NINE);
 	private Set<Card> definitelyShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_QUEEN, Card.DIAMOND_EIGHT, Card.DIAMOND_QUEEN, Card.HEART_EIGHT, Card.HEART_QUEEN, Card.SPADE_EIGHT, Card.SPADE_TEN);
 	private Set<Card> maybeShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_KING, Card.DIAMOND_NINE, Card.DIAMOND_KING, Card.HEART_SIX, Card.HEART_JACK, Card.SPADE_EIGHT, Card.SPADE_KING);
-
-	@Before
-	public void setUp() {
-		// IMPORTANT: Because the strategy is a singleton, this might affect later tests. Resetting at the end of this test
-		jassStrategy.setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
-	}
 
 	@Test
 	public void testChooseTrumpfDiamondWithGreatDiamondCards() {
@@ -192,11 +186,5 @@ public class ChooseTrumpfTest {
 		assertTrue(clubs < shiftValue);
 		jassStrategy.onSessionStarted(gameSession);
 		assertNotEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, true));
-	}
-
-	@After
-	public void tearDown() {
-		// Reset to standard behaviour
-		jassStrategy.setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 	}
 }

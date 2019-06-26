@@ -18,7 +18,7 @@ public class ChallengeBenchmarkTest {
 
 	private final static String BOT_NAME = "JassTheRipper";
 
-	private final static JassStrategy MY_STRATEGY = JassTheRipperJassStrategy.getInstance(StrengthLevel.STRONG);
+	private final static JassStrategy MY_STRATEGY = new JassTheRipperJassStrategy();
 
 	private final static int TOURNAMENT_ROUNDS = 1;
 	private final static int MAX_POINTS = 2500;
