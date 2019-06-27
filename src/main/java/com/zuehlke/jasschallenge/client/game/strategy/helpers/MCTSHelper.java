@@ -1,8 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.MCTSConfig;
 import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
@@ -37,6 +35,7 @@ public class MCTSHelper implements Serializable {
 		this.mctsConfig = mctsConfig;
 
 		// TODO tune parameters
+		mcts.setScoreBoundsUsed(mctsConfig.getScoreBoundsUsed());
 		mcts.setExplorationConstant(mctsConfig.getExplorationConstant());
 		mcts.setOptimisticBias(mctsConfig.getOptimisticBias());
 		mcts.setPessimisticBias(mctsConfig.getPessimisticBias());

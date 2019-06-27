@@ -61,4 +61,5 @@ public enum StrengthLevel {
 				", maxThinkingTime=" + maxThinkingTime +
 				", numRuns=" + numRuns +
 				'}';
-	}}
+	}
+}

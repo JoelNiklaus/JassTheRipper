@@ -1,8 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts.src;
 
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +22,8 @@ public class MCTS {
 	private final int seed = 42;
 	private final Random random = new Random(seed);
 
-	private boolean rootParallelisation;
-	private boolean scoreBounds;
+	private boolean rootParallelisationEnabled;
+	private boolean scoreBoundsUsed;
 	private double explorationConstant = Math.sqrt(2.0);
 	private double pessimisticBias = 0.0;
 	private double optimisticBias = 0.0;
@@ -47,7 +45,7 @@ public class MCTS {
 	 * @return
 	 */
 	public Move runForTime(Board startingBoard, int numDeterminizations, long endingTime) throws MCTSException {
-		if (!rootParallelisation) {
+		if (!rootParallelisationEnabled) {
 			logger.info("Only running one determinization :(");
 			return executeByTime(startingBoard, endingTime);
 		} else {
@@ -71,7 +69,7 @@ public class MCTS {
 	 * @return
 	 */
 	public Move runForRuns(Board startingBoard, int numDeterminizations, long runs) throws MCTSException {
-		if (!rootParallelisation) {
+		if (!rootParallelisationEnabled) {
 			logger.info("Only running one determinization :(");
 			return executeByRuns(startingBoard, runs);
 		} else {
@@ -229,7 +227,7 @@ public class MCTS {
 		// Backpropagate results of playout.
 		Node node = boardNodePair.getNode();
 		node.backPropagateScore(score);
-		if (scoreBounds) {
+		if (scoreBoundsUsed) {
 			node.backPropagateBounds(score);
 		}
 	}
@@ -479,10 +477,10 @@ public class MCTS {
 	/**
 	 * Determines if score bounds should be used or not.
 	 *
-	 * @param scoreBounds
+	 * @param scoreBoundsUsed
 	 */
-	public void setScoreBounds(boolean scoreBounds) {
-		this.scoreBounds = scoreBounds;
+	public void setScoreBoundsUsed(boolean scoreBoundsUsed) {
+		this.scoreBoundsUsed = scoreBoundsUsed;
 	}
 
 	/**
@@ -543,14 +541,14 @@ public class MCTS {
 	 * IMPORTANT: A threadPool is started here. Make sure that you terminate it using the {@link #shutDown()} method in the end (might be outside this class)!
 	 **/
 	public void enableRootParallelisation(int numThreads) {
-		rootParallelisation = true;
+		rootParallelisationEnabled = true;
 
 		threadPool = Executors.newFixedThreadPool(numThreads);
 		futures = new ArrayList<>();
 	}
 
 	public boolean isParallelisationEnabled() {
-		return rootParallelisation;
+		return rootParallelisationEnabled;
 	}
 
 	/**
