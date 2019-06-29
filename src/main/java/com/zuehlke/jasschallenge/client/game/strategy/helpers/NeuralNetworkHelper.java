@@ -48,6 +48,7 @@ public class NeuralNetworkHelper {
 	 * Gets the observations of all the color permutations for the given game state.
 	 * This will generate 24 instead of just 1 observation for trumpfs which are not top-down or bottom-up.
 	 * This can be used for data augmentation purposes.
+	 * TODO an additional idea for data augmentation would be adding noise (e.g. switch 6s and 7s inside every suit
 	 *
 	 * @param game
 	 * @return

@@ -35,6 +35,7 @@ public class MCTSHelper implements Serializable {
 		this.mctsConfig = mctsConfig;
 
 		// TODO tune parameters
+		mcts.setRandom(mctsConfig.getSeed());
 		mcts.setScoreBoundsUsed(mctsConfig.getScoreBoundsUsed());
 		mcts.setExplorationConstant(mctsConfig.getExplorationConstant());
 		mcts.setOptimisticBias(mctsConfig.getOptimisticBias());

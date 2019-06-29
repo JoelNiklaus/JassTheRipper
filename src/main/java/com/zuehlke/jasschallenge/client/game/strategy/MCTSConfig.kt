@@ -10,6 +10,7 @@ class MCTSConfig {
     var trumpfStrengthLevel = StrengthLevel.INSANE
     var cardStrengthLevel = StrengthLevel.POWERFUL
 
+    var seed = 42
     var scoreBoundsUsed = false
     var explorationConstant = sqrt(2.0)
     var pessimisticBias = 0.0

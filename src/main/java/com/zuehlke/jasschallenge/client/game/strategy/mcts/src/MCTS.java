@@ -19,14 +19,13 @@ import java.util.concurrent.*;
  * The main class responsible for the Monte Carlo Tree Search Method.
  */
 public class MCTS {
-	private final int seed = 42;
-	private final Random random = new Random(seed);
 
+	private Random random = new Random(42);
 	private boolean rootParallelisationEnabled;
 	private boolean scoreBoundsUsed;
 	private double explorationConstant = Math.sqrt(2.0);
-	private double pessimisticBias = 0.0;
-	private double optimisticBias = 0.0;
+	private double pessimisticBias;
+	private double optimisticBias;
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD;
 	private HeuristicFunction heuristicFunction;
 	private PlayoutSelection playoutPolicy;
@@ -579,6 +578,10 @@ public class MCTS {
 		}
 
 		return true;
+	}
+
+	public void setRandom(int seed) {
+		this.random = new Random(seed);
 	}
 
 	protected abstract class MCTSTask implements Callable<Move> {

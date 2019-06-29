@@ -17,7 +17,7 @@ class Config {
     // In other situations they seem to be comparable
     var trumpfSelectionMethod = TrumpfSelectionMethod.RULE_BASED
 
-    constructor() {}
+    constructor()
 
     constructor(mctsEnabled: Boolean, scoreEstimaterUsed: Boolean, scoreEstimatorTrainable: Boolean) {
         this.isMctsEnabled = mctsEnabled

@@ -344,7 +344,7 @@ public class Arena {
 		observations = EvictingQueue.create(size);
 		labels = EvictingQueue.create(size);
 
-		// NOTE: give the training a head start by using a pretrained network
+		// NOTE: give the training a head start by using a pre-trained network
 		if (SUPERVISED_PRETRAINING_ENABLED) {
 			final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
 			if (scoreEstimationNetwork != null) scoreEstimationNetwork.load(scoreEstimatorFilePath);
