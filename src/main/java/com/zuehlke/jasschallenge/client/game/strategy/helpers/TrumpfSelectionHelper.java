@@ -21,7 +21,7 @@ public class TrumpfSelectionHelper {
 	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
 	// --> The higher this value, the more likely shifting is.
 	public static final int MAX_SHIFT_RATING_VAL = 100;
-	public static final int TOP_TRUMPF_THRESHOLD = 30; // INFO: very conservative at the moment. Can probably be increased
+	public static final int TOP_TRUMPF_THRESHOLD = MAX_SHIFT_RATING_VAL; // NOTE: Set to a lower value when confidence in MCTS Trumpf Selection increases
 
 	private TrumpfSelectionHelper() {
 
@@ -64,7 +64,7 @@ public class TrumpfSelectionHelper {
 	public static List<Mode> getTopTrumpfChoices(Set<Card> availableCards, boolean isGschobe) {
 		final LinkedHashMap<Mode, Integer> trumpfRatings = rateModes(availableCards, isGschobe);
 		List<Mode> topTrumpfChoices = trumpfRatings.entrySet().stream()
-				.filter(e -> e.getValue() > TOP_TRUMPF_THRESHOLD)
+				.filter(e -> e.getValue() >= TOP_TRUMPF_THRESHOLD)
 				.map(Map.Entry::getKey)
 				.collect(Collectors.toList());
 		if (topTrumpfChoices.isEmpty()) // if no trumpf can make the cut, add the best one
@@ -73,7 +73,7 @@ public class TrumpfSelectionHelper {
 	}
 
 	/**
-	 * Calculates the values for each mode and sorts them in decending order:
+	 * Calculates the values for each mode and sorts them in descending order:
 	 * The first entry contains the highest rating and its corresponding mode.
 	 * The last entry contains the lowest rating and its corresponding mode.
 	 *
@@ -105,7 +105,7 @@ public class TrumpfSelectionHelper {
 				.stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.forEachOrdered(x -> sortedTrumpfRatings.put(x.getKey(), x.getValue()));
-		logger.info("Rule-based TrumpfRatings: {}", sortedTrumpfRatings);
+		logger.debug("Rule-based TrumpfRatings: {}", sortedTrumpfRatings);
 		return sortedTrumpfRatings;
 	}
 

@@ -17,17 +17,16 @@ import static java.util.Arrays.asList;
 public class GameSessionBuilder {
 
 	private Mode startedGameMode = null;
-	private JassStrategy jassStrategy = JassTheRipperJassStrategy.getTestInstance();
 
 	private Set<Card> cards0 = EnumSet.of(Card.CLUB_QUEEN, Card.CLUB_ACE, Card.HEART_SIX, Card.HEART_JACK, Card.HEART_KING, Card.DIAMOND_SEVEN, Card.DIAMOND_QUEEN, Card.SPADE_TEN, Card.SPADE_KING);
 	private Set<Card> cards1 = EnumSet.of(Card.CLUB_NINE, Card.CLUB_JACK, Card.HEART_EIGHT, Card.HEART_NINE, Card.DIAMOND_EIGHT, Card.DIAMOND_NINE, Card.DIAMOND_TEN, Card.SPADE_EIGHT, Card.SPADE_QUEEN);
 	private Set<Card> cards2 = EnumSet.of(Card.CLUB_KING, Card.CLUB_EIGHT, Card.HEART_SEVEN, Card.HEART_QUEEN, Card.DIAMOND_JACK, Card.DIAMOND_KING, Card.SPADE_SEVEN, Card.SPADE_JACK, Card.SPADE_ACE);
 	private Set<Card> cards3 = EnumSet.of(Card.CLUB_SIX, Card.CLUB_TEN, Card.CLUB_SEVEN, Card.HEART_TEN, Card.HEART_ACE, Card.DIAMOND_SIX, Card.DIAMOND_ACE, Card.SPADE_SIX, Card.SPADE_NINE);
 
-	private Player player0 = new Player("0", "Player0", 0, cards0, jassStrategy);
-	private Player player1 = new Player("1", "Player1", 1, cards1, jassStrategy);
-	private Player player2 = new Player("2", "Player2", 2, cards2, jassStrategy);
-	private Player player3 = new Player("3", "Player3", 3, cards3, jassStrategy);
+	private Player player0 = new Player("0", "Player0", 0, cards0, JassTheRipperJassStrategy.getTestInstance());
+	private Player player1 = new Player("1", "Player1", 1, cards1, JassTheRipperJassStrategy.getTestInstance());
+	private Player player2 = new Player("2", "Player2", 2, cards2, JassTheRipperJassStrategy.getTestInstance());
+	private Player player3 = new Player("3", "Player3", 3, cards3, JassTheRipperJassStrategy.getTestInstance());
 
 	private List<Player> playingOrder = asList(player0, player1, player2, player3);
 
