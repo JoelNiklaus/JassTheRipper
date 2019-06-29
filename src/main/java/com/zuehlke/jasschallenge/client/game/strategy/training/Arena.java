@@ -4,6 +4,7 @@ import com.google.common.collect.EvictingQueue;
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
@@ -31,15 +32,17 @@ public class Arena {
 			"_weight-decay=" + NeuralNetwork.WEIGHT_DECAY +
 			"_seed=" + NeuralNetwork.SEED;
 	public static final String SCORE_ESTIMATOR_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/ScoreEstimator.zip"; // Can be opened externally
-	public static final String DATASET_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/random_playout_start.dataset";// TODO what are the typical file extensions?
-	private static final int NUM_EPISODES = 100; // TEST: 1
-	private static final int NUM_TRAINING_GAMES = 100; // Should be an even number, TEST: 2
-	private static final int NUM_TESTING_GAMES = 100; // Should be an even number, TEST: 2
+	public static final String DATASET_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/random_playout_start.dataset";
+	public static final String FEATURES_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/features.npy";
+	public static final String LABELS_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/labels.npy";
+	private static final int NUM_EPISODES = 1; // TEST: 1
+	private static final int NUM_TRAINING_GAMES = 2; // Should be an even number, TEST: 2
+	private static final int NUM_TESTING_GAMES = 2; // Should be an even number, TEST: 2
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
 	public static final int SEED = 42;
 
-	private static final int SAVE_DATASET_FREQUENCY = 10;
+	private static final int SAVE_DATASET_FREQUENCY = 1;
 
 
 	private String scoreEstimatorFilePath;
@@ -114,7 +117,7 @@ public class Arena {
 	public void pretrainNetwork(String dataSetFilePath) {
 		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
 		try {
-			final DataSet dataSet = NeuralNetwork.loadDataSet(dataSetFilePath);
+			final DataSet dataSet = NeuralNetworkHelper.loadDataSet(dataSetFilePath);
 			System.out.println(dataSet);
 			scoreEstimationNetwork.train(dataSet, 500);
 			updateAndSaveNetwork(scoreEstimationNetwork, scoreEstimatorFilePath);
@@ -129,7 +132,7 @@ public class Arena {
 		// Set the frozen networks of the players of team 1 to a copy of the trainable network
 		gameSession.getPlayersOfTeam(1).forEach(player -> player.setScoreEstimationNetwork(new NeuralNetwork(scoreEstimationNetwork)));
 		// Checkpoint so we don't lose any training progress
-		scoreEstimationNetwork.saveModel(scoreEstimatorFilePath);
+		scoreEstimationNetwork.save(scoreEstimatorFilePath);
 	}
 
 
@@ -239,8 +242,8 @@ public class Arena {
 			logger.info("Result of game #{}: {}\n", i, result);
 
 			if (dataSetFilePath != null && i % SAVE_DATASET_FREQUENCY == 0) {
-				final DataSet dataSet = NeuralNetwork.buildDataSet(observations, labels);
-				NeuralNetwork.saveDataSet(dataSet, dataSetFilePath);
+				final DataSet dataSet = NeuralNetworkHelper.buildDataSet(observations, labels);
+				NeuralNetworkHelper.saveDataSet(dataSet, dataSetFilePath);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -270,7 +273,7 @@ public class Arena {
 				player.onMoveMade(move, gameSession);
 
 				if (collectExperiences) // NOTE: only collect high quality experiences
-					observationsWithPlayer.put(NeuralNetwork.getObservation(game), player);
+					NeuralNetworkHelper.getAnalogousObservations(game).forEach(observation -> observationsWithPlayer.put(observation, player));
 			}
 			gameSession.startNextRound();
 		}
@@ -344,7 +347,7 @@ public class Arena {
 		// NOTE: give the training a head start by using a pretrained network
 		if (SUPERVISED_PRETRAINING_ENABLED) {
 			final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
-			if (scoreEstimationNetwork != null) scoreEstimationNetwork.loadModel(scoreEstimatorFilePath);
+			if (scoreEstimationNetwork != null) scoreEstimationNetwork.load(scoreEstimatorFilePath);
 		}
 	}
 
@@ -353,7 +356,7 @@ public class Arena {
 			player.onSessionFinished();
 		}
 		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
-		if (scoreEstimationNetwork != null) scoreEstimationNetwork.saveModel(scoreEstimatorFilePath);
+		if (scoreEstimationNetwork != null) scoreEstimationNetwork.save(scoreEstimatorFilePath);
 		logger.info("Successfully terminated the training process\n");
 	}
 }

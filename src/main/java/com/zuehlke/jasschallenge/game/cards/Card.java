@@ -1,5 +1,7 @@
 package com.zuehlke.jasschallenge.game.cards;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 
 public enum Card implements Serializable {
@@ -49,6 +51,10 @@ public enum Card implements Serializable {
 	Card(Color color, CardValue value) {
 		this.value = value;
 		this.color = color;
+	}
+
+	public static Card getCard(Color color, CardValue value) {
+		return Card.valueOf(StringUtils.chop(color.name()) + "_" + value.name());
 	}
 
 	public boolean hasSameColor(Card other) {
