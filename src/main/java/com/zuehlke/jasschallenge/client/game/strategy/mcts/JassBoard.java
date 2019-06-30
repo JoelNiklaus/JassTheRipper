@@ -133,16 +133,16 @@ public class JassBoard implements Board, Serializable {
 
 			// INFO: This would be pruning for cards. At the moment we do not want to do this.
 			// It could be a possiblity later on if we see that the bot still plays badly in the first 1-3 moves of a game.
+			/*
 			try {
-				//logger.info("Possible cards before refining: " + possibleCards);
-				//possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
-				//logger.info("Possible cards after refining: " + possibleCards);
+				logger.info("Possible cards before refining: " + possibleCards);
+				possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
+				logger.info("Possible cards after refining: " + possibleCards);
 			} catch (Exception e) {
 				logger.debug("{}", e);
 				logger.info("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
 			}
-
-			assert !possibleCards.isEmpty();
+			*/
 
 			for (Card card : possibleCards)
 				moves.add(new CardMove(player, card));

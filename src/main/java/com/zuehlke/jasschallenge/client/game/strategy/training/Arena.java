@@ -109,7 +109,7 @@ public class Arena {
 		setUp(true);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		runMCTSWithRandomPlayout(random, numTrainingGames, true, dataSetFilePath);
+		runMCTSWithRandomPlayout(random, numTrainingGames, true, dataSetFilePath, false);
 
 		tearDown();
 	}
@@ -174,17 +174,17 @@ public class Arena {
 
 	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
 		setUp(false);
-		final double performance = performMatch(random, numGames, false, null, configs);
+		final double performance = performMatch(random, numGames, false, null, configs, true);
 		tearDown();
 		return performance;
 	}
 
-	private double runMCTSWithRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+	private double runMCTSWithRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, boolean orthogonalCardsEnabled) {
 		Config[] configs = {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs);
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, orthogonalCardsEnabled);
 	}
 
 	private double runMCTSWithValueEstimators(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
@@ -192,7 +192,7 @@ public class Arena {
 				new Config(true, true, true),
 				new Config(true, true, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs);
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, true);
 	}
 
 	private double runOnlyNetworks(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
@@ -200,7 +200,7 @@ public class Arena {
 				new Config(false, true, true),
 				new Config(false, true, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs);
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, true);
 	}
 
 	private double runScoreEstimatorAgainstRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
@@ -208,7 +208,7 @@ public class Arena {
 				new Config(true, true, true),
 				new Config(true, false, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs);
+		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, true);
 	}
 
 	/**
@@ -218,16 +218,19 @@ public class Arena {
 	 * @param collectExperiences
 	 * @param dataSetFilePath
 	 * @param configs
+	 * @param orthogonalCardsEnabled determines if two consecutive matches are played with the "same" cards or not
+	 *                               if true: we get a more fair tournament
+	 *                               if false: we get a more random tournament
 	 * @return
 	 */
-	private double performMatch(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, Config[] configs) {
+	private double performMatch(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, Config[] configs, boolean orthogonalCardsEnabled) {
 		gameSession.getPlayersOfTeam(0).forEach(player -> player.setConfig(configs[0]));
 		gameSession.getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
 
-		return playGames(random, numGames, collectExperiences, dataSetFilePath);
+		return playGames(random, numGames, collectExperiences, dataSetFilePath, orthogonalCardsEnabled);
 	}
 
-	private double playGames(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+	private double playGames(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, boolean orthogonalCardsEnabled) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
@@ -235,7 +238,12 @@ public class Arena {
 		for (int i = 0; i < numGames; i++) {
 			logger.info("Running game #{}\n", i);
 
-			orthogonalCards = dealCards(cards, orthogonalCards);
+			if (orthogonalCardsEnabled)
+				orthogonalCards = dealCards(cards, orthogonalCards);
+			else {
+				Collections.shuffle(cards, random);
+				gameSession.dealCards(cards);
+			}
 			performTrumpfSelection();
 			Result result = playGame(collectExperiences);
 
