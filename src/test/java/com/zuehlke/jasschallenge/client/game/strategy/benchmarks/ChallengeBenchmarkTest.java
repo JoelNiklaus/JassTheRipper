@@ -2,7 +2,6 @@ package com.zuehlke.jasschallenge.client.game.strategy.benchmarks;
 
 import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
-import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
 import org.json.JSONException;
 import org.junit.Test;
 
@@ -14,7 +13,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ChallengeBenchmarkTest {
 
-	private static final boolean RUN_BENCHMARK = false;
+	private static final boolean RUN_BENCHMARKS = false;
 
 	private final static String BOT_NAME = "JassTheRipper";
 
@@ -27,7 +26,7 @@ public class ChallengeBenchmarkTest {
 	@Test
 	public void testWinsAgainstChallengeWithChallengeAsTeam1() throws JSONException, InterruptedException {
 		Thread.sleep(1000);
-		if (RUN_BENCHMARK) {
+		if (RUN_BENCHMARKS) {
 			System.out.println("Running benchmark with " + TOURNAMENT_ROUNDS + " tournament round(s) to " + MAX_POINTS + " points with random seed " + SEED + " and with the Challenge bots as team 1");
 			BenchmarkRunner.runBenchmark(MY_STRATEGY, BOT_NAME, TOURNAMENT_ROUNDS, MAX_POINTS, SEED, true);
 			assertTrue(BenchmarkRunner.evaluateResult() < 0); // INFO: We want the JassTheRipper bots (Team 2 (!)) to win
@@ -37,7 +36,7 @@ public class ChallengeBenchmarkTest {
 	@Test
 	public void testWinsAgainstChallengeWithJassTheRipperAsTeam1() throws JSONException, InterruptedException {
 		Thread.sleep(1000);
-		if (RUN_BENCHMARK) {
+		if (RUN_BENCHMARKS) {
 			System.out.println("Running benchmark with " + TOURNAMENT_ROUNDS + " tournament round(s) to " + MAX_POINTS + " points with random seed " + SEED + " and with the JassTheRipper bots as team 1");
 			BenchmarkRunner.runBenchmark(MY_STRATEGY, BOT_NAME, TOURNAMENT_ROUNDS, MAX_POINTS, SEED, false);
 			assertTrue(BenchmarkRunner.evaluateResult() > 0); // INFO: We want the JassTheRipper bots (Team 1 (!)) to win

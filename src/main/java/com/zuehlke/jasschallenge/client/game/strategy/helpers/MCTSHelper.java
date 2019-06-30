@@ -78,20 +78,20 @@ public class MCTSHelper implements Serializable {
 	 */
 	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted) throws MCTSException {
 		Board jassBoard;
-		NeuralNetwork network;
+		NeuralNetwork scoreEstimator;
 		StrengthLevel strengthLevel;
 		if (isChoosingTrumpf) {
-			network = gameSession.getTrumpfSelectingPlayer().getScoreEstimationNetwork();
-			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, network);
+			scoreEstimator = gameSession.getTrumpfSelectingPlayer().getScoreEstimationNetwork();
+			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator);
 			strengthLevel = mctsConfig.getTrumpfStrengthLevel();
 		} else {
-			network = gameSession.getCurrentGame().getCurrentPlayer().getScoreEstimationNetwork();
-			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), network);
+			scoreEstimator = gameSession.getCurrentGame().getCurrentPlayer().getScoreEstimationNetwork();
+			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), scoreEstimator);
 			strengthLevel = mctsConfig.getCardStrengthLevel();
 		}
 		long numRuns = strengthLevel.getNumRuns();
-		if (network != null) {
-			logger.info("Using a value estimator network to determine the score");
+		if (scoreEstimator != null) {
+			logger.info("Using a score estimator network to determine the score");
 			if (mctsConfig.getRunMode() == RunMode.RUNS) {
 				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random playout
 				logger.info("Running only {} runs per determinization.", numRuns);

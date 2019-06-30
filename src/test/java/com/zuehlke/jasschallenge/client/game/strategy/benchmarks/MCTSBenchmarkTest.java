@@ -10,12 +10,13 @@ import static com.zuehlke.jasschallenge.client.game.strategy.training.Arena.IMPR
 import static org.junit.Assert.assertTrue;
 
 public class MCTSBenchmarkTest {
+
+	private static final boolean RUN_BENCHMARKS = false;
+
 	private static final long SEED = 42;
 	private static final int NUM_GAMES = 10;
 
 	private Arena arena = new Arena(Arena.SCORE_ESTIMATOR_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
-
-	private static final boolean RUN_BENCHMARKS = false;
 
 	/**
 	 * Tests if it is worthwhile to use the MCTS trumpf selection method

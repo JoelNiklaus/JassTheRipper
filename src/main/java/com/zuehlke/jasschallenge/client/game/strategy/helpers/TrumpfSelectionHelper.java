@@ -50,7 +50,9 @@ public class TrumpfSelectionHelper {
 	 * @return
 	 */
 	public static Mode predictTrumpf(Set<Card> availableCards, boolean isGschobe) {
-		return rateModes(availableCards, isGschobe).entrySet().iterator().next().getKey();
+		final LinkedHashMap<Mode, Integer> trumpfRatings = rateModes(availableCards, isGschobe);
+		logger.info("Sorted Trumpf Ratings: {}", trumpfRatings);
+		return trumpfRatings.entrySet().iterator().next().getKey();
 	}
 
 	/**
