@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from keras.callbacks import TensorBoard, EarlyStopping
 from keras.models import Sequential
@@ -17,11 +18,12 @@ model.add(Dense(units=128, activation='relu'))
 model.add(Dense(units=1, activation='sigmoid'))
 model.compile(loss='mae', optimizer='adam', metrics=['mae', 'mse', 'mape'])
 
-basepath = "/Users/joelito/MEGA/Studium/Master/Informatik/Masterarbeit/Code/JassTheRipper/src/main/resources/"
+rootPath = Path(os.path.realpath(__file__)).parent.parent.parent.parent.parent.parent.parent.parent.parent.parent
+basepath = str(rootPath) + "/resources/"
 datasetPath = basepath + "datasets/"
-createIfNotExists(datasetPath)
+#createIfNotExists(datasetPath)
 modelsPath = basepath + "models/"
-createIfNotExists(modelsPath)
+#createIfNotExists(modelsPath)
 features = np.load(datasetPath + "features.npy")
 labels = np.load(datasetPath + "labels.npy")
 x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.33)

@@ -45,9 +45,7 @@ public class Arena {
 	public static final int SEED = 42;
 	public static final double TOTAL_POINTS = 157.0; // TODO 257 or 157 better here?
 
-
 	private static final int SAVE_DATASET_FREQUENCY = 1;
-
 
 	private String scoreEstimatorFilePath;
 	private final int numTrainingGames;
@@ -68,7 +66,7 @@ public class Arena {
 		logger.info("Collecting a dataset of games played with random playouts\n");
 		arena.collectDataSetRandomPlayouts(10);
 
-		logger.info("Pretraining a score estimator network\n");
+		logger.info("Pre-training a score estimator network\n");
 		NeuralNetworkHelper.pretrainScoreEstimator();
 
 		logger.info("Training the score estimator network with self-play\n");
@@ -363,7 +361,7 @@ public class Arena {
 			if (scoreEstimationNetwork != null) {
 				scoreEstimationNetwork.loadKerasModel(SCORE_ESTIMATOR_MODEL_PATH);
 				// scoreEstimationNetwork.load(scoreEstimatorFilePath);
-				logger.info("Successfully loaded pretrained score estimator network.");
+				logger.info("Successfully loaded pre-trained score estimator network.");
 			}
 		}
 	}

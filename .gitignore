@@ -4,3 +4,5 @@ build
 *.log
 *.iml
 out
+src/main/resources/datasets
+src/main/resources/models

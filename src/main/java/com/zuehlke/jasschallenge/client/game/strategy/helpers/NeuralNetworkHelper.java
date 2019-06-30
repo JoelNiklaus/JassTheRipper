@@ -9,9 +9,6 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
-import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
-import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
-import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -39,7 +36,7 @@ public class NeuralNetworkHelper {
 	}
 
 	private static boolean pretrainKerasModel(String model) {
-		final String directory = "/Users/joelito/MEGA/Studium/Master/Informatik/Masterarbeit/Code/JassTheRipper/src/main/java/com/zuehlke/jasschallenge/client/game/strategy/training/keras";
+		final String directory = System.getProperty("user.dir") + "/src/main/java/com/zuehlke/jasschallenge/client/game/strategy/training/python";
 		String command = "python3 " + model + ".py";
 
 		return ShellScriptRunner.runShellProcess(directory, command);
