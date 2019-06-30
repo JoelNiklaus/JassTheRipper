@@ -6,9 +6,7 @@ import static com.zuehlke.jasschallenge.client.game.strategy.training.Arena.IMPR
 
 public class ArenaTest {
 
-
 	private Arena arena = new Arena(Arena.SCORE_ESTIMATOR_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
-
 
 	@Test
 	public void train() {

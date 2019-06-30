@@ -12,11 +12,9 @@ import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
 import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.io.ClassPathResource;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +30,19 @@ public class NeuralNetworkHelper {
 	public static final Logger logger = LoggerFactory.getLogger(NeuralNetworkHelper.class);
 
 
-	public static MultiLayerNetwork importKerasModel(String filePath) throws IOException, InvalidKerasConfigurationException, UnsupportedKerasConfigurationException {
-		String simpleMlp = new ClassPathResource(filePath).getFile().getPath(); // INFO: At the base of the resources folder
-		MultiLayerNetwork model = KerasModelImport.importKerasSequentialModelAndWeights(simpleMlp);
+	public static boolean pretrainCardsEstimator() {
+		return pretrainKerasModel("cards_estimator");
+	}
 
-		INDArray input = Nd4j.create(256, 100);
-		INDArray output = model.output(input);
-		System.out.println(output);
+	public static boolean pretrainScoreEstimator() {
+		return pretrainKerasModel("score_estimator");
+	}
 
-		return model;
+	private static boolean pretrainKerasModel(String model) {
+		final String directory = "/Users/joelito/MEGA/Studium/Master/Informatik/Masterarbeit/Code/JassTheRipper/src/main/java/com/zuehlke/jasschallenge/client/game/strategy/training/keras";
+		String command = "python3 " + model + ".py";
+
+		return ShellScriptRunner.runShellProcess(directory, command);
 	}
 
 	/**
@@ -243,15 +245,15 @@ public class NeuralNetworkHelper {
 	}
 
 	public static boolean saveDataSet(DataSet dataSet) {
-		if (createIfNotExists(new File(Arena.DATASET_BASE_PATH))) {
+		if (createIfNotExists(new File(Arena.DATASETS_BASE_PATH))) {
 			try {
 				dataSet.save(new File(Arena.DATASET_PATH));
 
-				Nd4j.writeTxt(dataSet.getFeatures(), Arena.DATASET_PATH + "features.txt");
-				Nd4j.writeTxt(dataSet.getLabels(), Arena.DATASET_PATH + "labels.txt");
+				Nd4j.writeTxt(dataSet.getFeatures(), Arena.DATASETS_BASE_PATH + "features.txt");
+				Nd4j.writeTxt(dataSet.getLabels(), Arena.DATASETS_BASE_PATH + "labels.txt");
 
-				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(Arena.DATASET_PATH + "features.npy"));
-				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(Arena.DATASET_PATH + "labels.npy"));
+				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(Arena.DATASETS_BASE_PATH + "features.npy"));
+				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(Arena.DATASETS_BASE_PATH + "labels.npy"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

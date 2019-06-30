@@ -5,6 +5,7 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.GradientNormalization;
@@ -12,6 +13,9 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
+import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
+import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -29,8 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-
-import static java.util.Arrays.asList;
 
 public class NeuralNetwork implements Serializable {
 	public static final int NUM_INPUT_ROWS = 72; // 36 + 9 + 9 + 9 + 9
@@ -96,7 +98,7 @@ public class NeuralNetwork implements Serializable {
 			clonedGame.makeMove(new CardMove(player, card));
 
 			// TODO maybe it is more efficient to do all the forward passes at the same time and not one by one
-			actionValuePairs.put(card, 157 - predictValue(clonedGame)); // NOTE: 157 - value because the value is from the perspective of a player of the opponent team
+			actionValuePairs.put(card, Arena.TOTAL_POINTS - predictValue(clonedGame)); // NOTE: 157 - value because the value is from the perspective of a player of the opponent team
 		}
 		Card bestCard = actionValuePairs.entrySet()
 				.stream()
@@ -109,7 +111,7 @@ public class NeuralNetwork implements Serializable {
 
 	public double predictValue(Game game) {
 		// INFO: We disregard the match bonus for simplicity
-		return 157 * predict(Collections.singletonList(NeuralNetworkHelper.getObservation(game)))[0];
+		return Arena.TOTAL_POINTS * predict(Collections.singletonList(NeuralNetworkHelper.getObservation(game)))[0];
 	}
 
 	/**
@@ -158,14 +160,31 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
-	public MultiLayerNetwork load(String filePath) {
+	public boolean load(String filePath) {
 		try {
 			model = ModelSerializer.restoreMultiLayerNetwork((filePath));
 			logger.info("Loaded saved model from {}", filePath);
-			return model;
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		logger.error("Could not load saved model from {}", filePath);
+		return false;
+	}
+
+	public boolean loadKerasModel(String filePath) {
+		try {
+			model = KerasModelImport.importKerasSequentialModelAndWeights(filePath);
+			logger.info("Loaded saved model from {}", filePath);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (UnsupportedKerasConfigurationException e) {
+			e.printStackTrace();
+		} catch (InvalidKerasConfigurationException e) {
+			e.printStackTrace();
+		}
+		logger.error("Could not load saved model from {}", filePath);
+		return false;
 	}
 }

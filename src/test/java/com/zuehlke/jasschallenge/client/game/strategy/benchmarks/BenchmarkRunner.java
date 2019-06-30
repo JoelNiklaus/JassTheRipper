@@ -5,6 +5,7 @@ import com.google.common.io.Files;
 import com.zuehlke.jasschallenge.client.RemoteGame;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.ShellScriptRunner;
 import com.zuehlke.jasschallenge.messages.type.SessionType;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +18,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -104,7 +104,7 @@ public class BenchmarkRunner {
 					+ " MAX_POINTS=" + maxPoints
 					+ " DECK_SHUFFLE_SEED=" + seed
 					+ " npm run start:tournament";
-			startShellProcess(processes, "../jass-server", command);
+			ShellScriptRunner.startShellProcessInThread(processes, "../jass-server", command);
 
 			// INFO: if the bots fail to connect, it may be because the server has not yet started. Increase the time sleeping
 			waitForStartup("Wait for jass server to start...", 7500);
@@ -133,14 +133,14 @@ public class BenchmarkRunner {
 			System.out.println("JassTheRipper bots successfully terminated.");
 
 			try {
-				killProcess(processes.get(0), 15);
+				ShellScriptRunner.killProcess(processes.get(0), 15);
 				System.out.println("Jass Server successfully terminated.");
 
 				// Challenge bots will terminate automatically when the Jass Server is shutdown
 				// But if they do not:
 				if (!processes.isEmpty()) {
 					// Try to kill them
-					killProcess(processes.get(1), 9);
+					ShellScriptRunner.killProcess(processes.get(1), 9);
 					System.out.println("Challenge Bots successfully terminated.");
 				}
 			} catch (InterruptedException | IllegalStateException | IOException e) {
@@ -160,7 +160,7 @@ public class BenchmarkRunner {
 	 * @param processes
 	 */
 	private static void startChallengeBots(ArrayList<Process> processes) {
-		startShellProcess(processes, "../bachelor-thesis-project/src/remote_play", "sudo python3 play_as_challenge_bot.py");
+		ShellScriptRunner.startShellProcessInThread(processes, "../bachelor-thesis-project/src/remote_play", "sudo python3 play_as_challenge_bot.py");
 		waitForStartup("Wait for the Challenge bots to start...", 1000);
 	}
 
@@ -236,58 +236,6 @@ public class BenchmarkRunner {
 		createNewTournament.sendKeys(Keys.ENTER);
 	}
 
-
-	private static void startShellProcess(ArrayList<Process> processes, String directory, String command) {
-		Thread thread = new Thread(() -> {
-			ProcessBuilder builder = buildShellCommand(directory, command);
-			try {
-				processes.add(builder.start());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-		thread.start();
-	}
-
-	private static ProcessBuilder buildShellCommand(String directory, String command) {
-		ProcessBuilder builder = new ProcessBuilder();
-		builder.inheritIO();
-		builder.directory(new File(directory));
-		builder.command(command.split(" "));
-		return builder;
-	}
-
-	private static void killProcess(Process process, int signal) throws InterruptedException, IOException, IllegalStateException {
-		ProcessBuilder builder = buildShellCommand("/", "kill " + signal + " " + getPidOfProcess(process));
-		int exitCode = builder.start().waitFor();
-		if (exitCode != 0) {
-			throw new IllegalStateException("<kill " + signal + "> failed, exit code: " + exitCode);
-		}
-	}
-
-	/**
-	 * Retrieves the pid of a running process with reflection.
-	 *
-	 * @param process
-	 * @return
-	 */
-	private static synchronized long getPidOfProcess(Process process) {
-		long pid = -1;
-
-		try {
-			if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
-				Field f = process.getClass().getDeclaredField("pid");
-				f.setAccessible(true);
-				pid = f.getLong(process);
-				f.setAccessible(false);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			pid = -1;
-		}
-		System.out.println("PID of " + process + " is " + pid);
-		return pid;
-	}
 
 	private static <T> void awaitFuture(Future<T> future) {
 		try {

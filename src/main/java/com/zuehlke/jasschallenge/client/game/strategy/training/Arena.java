@@ -32,14 +32,19 @@ public class Arena {
 			"_weight-decay=" + NeuralNetwork.WEIGHT_DECAY +
 			"_seed=" + NeuralNetwork.SEED;
 	public static final String SCORE_ESTIMATOR_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/ScoreEstimator.zip"; // Can be opened externally
-	public static final String DATASET_BASE_PATH = BASE_PATH + "datasets/";
-	public static final String DATASET_PATH = DATASET_BASE_PATH + "random_playout.dataset";
+	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
+	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
+	public static final String SCORE_ESTIMATOR_MODEL_PATH = MODELS_BASE_PATH + "score_estimator.h5";
+	public static final String CARDS_ESTIMATOR_MODEL_PATH = MODELS_BASE_PATH + "cards_estimator.h5";
+	public static final String DATASET_PATH = DATASETS_BASE_PATH + "random_playout.dataset";
 	private static final int NUM_EPISODES = 1; // TEST: 1
 	private static final int NUM_TRAINING_GAMES = 2; // Should be an even number, TEST: 2
 	private static final int NUM_TESTING_GAMES = 2; // Should be an even number, TEST: 2
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
 	public static final int SEED = 42;
+	public static final double TOTAL_POINTS = 157.0; // TODO 257 or 157 better here?
+
 
 	private static final int SAVE_DATASET_FREQUENCY = 1;
 
@@ -57,17 +62,17 @@ public class Arena {
 
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 
-	/**
-	 * @param args 0: "CollectDataSet" or "PretrainNetwork" or null
-	 */
 	public static void main(String[] args) {
 		final Arena arena = new Arena(SCORE_ESTIMATOR_PATH, NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
-		if ("CollectDataSet".equals(args[0]))
-			arena.collectDataSetRandomPlayouts();
-		else if ("PretrainNetwork".equals(args[0]))
-			arena.pretrainNetwork();
-		else
-			arena.trainForNumEpisodes(NUM_EPISODES);
+
+		logger.info("Collecting a dataset of games played with random playouts\n");
+		arena.collectDataSetRandomPlayouts(10);
+
+		logger.info("Pretraining a score estimator network\n");
+		NeuralNetworkHelper.pretrainScoreEstimator();
+
+		logger.info("Training the score estimator network with self-play\n");
+		arena.trainForNumEpisodes(NUM_EPISODES);
 	}
 
 	public Arena(String scoreEstimatorFilePath, int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
@@ -83,9 +88,9 @@ public class Arena {
 	public void trainForNumEpisodes(int numEpisodes) {
 		setUp(false);
 
-		List<Double> history = Arrays.asList(0.0);
+		List<Double> history = new ArrayList<>();
 		for (int i = 0; i < numEpisodes; i++) {
-			history.set(i, runEpisode(i));
+			history.add(i, runEpisode(i));
 		}
 		logger.info("Performance over the episodes:\n{}", history);
 
@@ -95,20 +100,19 @@ public class Arena {
 	public void trainUntilBetterThanRandomPlayouts() {
 		setUp(false);
 
-		List<Double> history = Arrays.asList(0.0);
+		List<Double> history = new ArrayList<>(Collections.singletonList(0.0));
 		for (int i = 0; history.get(i) < 100; i++) {
-			history.set(i, runEpisode(i));
+			history.add(i, runEpisode(i));
 		}
 		logger.info("Performance over the episodes:\n{}", history);
 
 		tearDown();
 	}
 
-	public void collectDataSetRandomPlayouts() {
+	public void collectDataSetRandomPlayouts(int numGames) {
 		setUp(true);
 
-		logger.info("Collecting a dataset of games played with random playouts\n");
-		runMCTSWithRandomPlayout(random, numTrainingGames, false);
+		runMCTSWithRandomPlayout(random, numGames, false);
 
 		tearDown();
 	}
@@ -137,13 +141,13 @@ public class Arena {
 
 	/**
 	 * Runs an episode with the following parts:
-	 * - Self play with value estimation and mcts policy improvement to collect experiences into the replay buffer
+	 * - Self play with score estimation and mcts policy improvement to collect experiences into the replay buffer
 	 * - Trains the network with the recorded games from the replay buffer
 	 * - Pits the networks against each other without the mcts policy improvement to see which one performs better
 	 * - If the learning network can outperform the frozen network by an improvementThresholdPercentage, the frozen one is updated
-	 * - Tests the performance of mcts with value estimation by playing against mcts with random playouts
+	 * - Tests the performance of mcts with score estimation by playing against mcts with random playouts
 	 *
-	 * @return the performance of mcts with value estimation against mcts with random playouts
+	 * @return the performance of mcts with score estimation against mcts with random playouts
 	 */
 	private double runEpisode(int episodeNumber) {
 		logger.info("Running episode #{}\n", episodeNumber);
@@ -164,10 +168,10 @@ public class Arena {
 			logger.info("The learning network outperformed the frozen network. Updated the frozen network\n");
 		}
 
-		logger.info("Testing MCTS with a value estimator against MCTS with random playouts\n");
+		logger.info("Testing MCTS with a score estimator against MCTS with random playouts\n");
 		final double performance = runScoreEstimatorAgainstRandomPlayout(random, numTestingGames);
 
-		logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts", episodeNumber, performance);
+		logger.info("After episode #{}, score estimation MCTS scored {}% of the points of random playout MCTS", episodeNumber, performance);
 		return performance;
 	}
 
@@ -288,7 +292,8 @@ public class Arena {
 		if (collectExperiences)
 			for (Map.Entry<INDArray, Player> entry : observationsWithPlayer.entrySet()) {
 				observations.add(entry.getKey());
-				double[] label = {game.getResult().getTeamScore(entry.getValue()) / 257.0}; // NOTE: the label is between 0 and 1 inside the network
+				// NOTE: the label is between 0 and 1 inside the network
+				double[] label = {game.getResult().getTeamScore(entry.getValue()) / TOTAL_POINTS};
 				labels.add(Nd4j.createFromArray(label));
 			}
 
@@ -345,8 +350,9 @@ public class Arena {
 		}
 
 		if (collectingDataSet)
-			replayMemorySizeFactor = 1000000; // Enough for a lot of games...
-		int size = numTrainingGames * replayMemorySizeFactor;
+			replayMemorySizeFactor = 10000; // Enough for a lot of games...
+		// 36: Number of Cards in a game, 24: Number of color permutations (data augmentation)
+		int size = 36 * 24 * numTrainingGames * replayMemorySizeFactor;
 		// When a new element is added and the queue is full, the head is removed.
 		observations = EvictingQueue.create(size);
 		labels = EvictingQueue.create(size);
@@ -354,7 +360,11 @@ public class Arena {
 		// NOTE: give the training a head start by using a pre-trained network
 		if (SUPERVISED_PRETRAINING_ENABLED) {
 			final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
-			if (scoreEstimationNetwork != null) scoreEstimationNetwork.load(scoreEstimatorFilePath);
+			if (scoreEstimationNetwork != null) {
+				scoreEstimationNetwork.loadKerasModel(SCORE_ESTIMATOR_MODEL_PATH);
+				// scoreEstimationNetwork.load(scoreEstimatorFilePath);
+				logger.info("Successfully loaded pretrained score estimator network.");
+			}
 		}
 	}
 

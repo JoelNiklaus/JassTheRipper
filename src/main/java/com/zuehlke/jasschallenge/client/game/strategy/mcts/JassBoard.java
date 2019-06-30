@@ -6,6 +6,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHel
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
@@ -291,7 +292,7 @@ public class JassBoard implements Board, Serializable {
 			if (player.equals(game.getCurrentPlayer()) || player.equals(game.getPartnerOfPlayer(game.getCurrentPlayer())))
 				score[player.getSeatId()] = value;
 			else
-				score[player.getSeatId()] = Math.max(157.0 - value, 0); // Matchbonus disregarded for simplicity
+				score[player.getSeatId()] = Math.max(Arena.TOTAL_POINTS - value, 0); // Matchbonus disregarded for simplicity
 		return score;
 	}
 

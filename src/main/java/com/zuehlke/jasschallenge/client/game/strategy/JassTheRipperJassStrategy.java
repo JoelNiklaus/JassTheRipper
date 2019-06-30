@@ -188,7 +188,7 @@ TODO Make new experiments with the improvements so far:
 					}
 				} else { // Choose the network's prediction directly, without the mcts policy enhancement
 					card = scoreEstimationNetwork.predictMove(game).getPlayedCard();
-					logger.info("Chose card based only on value estimator network.");
+					logger.info("Chose card based only on score estimator network.");
 				}
 			}
 
