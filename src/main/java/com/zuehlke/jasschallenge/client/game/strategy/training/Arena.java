@@ -278,7 +278,7 @@ public class Arena {
 				final Player player = game.getCurrentPlayer();
 				final Move move = player.makeMove(gameSession);
 				gameSession.makeMove(move);
-				player.onMoveMade(move, gameSession);
+				player.onMoveMade(move);
 
 				if (collectExperiences) // NOTE: only collect high quality experiences
 					NeuralNetworkHelper.getAnalogousObservations(game).forEach(observation -> observationsWithPlayer.put(observation, player));

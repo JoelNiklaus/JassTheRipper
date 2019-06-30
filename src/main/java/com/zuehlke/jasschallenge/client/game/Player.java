@@ -144,9 +144,9 @@ public class Player implements Serializable {
 		return jassStrategy.chooseTrumpf(cards, session, shifted);
 	}
 
-	public void onMoveMade(Move move, GameSession session) {
+	public void onMoveMade(Move move) {
 		cards.remove(move.getPlayedCard());
-		jassStrategy.onMoveMade(move, session);
+		jassStrategy.onMoveMade(move);
 	}
 
 	public void onSessionFinished() {

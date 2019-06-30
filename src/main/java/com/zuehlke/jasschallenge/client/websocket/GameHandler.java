@@ -149,7 +149,7 @@ public class GameHandler {
 
 		final Move move = new Move(player, Mapping.mapToCard(remoteCard));
 		gameSession.makeMove(move);
-		localPlayer.onMoveMade(move, gameSession);
+		localPlayer.onMoveMade(move); // NOTE: Maybe we could do this in the Round to make it easier.
 	}
 
 	public void onBroadCastStich(Stich stich) {

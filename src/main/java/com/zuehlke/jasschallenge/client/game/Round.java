@@ -50,6 +50,8 @@ public class Round implements Serializable {
 			throw new RuntimeException("Only four cards can be played in a round.");
 
 		moves.add(move);
+		// NOTE: If this method were called here it would be a bit simpler. But it breaks tests
+		// move.getPlayer().onMoveMade(move);
 		playingOrder.moveToNextPlayer();
 	}
 

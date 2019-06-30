@@ -14,7 +14,7 @@ public interface JassStrategy extends Serializable {
 
     default void onSessionStarted(GameSession session) {}
     default void onGameStarted(GameSession session) {}
-    default void onMoveMade(Move move, GameSession session) {}
+    default void onMoveMade(Move move) {}
     default void onGameFinished() {}
     default void onSessionFinished() {}
 }
