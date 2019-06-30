@@ -3,13 +3,12 @@ package com.zuehlke.jasschallenge.client.game;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.io.Serializable;
 import java.util.*;
 
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrder;
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
 
-public class GameSession implements Serializable {
+public class GameSession {
 
 	private final List<Team> teams;
 	private final PlayingOrder gameStartingPlayingOrder;

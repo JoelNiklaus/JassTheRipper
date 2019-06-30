@@ -5,14 +5,13 @@ import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Set;
 
 import static com.zuehlke.jasschallenge.game.mode.GeneralRules.calculateLastRoundBonus;
 import static java.lang.String.valueOf;
 
-class BottomUpMode extends Mode implements Serializable {
+class BottomUpMode extends Mode {
     private static final int FACTOR = 1;
 
     @Override

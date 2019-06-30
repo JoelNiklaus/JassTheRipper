@@ -16,52 +16,9 @@ import static org.junit.Assert.*;
  */
 public class DeepCopyTest {
 
-	private static final int MAX_TIME = 500 * 1000;
-	private static final int NUMBER_OF_RUNS = 1000;
-
 	private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
 
 	private GameSession gameSession = GameSessionBuilder.newSession().withStartedGame(Mode.topDown()).createGameSession();
-
-
-	@Test
-	public void testFastestCopyMechanism() {
-		// NOTE: Not necessary anymore. The fastest and most robust version is the system with the copy constructors.
-		/*
-		final GameSession gameSession = GameSessionBuilder.newSession()
-				.withStartedGame(Mode.bottomUp())
-				.createGameSession();
-
-		try {
-			long startTime = System.nanoTime();
-			SerializationUtils.clone(gameSession);
-			long elapsedTime = System.nanoTime() - startTime;
-			System.out.println("SerializationUtils " + elapsedTime + "ns");
-
-			startTime = System.nanoTime();
-			ObjectCloner.deepCopySerialization(gameSession);
-			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("ObjectCloner " + elapsedTime + "ns");
-
-			startTime = System.nanoTime();
-			new Cloner().deepClone(gameSession);
-			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("Reflection " + elapsedTime + "ns");
-
-			startTime = System.nanoTime();
-			DeepCopy.copy(gameSession);
-			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("Serialization " + elapsedTime + "ns");
-
-			startTime = System.nanoTime();
-			new GameSession(gameSession);
-			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("CopyConstructor " + elapsedTime + "ns");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		*/
-	}
 
 	@Test
 	public void testWhereTimeIsSpentCopying() {
@@ -76,77 +33,45 @@ public class DeepCopyTest {
 			long startTime = System.nanoTime();
 			new GameSession(gameSession);
 			long elapsedTime = System.nanoTime() - startTime;
-			System.out.println("GameSession " + elapsedTime + "ns");
+			System.out.println("GameSession " + elapsedTime / 1000 + "µs");
 
 			startTime = System.nanoTime();
 			new Game(gameSessionStarted.getCurrentGame());
 			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("Game " + elapsedTime + "ns");
+			System.out.println("Game " + elapsedTime / 1000 + "µs");
 
 			startTime = System.nanoTime();
 			new Player(gameSessionStarted.getCurrentGame().getCurrentPlayer());
 			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("Player " + elapsedTime + "ns");
+			System.out.println("Player " + elapsedTime / 1000 + "µs");
 
 			startTime = System.nanoTime();
 			new Round(gameSessionStarted.getCurrentGame().getCurrentRound());
 			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("Round " + elapsedTime + "ns");
+			System.out.println("Round " + elapsedTime / 1000 + "µs");
 
 			startTime = System.nanoTime();
 			new PlayingOrder(gameSessionStarted.getCurrentGame().getOrder());
 			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("PlayingOrder " + elapsedTime + "ns");
+			System.out.println("PlayingOrder " + elapsedTime / 1000 + "µs");
+
+			startTime = System.nanoTime();
+			new Team(gameSessionStarted.getTeams().get(0));
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("Team " + elapsedTime / 1000 + "µs");
+
+			startTime = System.nanoTime();
+			new TeamScore(gameSessionStarted.getCurrentGame().getResult().getTeamAScore());
+			elapsedTime = System.nanoTime() - startTime;
+			System.out.println("TeamScore " + elapsedTime / 1000 + "µs");
 
 			startTime = System.nanoTime();
 			new Result(gameSessionStarted.getCurrentGame().getResult());
 			elapsedTime = System.nanoTime() - startTime;
-			System.out.println("Result " + elapsedTime + "ns");
+			System.out.println("Result " + elapsedTime / 1000 + "µs");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Test
-	public void testMostRobustCopyMechanism() {
-		// NOTE: Not necessary anymore. The fastest and most robust version is the system with the copy constructors.
-		/*
-		for (int i = 0; i < NUMBER_OF_RUNS; i++) {
-			try {
-				long startTime = System.nanoTime();
-				SerializationUtils.clone(gameSession);
-				long elapsedTime = System.nanoTime() - startTime;
-				if (elapsedTime > MAX_TIME)
-					System.out.println("SerializationUtils " + elapsedTime + "ns");
-
-				startTime = System.nanoTime();
-				ObjectCloner.deepCopySerialization(gameSession);
-				elapsedTime = System.nanoTime() - startTime;
-				if (elapsedTime > MAX_TIME)
-					System.out.println("ObjectCloner " + elapsedTime + "ns");
-
-				startTime = System.nanoTime();
-				new Cloner().deepClone(gameSession);
-				elapsedTime = System.nanoTime() - startTime;
-				if (elapsedTime > MAX_TIME)
-					System.out.println("Reflection " + elapsedTime + "ns");
-
-				startTime = System.nanoTime();
-				DeepCopy.copy(gameSession);
-				elapsedTime = System.nanoTime() - startTime;
-				if (elapsedTime > MAX_TIME)
-					System.out.println("Serialization " + elapsedTime + "ns");
-
-				startTime = System.nanoTime();
-				new GameSession(gameSession);
-				elapsedTime = System.nanoTime() - startTime;
-				if (elapsedTime > MAX_TIME)
-					System.out.println("CopyConstructor " + elapsedTime + "ns");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		*/
 	}
 
 	@Test

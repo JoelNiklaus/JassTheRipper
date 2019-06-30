@@ -3,15 +3,12 @@ package com.zuehlke.jasschallenge.client.game;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
-
-public class Game implements Serializable {
+public class Game {
 	public static final int LAST_ROUND_NUMBER = 8;
 	private final Mode mode;
 	private Round currentRound;
@@ -119,7 +116,7 @@ public class Game implements Serializable {
 	}
 
 	private Round createNextRound() {
-		final PlayingOrder nextPlayingOrder = createOrderStartingFromPlayer(getOrder().getPlayersInInitialPlayingOrder(), currentRound.getWinner());
+		final PlayingOrder nextPlayingOrder = PlayingOrder.createOrderStartingFromPlayer(getOrder().getPlayersInInitialPlayingOrder(), currentRound.getWinner());
 		final int nextRoundNumber = currentRound.getRoundNumber() + 1;
 		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
 	}

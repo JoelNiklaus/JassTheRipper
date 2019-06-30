@@ -5,11 +5,10 @@ import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class Mode implements Serializable {
+public abstract class Mode {
 
 	public static Mode topDown() {
 		return new TopDownMode();

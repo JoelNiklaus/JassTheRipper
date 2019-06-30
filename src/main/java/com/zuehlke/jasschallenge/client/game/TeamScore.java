@@ -1,8 +1,6 @@
 package com.zuehlke.jasschallenge.client.game;
 
-import java.io.Serializable;
-
-public class TeamScore implements Serializable {
+public class TeamScore {
 	private final Team team;
 	private int score;
 

@@ -6,10 +6,9 @@ import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHel
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.io.Serializable;
 import java.util.Set;
 
-public class RandomJassStrategy implements JassStrategy, Serializable {
+public class RandomJassStrategy implements JassStrategy {
 
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {

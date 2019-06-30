@@ -12,14 +12,13 @@ import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.*;
 
 
 /**
  * Created by joelniklaus on 06.05.17.
  */
-public class JassBoard implements Board, Serializable {
+public class JassBoard implements Board {
 
 	private final Set<Card> availableCards; // NOTE: should only be used in duplicating. Use player.getCards() otherwise
 	private GameSession gameSession;

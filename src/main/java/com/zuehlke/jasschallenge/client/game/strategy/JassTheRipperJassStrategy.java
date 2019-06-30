@@ -15,7 +15,6 @@ import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.*;
 
 
@@ -30,7 +29,7 @@ import java.util.*;
  * Verwerfen: (Nur bei Obeabe oder Undeufe) If my partner wins the round play a Brettli of a color in order to show him/her that I am weak at that color
  * Schmieren: If my partner wins the round play a valuable card to gain many points.
  */
-public class JassTheRipperJassStrategy extends RandomJassStrategy implements JassStrategy, Serializable {
+public class JassTheRipperJassStrategy implements JassStrategy {
 
 //	TODO refinejass knowledge schauen austrumpfen
 /*

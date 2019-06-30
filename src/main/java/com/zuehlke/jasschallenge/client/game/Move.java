@@ -2,9 +2,7 @@ package com.zuehlke.jasschallenge.client.game;
 
 import com.zuehlke.jasschallenge.game.cards.Card;
 
-import java.io.Serializable;
-
-public class Move implements Serializable {
+public class Move {
 	private final Player player;
 	private final Card playedCard;
 

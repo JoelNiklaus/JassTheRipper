@@ -5,10 +5,9 @@ import com.zuehlke.jasschallenge.client.game.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.io.Serializable;
 import java.util.Set;
 
-public interface JassStrategy extends Serializable {
+public interface JassStrategy {
     Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe);
     Card chooseCard(Set<Card> availableCards, GameSession session);
 

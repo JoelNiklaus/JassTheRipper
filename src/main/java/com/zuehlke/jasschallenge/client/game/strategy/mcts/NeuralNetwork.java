@@ -31,10 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
-public class NeuralNetwork implements Serializable {
+public class NeuralNetwork {
 	public static final int NUM_INPUT_ROWS = 72; // 36 + 9 + 9 + 9 + 9
 	public static final int THREE_HOT_ENCODING_LENGTH = 14; // 4 + 9 + 1
 	public static final int INPUT_DIM = NUM_INPUT_ROWS * THREE_HOT_ENCODING_LENGTH;

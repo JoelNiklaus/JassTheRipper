@@ -4,7 +4,6 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-public class Round implements Serializable {
+public class Round {
 	private final Mode mode;
 	private final int roundNumber;
 	private final PlayingOrder playingOrder;

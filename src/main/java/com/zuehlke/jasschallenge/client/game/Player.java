@@ -7,11 +7,10 @@ import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class Player implements Serializable {
+public class Player {
 
 	private static final Logger logger = LoggerFactory.getLogger(Player.class);
 

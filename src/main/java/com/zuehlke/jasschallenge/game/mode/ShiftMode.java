@@ -5,14 +5,13 @@ import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 import static java.lang.String.valueOf;
 
-public class ShiftMode extends Mode implements Serializable {
+public class ShiftMode extends Mode {
 
 	@Override
 	public int getCode() {

@@ -14,13 +14,12 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.Set;
 
 /**
  * Created by joelniklaus on 05.05.17.
  */
-public class MCTSHelper implements Serializable {
+public class MCTSHelper {
 
 	private final MCTSConfig mctsConfig;
 
