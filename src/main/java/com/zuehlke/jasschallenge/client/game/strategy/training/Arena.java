@@ -32,9 +32,8 @@ public class Arena {
 			"_weight-decay=" + NeuralNetwork.WEIGHT_DECAY +
 			"_seed=" + NeuralNetwork.SEED;
 	public static final String SCORE_ESTIMATOR_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/ScoreEstimator.zip"; // Can be opened externally
-	public static final String DATASET_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/random_playout_start.dataset";
-	public static final String FEATURES_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/features.npy";
-	public static final String LABELS_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/labels.npy";
+	public static final String DATASET_BASE_PATH = BASE_PATH + "datasets/";
+	public static final String DATASET_PATH = DATASET_BASE_PATH + "random_playout.dataset";
 	private static final int NUM_EPISODES = 1; // TEST: 1
 	private static final int NUM_TRAINING_GAMES = 2; // Should be an even number, TEST: 2
 	private static final int NUM_TESTING_GAMES = 2; // Should be an even number, TEST: 2
@@ -64,9 +63,9 @@ public class Arena {
 	public static void main(String[] args) {
 		final Arena arena = new Arena(SCORE_ESTIMATOR_PATH, NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 		if ("CollectDataSet".equals(args[0]))
-			arena.collectDataSetRandomPlayouts(DATASET_PATH);
+			arena.collectDataSetRandomPlayouts();
 		else if ("PretrainNetwork".equals(args[0]))
-			arena.pretrainNetwork(DATASET_PATH);
+			arena.pretrainNetwork();
 		else
 			arena.trainForNumEpisodes(NUM_EPISODES);
 	}
@@ -105,19 +104,19 @@ public class Arena {
 		tearDown();
 	}
 
-	public void collectDataSetRandomPlayouts(String dataSetFilePath) {
+	public void collectDataSetRandomPlayouts() {
 		setUp(true);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		runMCTSWithRandomPlayout(random, numTrainingGames, true, dataSetFilePath, false);
+		runMCTSWithRandomPlayout(random, numTrainingGames, false);
 
 		tearDown();
 	}
 
-	public void pretrainNetwork(String dataSetFilePath) {
+	public void pretrainNetwork() {
 		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
 		try {
-			final DataSet dataSet = NeuralNetworkHelper.loadDataSet(dataSetFilePath);
+			final DataSet dataSet = NeuralNetworkHelper.loadDataSet(DATASET_PATH);
 			System.out.println(dataSet);
 			scoreEstimationNetwork.train(dataSet, 500);
 			updateAndSaveNetwork(scoreEstimationNetwork, scoreEstimatorFilePath);
@@ -150,7 +149,7 @@ public class Arena {
 		logger.info("Running episode #{}\n", episodeNumber);
 
 		logger.info("Collecting training examples by self play with MCTS policy improvement\n");
-		runMCTSWithValueEstimators(random, numTrainingGames, true, null);
+		runMCTSWithValueEstimators(random, numTrainingGames);
 
 		logger.info("Training the network with the collected examples\n");
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
@@ -159,14 +158,14 @@ public class Arena {
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
 				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
-		final double improvement = runOnlyNetworks(random, numTestingGames, false, null);
+		final double improvement = runOnlyNetworks(random, numTestingGames);
 		if (improvement > improvementThresholdPercentage) { // if the learning network is significantly better
 			updateAndSaveNetwork(scoreEstimationNetwork, scoreEstimatorFilePath);
 			logger.info("The learning network outperformed the frozen network. Updated the frozen network\n");
 		}
 
 		logger.info("Testing MCTS with a value estimator against MCTS with random playouts\n");
-		final double performance = runScoreEstimatorAgainstRandomPlayout(random, numTestingGames, true, null);
+		final double performance = runScoreEstimatorAgainstRandomPlayout(random, numTestingGames);
 
 		logger.info("After episode #{}, value estimation mcts scored {}% of the points of random playouts mcts", episodeNumber, performance);
 		return performance;
@@ -174,41 +173,41 @@ public class Arena {
 
 	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
 		setUp(false);
-		final double performance = performMatch(random, numGames, false, null, configs, true);
+		final double performance = performMatch(random, numGames, false, false, true, configs);
 		tearDown();
 		return performance;
 	}
 
-	private double runMCTSWithRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, boolean orthogonalCardsEnabled) {
+	private double runMCTSWithRandomPlayout(Random random, int numGames, boolean orthogonalCardsEnabled) {
 		Config[] configs = {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, orthogonalCardsEnabled);
+		return performMatch(random, numGames, true, true, orthogonalCardsEnabled, configs);
 	}
 
-	private double runMCTSWithValueEstimators(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+	private double runMCTSWithValueEstimators(Random random, int numGames) {
 		Config[] configs = {
 				new Config(true, true, true),
 				new Config(true, true, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, true);
+		return performMatch(random, numGames, true, false, true, configs);
 	}
 
-	private double runOnlyNetworks(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+	private double runOnlyNetworks(Random random, int numGames) {
 		Config[] configs = {
 				new Config(false, true, true),
 				new Config(false, true, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, true);
+		return performMatch(random, numGames, false, false, true, configs);
 	}
 
-	private double runScoreEstimatorAgainstRandomPlayout(Random random, int numGames, boolean collectExperiences, String dataSetFilePath) {
+	private double runScoreEstimatorAgainstRandomPlayout(Random random, int numGames) {
 		Config[] configs = {
 				new Config(true, true, true),
 				new Config(true, false, false)
 		};
-		return performMatch(random, numGames, collectExperiences, dataSetFilePath, configs, true);
+		return performMatch(random, numGames, true, false, true, configs);
 	}
 
 	/**
@@ -216,21 +215,21 @@ public class Arena {
 	 *
 	 * @param numGames
 	 * @param collectExperiences
-	 * @param dataSetFilePath
-	 * @param configs
+	 * @param saveData
 	 * @param orthogonalCardsEnabled determines if two consecutive matches are played with the "same" cards or not
 	 *                               if true: we get a more fair tournament
 	 *                               if false: we get a more random tournament
+	 * @param configs
 	 * @return
 	 */
-	private double performMatch(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, Config[] configs, boolean orthogonalCardsEnabled) {
+	private double performMatch(Random random, int numGames, boolean collectExperiences, boolean saveData, boolean orthogonalCardsEnabled, Config[] configs) {
 		gameSession.getPlayersOfTeam(0).forEach(player -> player.setConfig(configs[0]));
 		gameSession.getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
 
-		return playGames(random, numGames, collectExperiences, dataSetFilePath, orthogonalCardsEnabled);
+		return playGames(random, numGames, collectExperiences, saveData, orthogonalCardsEnabled);
 	}
 
-	private double playGames(Random random, int numGames, boolean collectExperiences, String dataSetFilePath, boolean orthogonalCardsEnabled) {
+	private double playGames(Random random, int numGames, boolean collectExperiences, boolean saveData, boolean orthogonalCardsEnabled) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
@@ -249,9 +248,9 @@ public class Arena {
 
 			logger.info("Result of game #{}: {}\n", i, result);
 
-			if (dataSetFilePath != null && i % SAVE_DATASET_FREQUENCY == 0) {
+			if (saveData && i % SAVE_DATASET_FREQUENCY == 0) {
 				final DataSet dataSet = NeuralNetworkHelper.buildDataSet(observations, labels);
-				NeuralNetworkHelper.saveDataSet(dataSet, dataSetFilePath);
+				NeuralNetworkHelper.saveDataSet(dataSet);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -289,7 +288,7 @@ public class Arena {
 		if (collectExperiences)
 			for (Map.Entry<INDArray, Player> entry : observationsWithPlayer.entrySet()) {
 				observations.add(entry.getKey());
-				double[] label = {game.getResult().getTeamScore(entry.getValue()) / 157.0}; // NOTE: the label is between 0 and 1 inside the network
+				double[] label = {game.getResult().getTeamScore(entry.getValue()) / 257.0}; // NOTE: the label is between 0 and 1 inside the network
 				labels.add(Nd4j.createFromArray(label));
 			}
 

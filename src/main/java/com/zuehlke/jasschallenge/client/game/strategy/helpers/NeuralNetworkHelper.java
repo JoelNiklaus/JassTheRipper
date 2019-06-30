@@ -242,22 +242,23 @@ public class NeuralNetworkHelper {
 		return directory.mkdirs();
 	}
 
-	public static boolean saveDataSet(DataSet dataSet, String filePath) {
-		final File file = new File(filePath);
-		if (createIfNotExists(file.getParentFile())) {
-			dataSet.save(file);
-			// System.out.println(dataSet.getFeatures().toString());
-			// System.out.println(dataSet.getLabels().toString());
+	public static boolean saveDataSet(DataSet dataSet) {
+		if (createIfNotExists(new File(Arena.DATASET_BASE_PATH))) {
 			try {
-				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(Arena.FEATURES_PATH));
-				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(Arena.LABELS_PATH));
+				dataSet.save(new File(Arena.DATASET_PATH));
+
+				Nd4j.writeTxt(dataSet.getFeatures(), Arena.DATASET_PATH + "features.txt");
+				Nd4j.writeTxt(dataSet.getLabels(), Arena.DATASET_PATH + "labels.txt");
+
+				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(Arena.DATASET_PATH + "features.npy"));
+				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(Arena.DATASET_PATH + "labels.npy"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			logger.info("Saved dataset to {}", filePath);
+			logger.info("Saved dataset to {}", Arena.DATASET_PATH);
 			return true;
 		} else {
-			logger.error("Could not save the file {}", filePath);
+			logger.error("Could not save the file {}", Arena.DATASET_PATH);
 			return false;
 		}
 	}
