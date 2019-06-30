@@ -46,6 +46,9 @@ public class PlayingOrder implements Serializable {
 		for (int i = currentPlayerIndex; i < 4; i++) {
 			playersInCurrentPlayingOrder.add(getPlayerByIndex(i));
 		}
+		for (int i = 0; i < currentPlayerIndex; i++) {
+			playersInCurrentPlayingOrder.add(getPlayerByIndex(i));
+		}
 		return playersInCurrentPlayingOrder;
 	}
 

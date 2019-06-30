@@ -6,6 +6,7 @@ import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
@@ -22,9 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 
@@ -135,6 +134,37 @@ public class NeuralNetworkHelper {
 	}
 
 	/**
+	 * Reconstructs the information from an observation (list of three hot encoded vectors representing a card each)
+	 *
+	 * @param observation
+	 * @return
+	 */
+	public static Map<String, List<Card>> reconstructObservation(int[][] observation) {
+		Map<String, List<Card>> reconstruction = new HashMap<>();
+
+		List<Card> alreadyPlayedCards = new ArrayList<>();
+		for (int i = 0; i <= 35; i++) {
+			final Card card = fromThreeHotToCard(observation[i]);
+			if (card != null)
+				alreadyPlayedCards.add(card);
+		}
+
+		reconstruction.put("AlreadyPlayedCards", alreadyPlayedCards);
+
+		for (int j = 0; j < 4; j++) {
+			List<Card> playerCards = new ArrayList<>();
+			for (int i = 36 + j * 9; i <= 44 + j * 9; i++) {
+				final Card card = fromThreeHotToCard(observation[i]);
+				if (card != null)
+					playerCards.add(card);
+			}
+			reconstruction.put("PlayerCards-" + j, playerCards);
+		}
+
+		return reconstruction;
+	}
+
+	/**
 	 * Example:
 	 * |    suit   |           value          | isTrumpf
 	 * 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0            for DIAMOND_JACK and TrumpfColor CLUBS
@@ -152,6 +182,26 @@ public class NeuralNetworkHelper {
 		threeHot[NeuralNetwork.THREE_HOT_ENCODING_LENGTH - 1] = getTrumpfBit(card, mode); // set trumpf
 
 		return threeHot;
+	}
+
+	public static Card fromThreeHotToCard(int[] threeHot) {
+		Color color = null;
+		for (int i = 0; i < 4; i++) {
+			if (threeHot[i] == 1)
+				color = Color.getColor(i);
+		}
+		if (color == null)
+			return null;
+
+		CardValue cardValue = null;
+		for (int i = 1; i < 10; i++) {
+			if (threeHot[3 + i] == 1)
+				cardValue = CardValue.getCardValue(i);
+		}
+		if (cardValue == null)
+			return null;
+
+		return Card.getCard(color, cardValue);
 	}
 
 	public static int getTrumpfBit(Card card, Mode mode) {
@@ -179,6 +229,13 @@ public class NeuralNetworkHelper {
 		return binary;
 	}
 
+	public static int fromBinary(int[] binary) {
+		int result = 0;
+		for (int i = 0; i < binary.length; i++)
+			result += binary[binary.length - 1 - i] * Math.pow(2d, i);
+		return result;
+	}
+
 	public static boolean createIfNotExists(File directory) {
 		if (directory.isDirectory())
 			return true;
@@ -189,8 +246,8 @@ public class NeuralNetworkHelper {
 		final File file = new File(filePath);
 		if (createIfNotExists(file.getParentFile())) {
 			dataSet.save(file);
-			System.out.println(dataSet.getFeatures().toString());
-			System.out.println(dataSet.getLabels().toString());
+			// System.out.println(dataSet.getFeatures().toString());
+			// System.out.println(dataSet.getLabels().toString());
 			try {
 				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(Arena.FEATURES_PATH));
 				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(Arena.LABELS_PATH));
