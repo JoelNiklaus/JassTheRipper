@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 public class NeuralNetworkBenchmarkTest {
 
-	private static final boolean RUN_BENCHMARKS = true;
+	private static final boolean RUN_BENCHMARKS = false;
 
 	private static final long SEED = 42;
 	private static final int NUM_GAMES = 10;

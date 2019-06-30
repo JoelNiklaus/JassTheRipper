@@ -4,30 +4,59 @@ import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
+import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Test;
 
 import java.io.File;
 
+import static junit.framework.TestCase.assertTrue;
+
 public class NeuralNetworkTest {
 
-	private Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.CLUBS)).createGameSession().getCurrentGame();
+	private Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 	@Test
-	public void testPretrainedScoreEstimatorPredictionsMakeSomeSense() {
-		/*
-		final Player player = diamondsGame.getCurrentPlayer();
-		final Move move = new Move(player, Card.CLUB_QUEEN);
-		player.onMoveMade(move);
-		diamondsGame.makeMove(move);
-		*/
+	public void testPreTrainedScoreEstimatorPredictionsIsMediocreForShiftCards() {
+		Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		if (!new File(Arena.SCORE_ESTIMATOR_MODEL_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
 		NeuralNetwork network = new NeuralNetwork();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_MODEL_PATH);
-		System.out.println(network.predictValue(diamondsGame));
+
+		assertTrue(network.predictValue(diamondsGame) < 120);
+	}
+
+	@Test
+	public void testPreTrainedScoreEstimatorPredictionsIsHighForTopDiamondsCards() {
+		Game diamondsGame = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
+
+		if (!new File(Arena.SCORE_ESTIMATOR_MODEL_PATH).exists())
+			NeuralNetworkHelper.pretrainScoreEstimator();
+		NeuralNetwork network = new NeuralNetwork();
+		network.loadKerasModel(Arena.SCORE_ESTIMATOR_MODEL_PATH);
+
+		assertTrue(network.predictValue(diamondsGame) > 120);
+	}
+
+	@Test
+	public void testPreTrainedScoreEstimatorPredictionsIsLowForOpponentTopDiamondsCards() {
+		Game diamondsGame = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
+
+		final Player player = diamondsGame.getCurrentPlayer();
+		final Move move = new Move(player, Card.DIAMOND_JACK);
+		player.onMoveMade(move);
+		diamondsGame.makeMove(move);
+
+
+		if (!new File(Arena.SCORE_ESTIMATOR_MODEL_PATH).exists())
+			NeuralNetworkHelper.pretrainScoreEstimator();
+		NeuralNetwork network = new NeuralNetwork();
+		network.loadKerasModel(Arena.SCORE_ESTIMATOR_MODEL_PATH);
+
+		assertTrue(network.predictValue(diamondsGame) < 100);
 	}
 
 	@Test

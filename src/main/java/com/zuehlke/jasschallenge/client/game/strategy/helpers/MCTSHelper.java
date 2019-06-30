@@ -89,17 +89,22 @@ public class MCTSHelper implements Serializable {
 			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), scoreEstimator);
 			strengthLevel = mctsConfig.getCardStrengthLevel();
 		}
+
+		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.getNumDeterminizationsFactor());
+
 		long numRuns = strengthLevel.getNumRuns();
 		if (scoreEstimator != null) {
 			logger.info("Using a score estimator network to determine the score");
 			if (mctsConfig.getRunMode() == RunMode.RUNS) {
 				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random playout
-				logger.info("Running only {} runs per determinization.", numRuns);
+				logger.info("Running only {} runs per determinization", numRuns);
+			} else if (mctsConfig.getRunMode() == RunMode.TIME) {
+				numDeterminizations *= 2; // NOTE: Can do more determinizations in the same time because it should be faster than random playout
+				logger.info("Running even {} determinizations", numDeterminizations);
 			}
 		} else
 			logger.info("Using a random playout to determine the score");
 
-		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.getNumDeterminizationsFactor());
 		if (mctsConfig.getRunMode() == RunMode.RUNS)
 			return mcts.runForRuns(jassBoard, numDeterminizations, numRuns);
 		else if (mctsConfig.getRunMode() == RunMode.TIME)

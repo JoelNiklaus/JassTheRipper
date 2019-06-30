@@ -8,39 +8,50 @@ import com.zuehlke.jasschallenge.client.game.strategy.*;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.zuehlke.jasschallenge.game.cards.Card.*;
 import static java.util.Arrays.asList;
 
 public class GameSessionBuilder {
 
 	private Mode startedGameMode = null;
 
-	// TODO add different games to test based on different card configurations
+	public static final List<Set<Card>> shiftCards = asList(
+			EnumSet.of(CLUB_QUEEN, CLUB_ACE, HEART_SIX, HEART_JACK, HEART_KING, DIAMOND_SEVEN, DIAMOND_QUEEN, SPADE_TEN, SPADE_KING),
+			EnumSet.of(CLUB_NINE, CLUB_JACK, HEART_EIGHT, HEART_NINE, DIAMOND_EIGHT, DIAMOND_NINE, DIAMOND_TEN, SPADE_EIGHT, SPADE_QUEEN),
+			EnumSet.of(CLUB_KING, CLUB_EIGHT, HEART_SEVEN, HEART_QUEEN, DIAMOND_JACK, DIAMOND_KING, SPADE_SEVEN, SPADE_JACK, SPADE_ACE),
+			EnumSet.of(CLUB_SIX, CLUB_TEN, CLUB_SEVEN, HEART_TEN, HEART_ACE, DIAMOND_SIX, DIAMOND_ACE, SPADE_SIX, SPADE_NINE));
 
-	private Set<Card> cards0 = EnumSet.of(Card.CLUB_QUEEN, Card.CLUB_ACE, Card.HEART_SIX, Card.HEART_JACK, Card.HEART_KING, Card.DIAMOND_SEVEN, Card.DIAMOND_QUEEN, Card.SPADE_TEN, Card.SPADE_KING);
-	private Set<Card> cards1 = EnumSet.of(Card.CLUB_NINE, Card.CLUB_JACK, Card.HEART_EIGHT, Card.HEART_NINE, Card.DIAMOND_EIGHT, Card.DIAMOND_NINE, Card.DIAMOND_TEN, Card.SPADE_EIGHT, Card.SPADE_QUEEN);
-	private Set<Card> cards2 = EnumSet.of(Card.CLUB_KING, Card.CLUB_EIGHT, Card.HEART_SEVEN, Card.HEART_QUEEN, Card.DIAMOND_JACK, Card.DIAMOND_KING, Card.SPADE_SEVEN, Card.SPADE_JACK, Card.SPADE_ACE);
-	private Set<Card> cards3 = EnumSet.of(Card.CLUB_SIX, Card.CLUB_TEN, Card.CLUB_SEVEN, Card.HEART_TEN, Card.HEART_ACE, Card.DIAMOND_SIX, Card.DIAMOND_ACE, Card.SPADE_SIX, Card.SPADE_NINE);
+	public static final List<Set<Card>> topDiamondsCards = asList(
+			EnumSet.of(DIAMOND_SIX, DIAMOND_EIGHT, DIAMOND_NINE, DIAMOND_JACK, DIAMOND_QUEEN, DIAMOND_ACE, HEART_ACE, SPADE_SEVEN, SPADE_KING),
+			EnumSet.of(DIAMOND_SEVEN, CLUB_TEN, CLUB_QUEEN, CLUB_ACE, HEART_SIX, HEART_JACK, HEART_KING, SPADE_SIX, SPADE_TEN),
+			EnumSet.of(DIAMOND_TEN, CLUB_NINE, CLUB_JACK, HEART_EIGHT, HEART_NINE, HEART_TEN, SPADE_EIGHT, SPADE_NINE, SPADE_QUEEN),
+			EnumSet.of(DIAMOND_KING, CLUB_SIX, CLUB_SEVEN, CLUB_KING, CLUB_EIGHT, HEART_SEVEN, HEART_QUEEN, SPADE_JACK, SPADE_ACE));
 
-	private Player player0 = new Player("0", "Player0", 0, cards0, JassTheRipperJassStrategy.getTestInstance());
-	private Player player1 = new Player("1", "Player1", 1, cards1, JassTheRipperJassStrategy.getTestInstance());
-	private Player player2 = new Player("2", "Player2", 2, cards2, JassTheRipperJassStrategy.getTestInstance());
-	private Player player3 = new Player("3", "Player3", 3, cards3, JassTheRipperJassStrategy.getTestInstance());
+	private List<Player> playingOrder = new ArrayList<>();
 
-	private List<Player> playingOrder = asList(player0, player1, player2, player3);
-
-	private Team team0 = new Team("Team0", asList(player0, player2));
-	private Team team1 = new Team("Team1", asList(player1, player3));
-
-	private List<Team> teams = asList(team0, team1);
+	private List<Team> teams = new ArrayList<>();
 
 	private Card[] playedCards = {};
 
+	public GameSessionBuilder(List<Set<Card>> cards) {
+		for (int i = 0; i < 4; i++)
+			playingOrder.add(new Player("" + i, "Player" + i, i, EnumSet.copyOf(cards.get(i)), JassTheRipperJassStrategy.getTestInstance()));
+
+		teams.add(new Team("Team0", asList(playingOrder.get(0), playingOrder.get(2))));
+		teams.add(new Team("Team1", asList(playingOrder.get(1), playingOrder.get(3))));
+	}
+
+	public static GameSessionBuilder newSession(List<Set<Card>> cards) {
+		return new GameSessionBuilder(cards);
+	}
+
 	public static GameSessionBuilder newSession() {
-		return new GameSessionBuilder();
+		return new GameSessionBuilder(shiftCards);
 	}
 
 	public GameSession createGameSession() {
