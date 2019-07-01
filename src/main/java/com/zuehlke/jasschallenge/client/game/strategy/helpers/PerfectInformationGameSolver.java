@@ -1,8 +1,9 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.game.cards.Card;
 
 import java.util.*;

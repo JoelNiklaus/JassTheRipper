@@ -1,9 +1,10 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
+import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
@@ -135,7 +136,7 @@ public class CardKnowledgeBase {
 	 * @param numberOfCards
 	 * @return
 	 */
-	static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
+	public static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
 		assert (numberOfCards > 0 || numberOfCards <= 9);
 		List<Card> listOfCards = new LinkedList<>(cards);
 		assert numberOfCards <= listOfCards.size();

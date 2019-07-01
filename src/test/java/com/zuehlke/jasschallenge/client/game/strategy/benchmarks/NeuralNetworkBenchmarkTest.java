@@ -1,6 +1,6 @@
 package com.zuehlke.jasschallenge.client.game.strategy.benchmarks;
 
-import com.zuehlke.jasschallenge.client.game.strategy.Config;
+import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import org.junit.Test;
 

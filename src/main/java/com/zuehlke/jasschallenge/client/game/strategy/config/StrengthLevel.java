@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.game.strategy;
+package com.zuehlke.jasschallenge.client.game.strategy.config;
 
 /**
  * Describes the strength of the strategy. More configurations can be added when needed.

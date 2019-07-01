@@ -1,6 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.mcts;
 
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardKnowledgeBase;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.game.Trumpf;

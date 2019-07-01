@@ -1,7 +1,7 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Test;

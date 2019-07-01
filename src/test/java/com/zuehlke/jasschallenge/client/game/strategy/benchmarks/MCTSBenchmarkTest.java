@@ -1,6 +1,9 @@
 package com.zuehlke.jasschallenge.client.game.strategy.benchmarks;
 
-import com.zuehlke.jasschallenge.client.game.strategy.*;
+import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
+import com.zuehlke.jasschallenge.client.game.strategy.config.MCTSConfig;
+import com.zuehlke.jasschallenge.client.game.strategy.config.StrengthLevel;
+import com.zuehlke.jasschallenge.client.game.strategy.config.TrumpfSelectionMethod;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import org.junit.Test;
 

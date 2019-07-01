@@ -2,12 +2,16 @@ package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.google.common.collect.Iterables;
 import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
+import com.zuehlke.jasschallenge.client.game.strategy.config.MCTSConfig;
+import com.zuehlke.jasschallenge.client.game.strategy.config.StrengthLevel;
+import com.zuehlke.jasschallenge.client.game.strategy.config.TrumpfSelectionMethod;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.game.cards.Card;

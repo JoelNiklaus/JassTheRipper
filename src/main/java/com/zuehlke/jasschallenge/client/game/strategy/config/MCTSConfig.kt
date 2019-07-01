@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.game.strategy
+package com.zuehlke.jasschallenge.client.game.strategy.config
 
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.FinalSelectionPolicy
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.HeuristicFunction

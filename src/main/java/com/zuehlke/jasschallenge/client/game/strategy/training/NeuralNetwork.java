@@ -1,11 +1,12 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.training;
 
 
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelper;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.Distribution;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
-import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
+import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.GradientNormalization;

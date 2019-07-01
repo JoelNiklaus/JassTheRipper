@@ -1,12 +1,12 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.strategy.MCTSConfig;
-import com.zuehlke.jasschallenge.client.game.strategy.RunMode;
-import com.zuehlke.jasschallenge.client.game.strategy.StrengthLevel;
+import com.zuehlke.jasschallenge.client.game.strategy.config.MCTSConfig;
+import com.zuehlke.jasschallenge.client.game.strategy.config.RunMode;
+import com.zuehlke.jasschallenge.client.game.strategy.config.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;

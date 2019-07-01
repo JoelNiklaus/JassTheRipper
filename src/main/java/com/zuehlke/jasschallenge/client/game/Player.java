@@ -1,7 +1,8 @@
 package com.zuehlke.jasschallenge.client.game;
 
 import com.zuehlke.jasschallenge.client.game.strategy.*;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
+import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;

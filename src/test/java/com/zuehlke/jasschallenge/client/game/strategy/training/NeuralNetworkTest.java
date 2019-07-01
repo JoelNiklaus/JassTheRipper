@@ -1,9 +1,8 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.training;
 
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
-import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;

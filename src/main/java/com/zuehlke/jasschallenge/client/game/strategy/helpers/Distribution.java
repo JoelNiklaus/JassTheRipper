@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import java.util.ArrayList;
 import java.util.List;

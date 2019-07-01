@@ -3,7 +3,7 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 import com.google.common.collect.Collections2;
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;

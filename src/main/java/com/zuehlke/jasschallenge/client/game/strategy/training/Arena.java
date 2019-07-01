@@ -2,10 +2,9 @@ package com.zuehlke.jasschallenge.client.game.strategy.training;
 
 import com.google.common.collect.EvictingQueue;
 import com.zuehlke.jasschallenge.client.game.*;
-import com.zuehlke.jasschallenge.client.game.strategy.*;
+import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
-import com.zuehlke.jasschallenge.client.game.strategy.mcts.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.nd4j.linalg.api.ndarray.INDArray;

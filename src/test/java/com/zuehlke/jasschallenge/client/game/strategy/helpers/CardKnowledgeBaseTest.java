@@ -1,4 +1,4 @@
-package com.zuehlke.jasschallenge.client.game.strategy.mcts;
+package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
 import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.game.Trumpf;
