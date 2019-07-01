@@ -26,16 +26,17 @@ public class Arena {
 	private static final String BASE_PATH = "src/main/resources/";
 	private static final String EXPERIMENT_FOLDER = "DOES-IT-LEARN?_"
 			+ NeuralNetwork.NUM_NEURONS + "-neurons" + // TODO experiment with num neurons first (128, 256, 512)
-			"_3-hidden-layers" + // TODO experiment with num hidden layers later 2, 3, 4, 5,6
+			"_3-hidden-layers" + // TODO experiment with num hidden layers later 2, 3, 4, 5, 6
 			"_lr=" + NeuralNetwork.LEARNING_RATE +
 			"_dropout=" + NeuralNetwork.DROPOUT +
 			"_weight-decay=" + NeuralNetwork.WEIGHT_DECAY +
 			"_seed=" + NeuralNetwork.SEED;
-	public static final String SCORE_ESTIMATOR_PATH = BASE_PATH + EXPERIMENT_FOLDER + "/ScoreEstimator.zip"; // Can be opened externally
 	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
 	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
-	public static final String SCORE_ESTIMATOR_MODEL_PATH = MODELS_BASE_PATH + "score_estimator.h5";
-	public static final String CARDS_ESTIMATOR_MODEL_PATH = MODELS_BASE_PATH + "cards_estimator.h5";
+	public static final String SCORE_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "score_estimator.h5";
+	public static final String SCORE_ESTIMATOR_DL4J_PATH = MODELS_BASE_PATH + "/ScoreEstimator.zip"; // Can be opened externally
+	public static final String CARDS_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "cards_estimator.h5";
+	public static final String CARDS_ESTIMATOR_DL4J_PATH = MODELS_BASE_PATH + "/CardsEstimator.zip"; // Can be opened externally
 	public static final String DATASET_PATH = DATASETS_BASE_PATH + "random_playout.dataset";
 	private static final int NUM_EPISODES = 1; // TEST: 1
 	private static final int NUM_TRAINING_GAMES = 2; // Should be an even number, TEST: 2
@@ -61,16 +62,16 @@ public class Arena {
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 
 	public static void main(String[] args) {
-		final Arena arena = new Arena(SCORE_ESTIMATOR_PATH, NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+		final Arena arena = new Arena(SCORE_ESTIMATOR_DL4J_PATH, NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		arena.collectDataSetRandomPlayouts(10);
+		arena.collectDataSetRandomPlayouts(1000);
 
 		logger.info("Pre-training a score estimator network\n");
 		NeuralNetworkHelper.pretrainScoreEstimator();
 
-		logger.info("Training the score estimator network with self-play\n");
-		arena.trainForNumEpisodes(NUM_EPISODES);
+		//logger.info("Training the score estimator network with self-play\n");
+		//arena.trainForNumEpisodes(1000);
 	}
 
 	public Arena(String scoreEstimatorFilePath, int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
@@ -116,7 +117,7 @@ public class Arena {
 	}
 
 	public void pretrainNetwork() {
-		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
+		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
 		try {
 			final DataSet dataSet = NeuralNetworkHelper.loadDataSet(DATASET_PATH);
 			System.out.println(dataSet);
@@ -131,7 +132,7 @@ public class Arena {
 
 	private void updateAndSaveNetwork(NeuralNetwork scoreEstimationNetwork, String scoreEstimatorFilePath) {
 		// Set the frozen networks of the players of team 1 to a copy of the trainable network
-		gameSession.getPlayersOfTeam(1).forEach(player -> player.setScoreEstimationNetwork(new NeuralNetwork(scoreEstimationNetwork)));
+		gameSession.getPlayersOfTeam(1).forEach(player -> player.setScoreEstimator(new NeuralNetwork(scoreEstimationNetwork)));
 		// Checkpoint so we don't lose any training progress
 		scoreEstimationNetwork.save(scoreEstimatorFilePath);
 	}
@@ -155,7 +156,7 @@ public class Arena {
 
 		logger.info("Training the network with the collected examples\n");
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
-		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
+		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
 		scoreEstimationNetwork.train(observations, labels, 10);
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
@@ -357,9 +358,9 @@ public class Arena {
 
 		// NOTE: give the training a head start by using a pre-trained network
 		if (SUPERVISED_PRETRAINING_ENABLED) {
-			final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
+			final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
 			if (scoreEstimationNetwork != null) {
-				scoreEstimationNetwork.loadKerasModel(SCORE_ESTIMATOR_MODEL_PATH);
+				scoreEstimationNetwork.loadKerasModel(SCORE_ESTIMATOR_KERAS_PATH);
 				// scoreEstimationNetwork.load(scoreEstimatorFilePath);
 				logger.info("Successfully loaded pre-trained score estimator network.");
 			}
@@ -370,7 +371,7 @@ public class Arena {
 		for (Player player : gameSession.getPlayersInInitialPlayingOrder()) {
 			player.onSessionFinished();
 		}
-		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimationNetwork();
+		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
 		if (scoreEstimationNetwork != null) scoreEstimationNetwork.save(scoreEstimatorFilePath);
 		logger.info("Successfully terminated the training process\n");
 	}

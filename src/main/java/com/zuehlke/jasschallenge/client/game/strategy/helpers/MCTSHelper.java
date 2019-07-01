@@ -77,16 +77,18 @@ public class MCTSHelper {
 	 */
 	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted) throws MCTSException {
 		Board jassBoard;
-		NeuralNetwork scoreEstimator;
+		NeuralNetwork scoreEstimator, cardsEstimator;
 		StrengthLevel strengthLevel;
 		if (isChoosingTrumpf) {
-			scoreEstimator = gameSession.getTrumpfSelectingPlayer().getScoreEstimationNetwork();
-			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator);
 			strengthLevel = mctsConfig.getTrumpfStrengthLevel();
+			scoreEstimator = gameSession.getTrumpfSelectingPlayer().getScoreEstimator();
+			cardsEstimator = gameSession.getTrumpfSelectingPlayer().getCardsEstimator();
+			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator, cardsEstimator);
 		} else {
-			scoreEstimator = gameSession.getCurrentGame().getCurrentPlayer().getScoreEstimationNetwork();
-			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), scoreEstimator);
 			strengthLevel = mctsConfig.getCardStrengthLevel();
+			scoreEstimator = gameSession.getCurrentGame().getCurrentPlayer().getScoreEstimator();
+			cardsEstimator = gameSession.getCurrentGame().getCurrentPlayer().getCardsEstimator();
+			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), scoreEstimator, cardsEstimator);
 		}
 
 		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.getNumDeterminizationsFactor());

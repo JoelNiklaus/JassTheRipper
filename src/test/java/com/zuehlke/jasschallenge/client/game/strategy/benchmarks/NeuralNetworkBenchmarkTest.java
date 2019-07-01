@@ -16,7 +16,7 @@ public class NeuralNetworkBenchmarkTest {
 	private static final long SEED = 42;
 	private static final int NUM_GAMES = 10;
 
-	private Arena arena = new Arena(Arena.SCORE_ESTIMATOR_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+	private Arena arena = new Arena(Arena.SCORE_ESTIMATOR_DL4J_PATH, 2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
 	/**
 	 * Tests if it is worthwhile to use a score estimator

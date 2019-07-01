@@ -43,7 +43,7 @@ public class NeuralNetwork {
 	public static final double DROPOUT = 0.5;
 	public static final int SEED = 42;
 
-	private MultiLayerNetwork model;
+	protected MultiLayerNetwork model;
 
 	public static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
@@ -93,11 +93,11 @@ public class NeuralNetwork {
 
 		EnumMap<Card, Double> actionValuePairs = new EnumMap<>(Card.class);
 		for (Card card : possibleCards) {
-			Game clonedGame = new Game(game); // TODO this might be a performance bottleneck. Change to a more efficient variant
+			Game clonedGame = new Game(game);
 			clonedGame.makeMove(new CardMove(player, card));
 
 			// TODO maybe it is more efficient to do all the forward passes at the same time and not one by one
-			actionValuePairs.put(card, Arena.TOTAL_POINTS - predictValue(clonedGame)); // NOTE: 157 - value because the value is from the perspective of a player of the opponent team
+			actionValuePairs.put(card, Arena.TOTAL_POINTS - predictScore(clonedGame)); // NOTE: 157 - value because the value is from the perspective of a player of the opponent team
 		}
 		Card bestCard = actionValuePairs.entrySet()
 				.stream()
@@ -108,7 +108,13 @@ public class NeuralNetwork {
 		return new CardMove(player, bestCard);
 	}
 
-	public double predictValue(Game game) {
+	/**
+	 * Score Estimator: predict the final score of a determinized game (perfect information)
+	 *
+	 * @param game
+	 * @return
+	 */
+	public double predictScore(Game game) {
 		// INFO: We disregard the match bonus for simplicity
 		return Arena.TOTAL_POINTS * predict(Collections.singletonList(NeuralNetworkHelper.getObservation(game)))[0];
 	}
@@ -185,5 +191,15 @@ public class NeuralNetwork {
 		}
 		logger.error("Could not load saved model from {}", filePath);
 		return false;
+	}
+
+	/**
+	 * Cards Estimator: Predict the card distribution of the hidden cards of the other players.
+	 * This should help generating determinizations of better quality.
+	 *
+	 * @return
+	 */
+	public Map<Card, Distribution<Player>> predictCardDistribution() {
+		return null;
 	}
 }

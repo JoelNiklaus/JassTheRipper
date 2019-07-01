@@ -103,20 +103,24 @@ public class Player {
 		((JassTheRipperJassStrategy) jassStrategy).setConfig(config);
 	}
 
-	public NeuralNetwork getScoreEstimationNetwork() {
-		return ((JassTheRipperJassStrategy) jassStrategy).getScoreEstimationNetwork();
+	public NeuralNetwork getScoreEstimator() {
+		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		return ((JassTheRipperJassStrategy) jassStrategy).getScoreEstimator();
 	}
 
-	public void setScoreEstimationNetwork(NeuralNetwork scoreEstimationNetwork) {
-		((JassTheRipperJassStrategy) jassStrategy).setScoreEstimationNetwork(scoreEstimationNetwork);
+	public void setScoreEstimator(NeuralNetwork scoreEstimator) {
+		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		((JassTheRipperJassStrategy) jassStrategy).setScoreEstimator(scoreEstimator);
 	}
 
-	public NeuralNetwork getCardsEstimationNetwork() {
-		return ((JassTheRipperJassStrategy) jassStrategy).getCardsEstimationNetwork();
+	public NeuralNetwork getCardsEstimator() {
+		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		return ((JassTheRipperJassStrategy) jassStrategy).getCardsEstimator();
 	}
 
-	public void setCardsEstimationNetwork(NeuralNetwork cardsEstimationNetwork) {
-		((JassTheRipperJassStrategy) jassStrategy).setCardsEstimationNetwork(cardsEstimationNetwork);
+	public void setCardsEstimator(NeuralNetwork cardsEstimator) {
+		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		((JassTheRipperJassStrategy) jassStrategy).setCardsEstimator(cardsEstimator);
 	}
 
 	public Move makeMove(GameSession session) {

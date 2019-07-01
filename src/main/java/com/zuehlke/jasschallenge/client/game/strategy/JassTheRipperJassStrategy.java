@@ -105,8 +105,8 @@ TODO Make new experiments with the improvements so far:
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-	private NeuralNetwork scoreEstimationNetwork;
-	private NeuralNetwork cardsEstimationNetwork;
+	private NeuralNetwork scoreEstimator;
+	private NeuralNetwork cardsEstimator;
 
 	private Config config;
 
@@ -186,7 +186,7 @@ TODO Make new experiments with the improvements so far:
 						logger.error("Something went wrong. Had to choose random card, damn it!");
 					}
 				} else { // Choose the network's prediction directly, without the mcts policy enhancement
-					card = scoreEstimationNetwork.predictMove(game).getPlayedCard();
+					card = scoreEstimator.predictMove(game).getPlayedCard();
 					logger.info("Chose card based only on score estimator network.");
 				}
 			}
@@ -220,20 +220,20 @@ TODO Make new experiments with the improvements so far:
 		logger.info("Hi there! I am JassTheRipper and these are my cards: {} ", availableCards);
 	}
 
-	public NeuralNetwork getScoreEstimationNetwork() {
-		return scoreEstimationNetwork;
+	public NeuralNetwork getScoreEstimator() {
+		return scoreEstimator;
 	}
 
-	public void setScoreEstimationNetwork(NeuralNetwork scoreEstimationNetwork) {
-		this.scoreEstimationNetwork = scoreEstimationNetwork;
+	public void setScoreEstimator(NeuralNetwork scoreEstimator) {
+		this.scoreEstimator = scoreEstimator;
 	}
 
-	public NeuralNetwork getCardsEstimationNetwork() {
-		return cardsEstimationNetwork;
+	public NeuralNetwork getCardsEstimator() {
+		return cardsEstimator;
 	}
 
-	public void setCardsEstimationNetwork(NeuralNetwork cardsEstimationNetwork) {
-		this.cardsEstimationNetwork = cardsEstimationNetwork;
+	public void setCardsEstimator(NeuralNetwork cardsEstimator) {
+		this.cardsEstimator = cardsEstimator;
 	}
 
 	public void setConfig(Config config) {
@@ -242,8 +242,10 @@ TODO Make new experiments with the improvements so far:
 		if (this.mctsHelper != null)
 			this.mctsHelper.shutDown();
 		this.mctsHelper = new MCTSHelper(config.getMctsConfig());
-		if(config.isScoreEstimaterUsed())
-			scoreEstimationNetwork = new NeuralNetwork();
+		if(config.isScoreEstimatorUsed())
+			scoreEstimator = new NeuralNetwork();
+		if(config.isCardsEstimatorUsed())
+			cardsEstimator = new NeuralNetwork();
 	}
 
 	@Override

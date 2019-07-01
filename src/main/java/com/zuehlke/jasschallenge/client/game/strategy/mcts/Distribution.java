@@ -27,13 +27,13 @@ public class Distribution<T> {
 	}
 
 	/**
-	 * Deletes the given event and recomputes the probabilities so that they add up to one again.
+	 * Deletes the given event and distributes its probability part to the other events so that the total probability is 1 again.
 	 *
 	 * @param event
 	 * @return true when the event is not in the list or when the operation is completed successfully
 	 * false when there is only one event in the list
 	 */
-	public boolean deleteEventAndRebalance(T event) {
+	public boolean deleteEventAndReBalance(T event) {
 		if (!events.contains(event))
 			return true;
 

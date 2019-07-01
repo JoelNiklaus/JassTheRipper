@@ -21,24 +21,24 @@ public class NeuralNetworkTest {
 	public void testPreTrainedScoreEstimatorPredictionsIsMediocreForShiftCards() {
 		Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
-		if (!new File(Arena.SCORE_ESTIMATOR_MODEL_PATH).exists())
+		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
 		NeuralNetwork network = new NeuralNetwork();
-		network.loadKerasModel(Arena.SCORE_ESTIMATOR_MODEL_PATH);
+		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
-		assertTrue(network.predictValue(diamondsGame) < 120);
+		assertTrue(network.predictScore(diamondsGame) < 120);
 	}
 
 	@Test
 	public void testPreTrainedScoreEstimatorPredictionsIsHighForTopDiamondsCards() {
 		Game diamondsGame = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
-		if (!new File(Arena.SCORE_ESTIMATOR_MODEL_PATH).exists())
+		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
 		NeuralNetwork network = new NeuralNetwork();
-		network.loadKerasModel(Arena.SCORE_ESTIMATOR_MODEL_PATH);
+		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
-		assertTrue(network.predictValue(diamondsGame) > 120);
+		assertTrue(network.predictScore(diamondsGame) > 120);
 	}
 
 	@Test
@@ -51,19 +51,19 @@ public class NeuralNetworkTest {
 		diamondsGame.makeMove(move);
 
 
-		if (!new File(Arena.SCORE_ESTIMATOR_MODEL_PATH).exists())
+		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
 		NeuralNetwork network = new NeuralNetwork();
-		network.loadKerasModel(Arena.SCORE_ESTIMATOR_MODEL_PATH);
+		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
-		assertTrue(network.predictValue(diamondsGame) < 100);
+		assertTrue(network.predictScore(diamondsGame) < 100);
 	}
 
 	@Test
 	public void testFirstForwardPassSpeed() {
 		NeuralNetwork network = new NeuralNetwork();
 		long startTime = System.currentTimeMillis();
-		network.predictValue(diamondsGame);
+		network.predictScore(diamondsGame);
 		System.out.println("The execution of one forward pass took " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 
@@ -72,7 +72,7 @@ public class NeuralNetworkTest {
 		NeuralNetwork network = new NeuralNetwork();
 		for (int i = 0; i < 10; i++) {
 			long startTime = System.currentTimeMillis();
-			network.predictValue(diamondsGame);
+			network.predictScore(diamondsGame);
 			System.out.println("The execution of one forward pass took " + (System.currentTimeMillis() - startTime) + "ms");
 		}
 	}
@@ -82,7 +82,7 @@ public class NeuralNetworkTest {
 		NeuralNetwork network = new NeuralNetwork();
 		for (int i = 0; i < 100; i++) {
 			long startTime = System.nanoTime() / 1000;
-			network.predictValue(diamondsGame);
+			network.predictScore(diamondsGame);
 			System.out.println("The execution of one forward pass took " + (System.nanoTime() / 1000 - startTime) / 1000.0 + "ms");
 		}
 	}
@@ -92,7 +92,7 @@ public class NeuralNetworkTest {
 		NeuralNetwork network = new NeuralNetwork();
 		for (int i = 0; i < 1000; i++) {
 			long startTime = System.nanoTime() / 1000;
-			network.predictValue(diamondsGame);
+			network.predictScore(diamondsGame);
 			System.out.println("The execution of one forward pass took " + (System.nanoTime() / 1000 - startTime) / 1000.0 + "ms");
 		}
 	}
@@ -103,7 +103,7 @@ public class NeuralNetworkTest {
 		long startTime = System.nanoTime() / 1000;
 		double n = 10000;
 		for (int i = 0; i < n; i++)
-			network.predictValue(diamondsGame);
+			network.predictScore(diamondsGame);
 		System.out.println("The execution of " + n + " forward passes took " + (System.nanoTime() / 1000 - startTime) / (1000.0 * n) + "ms on average");
 	}
 

@@ -43,7 +43,7 @@ public class CardKnowledgeBaseTest {
 		obeAbeGame.makeMove(new Move(player3, Card.CLUB_KING));
 		obeAbeGame.startNextRound();
 
-		CardKnowledgeBase.sampleCardDeterminizationToPlayers(obeAbeGame, cards1);
+		CardKnowledgeBase.sampleCardDeterminizationToPlayers(obeAbeGame, cards1, null);
 
 		assertEquals(8, player0.getCards().size());
 		assertEquals(8, player1.getCards().size());
@@ -67,7 +67,7 @@ public class CardKnowledgeBaseTest {
 		diamondsGame.makeMove(new Move(player1, Card.CLUB_SEVEN));
 		diamondsGame.makeMove(new Move(player2, Card.HEART_EIGHT)); // player 2 did not follow suit
 
-		CardKnowledgeBase.sampleCardDeterminizationToPlayers(diamondsGame, cards2);
+		CardKnowledgeBase.sampleCardDeterminizationToPlayers(diamondsGame, cards2, null);
 
 		assertEquals(8, player0.getCards().size());
 		assertEquals(8, player1.getCards().size());

@@ -588,6 +588,8 @@ public class MCTS {
 		protected Board board;
 
 		protected MCTSTask(Board board) {
+			// Here we create a new determinization by distributing new random cards for the hidden cards of the other players
+			// Starting from here we operate in a perfect information game setting!
 			this.board = board.duplicate(true);
 		}
 	}

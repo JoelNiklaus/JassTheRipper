@@ -27,30 +27,28 @@ public class JassBoard implements Board {
 
 	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
 	private final NeuralNetwork scoreEstimator;
+	// The neural netowrk of the player estimating the hidden cards of the other players. If null -> only use heuristics
+	private final NeuralNetwork cardsEstimator;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, NeuralNetwork scoreEstimator) {
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, NeuralNetwork scoreEstimator, NeuralNetwork cardsEstimator) {
 		this.availableCards = availableCards;
 		this.gameSession = gameSession;
 		this.shifted = shifted;
 		this.game = game;
 		this.scoreEstimator = scoreEstimator;
+		this.cardsEstimator = cardsEstimator;
 	}
 
-	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, NeuralNetwork neuralNetwork) {
-		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, neuralNetwork);
+	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, NeuralNetwork scoreEstimator, NeuralNetwork cardsEstimator) {
+		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, scoreEstimator, cardsEstimator);
 		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
 		return jassBoard;
 	}
 
-	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, NeuralNetwork scoreEstimator) {
-		// INFO: The version with copy constructors is almost factor 100 more efficient than the fastest other version
-		//this.game = (Game) DeepCopy.copy(game);
-		//this.game = (Game) new Cloner().deepClone(game);
-		//this.game = ObjectCloner.deepCopySerialization(game);
-		//this.game = SerializationUtils.clone(game);
-		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game), scoreEstimator);
+	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, NeuralNetwork scoreEstimator, NeuralNetwork cardsEstimator) {
+		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game), scoreEstimator, cardsEstimator);
 	}
 
 	/**
@@ -69,7 +67,7 @@ public class JassBoard implements Board {
 
 	void sampleCardDeterminizationToPlayersInCardPlay() {
 		if (cardsAreNotDistributedYet())
-			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards);
+			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards, cardsEstimator);
 	}
 
 	/**
@@ -95,9 +93,9 @@ public class JassBoard implements Board {
 	@Override
 	public Board duplicate(boolean newRandomCards) {
 		if (isChoosingTrumpf())
-			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator);
+			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator, cardsEstimator);
 
-		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, scoreEstimator);
+		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, scoreEstimator, cardsEstimator);
 		if (newRandomCards)
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 		return jassBoard;
@@ -284,7 +282,7 @@ public class JassBoard implements Board {
 
 	@Override
 	public double[] estimateScore() {
-		double value = scoreEstimator.predictValue(game);
+		double value = scoreEstimator.predictScore(game);
 		// logger.info("The neural network predicted a value of " + value);
 		double[] score = new double[getQuantityOfPlayers()];
 		for (Player player : game.getPlayers())
@@ -294,5 +292,4 @@ public class JassBoard implements Board {
 				score[player.getSeatId()] = Math.max(Arena.TOTAL_POINTS - value, 0); // Matchbonus disregarded for simplicity
 		return score;
 	}
-
 }

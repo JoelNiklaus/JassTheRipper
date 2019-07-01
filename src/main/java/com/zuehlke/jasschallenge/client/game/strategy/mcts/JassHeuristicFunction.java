@@ -6,7 +6,7 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.HeuristicFunction
 /**
  * Created by joelniklaus on 10.05.17.
  */
-public class JassHeuristic implements HeuristicFunction {
+public class JassHeuristicFunction implements HeuristicFunction {
 
 	@Override
 	public double heuristicFunction(Board board) {

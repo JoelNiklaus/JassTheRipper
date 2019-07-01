@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,7 +21,6 @@ import java.util.stream.Stream;
 public class CardKnowledgeBase {
 
 	public static final Logger logger = LoggerFactory.getLogger(CardKnowledgeBase.class);
-
 
 	private CardKnowledgeBase() {
 
@@ -60,50 +58,60 @@ public class CardKnowledgeBase {
 	 * @param game
 	 * @param availableCards
 	 */
-	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards) {
+	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards, NeuralNetwork cardsEstimator) {
 		// INFO: This method should only be used when new cards are distributed (at the beginning of a move).
 		for (Player player : game.getPlayers()) {
 			assert player.getCards().isEmpty();
 		}
 
-		game.getCurrentPlayer().setCards(EnumSet.copyOf(availableCards));
+		Map<Card, Distribution<Player>> cardDistributionMap;
+		if (cardsEstimator == null) {
+			cardDistributionMap = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
+		} else {
+			cardDistributionMap = cardsEstimator.predictCardDistribution();
+		}
 
-		Map<Card, Distribution<Player>> cardDistributionMap = initCardDistributionMap(game, availableCards);
+		game.getCurrentPlayer().setCards(EnumSet.copyOf(availableCards));
 
 		// TODO extend this with a belief distribution: we can assume that a player has/has not some cards based on the game.
 		//  For example when a player did not take a very valuable stich he probably does not have any trumpfs or higher cards of the given suit.
 
 		while (cardsNeedToBeDistributed(cardDistributionMap)) {
-			AtomicBoolean noConflictSoFar = new AtomicBoolean(true);
+			//AtomicBoolean noConflictSoFar = new AtomicBoolean(true);
 			getStreamWithNonNullDistributions(cardDistributionMap)
-					.min(Comparator.comparingInt(o -> o.getValue().getNumEvents()))
+					.min(Comparator.comparingInt(o -> o.getValue().getNumEvents())) // Select the card with the least possible players
 					.ifPresent(cardDistributionEntry -> {
 						Card card = cardDistributionEntry.getKey();
-						Player player = cardDistributionEntry.getValue().sample();
+						Player player = cardDistributionEntry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
 						assert player != game.getCurrentPlayer();
 						Set<Card> cards = EnumSet.copyOf(player.getCards());
 						cards.add(card);
 						player.setCards(cards);
 						assert player.getCards().size() <= 9;
-						// set distribution of already distributed card to null so it is not selected anymore in future runs
+						// Set distribution of already distributed card to null so it is not selected anymore in future runs
 						cardDistributionEntry.setValue(null);
 
-						// As soon as a player has enough cards, delete him from all distributions
+						// As soon as a player has enough cards, delete him from all remaining distributions
 						final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0; // rounds down the number
 						if (cards.size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
 							getStreamWithNonNullDistributions(cardDistributionMap)
 									.filter(entry -> entry.getValue().hasEvent(player))
 									.forEach(entry -> {
-										noConflictSoFar.set(entry.getValue().deleteEventAndRebalance(player));
+										entry.getValue().deleteEventAndReBalance(player);
+									/*
+									noConflictSoFar.set(entry.getValue().deleteEventAndReBalance(player));
 										if (!noConflictSoFar.get()) {
 											//logger.debug("{}", card);
 											//logger.debug("{}", player);
 										}
+										*/
 									});
 						}
 					});
+			/* NOTE: It seems to be stable enough so we can make this simplification here
 			// There has been a conflict in distributing the cards. Rollback and try again.
 			if (!noConflictSoFar.get()) {
+
 				logger.info("There has been a conflict in sampling the card determinizations for the players. Rolling back and trying again now.");
 				logger.debug("{}", game);
 				// Deletes the set cards from the players again.
@@ -113,6 +121,7 @@ public class CardKnowledgeBase {
 				sampleCardDeterminizationToPlayers(game, availableCards);
 				return; // We started a new try. So do not finish the old one by continuing the while loop.
 			}
+			*/
 		}
 
 		for (Player player : game.getPlayers())
@@ -137,6 +146,14 @@ public class CardKnowledgeBase {
 		return randomSubSet;
 	}
 
+	/**
+	 * Initializes a basic card distribution based only on the information we know for sure. Only certainties are encoded.
+	 * This could be extended with rule based knowledge or with learning based approaches.
+	 *
+	 * @param game
+	 * @param availableCards
+	 * @return
+	 */
 	private static Map<Card, Distribution<Player>> initCardDistributionMap(Game game, Set<Card> availableCards) {
 		Map<Card, Distribution<Player>> cardDistributionMap = new EnumMap<>(Card.class);
 
@@ -154,7 +171,7 @@ public class CardKnowledgeBase {
 			Set<Card> impossibleCardsForPlayer = getImpossibleCardsForPlayer(game, player);
 			for (Card card : impossibleCardsForPlayer) {
 				if (cardDistributionMap.containsKey(card))
-					cardDistributionMap.get(card).deleteEventAndRebalance(player);
+					cardDistributionMap.get(card).deleteEventAndReBalance(player);
 			}
 		}
 

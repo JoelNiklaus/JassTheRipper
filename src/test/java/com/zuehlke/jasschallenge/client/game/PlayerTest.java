@@ -20,7 +20,6 @@ public class PlayerTest {
 
     @Test
     public void chooseCard_strategyReturnsInvalidCard() {
-
         final GameSession gameSession = GameSessionBuilder
                 .newSession()
                 .withStartedGame(Mode.bottomUp())

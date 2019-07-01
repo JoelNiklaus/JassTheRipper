@@ -8,8 +8,9 @@ import com.zuehlke.jasschallenge.game.cards.Card;
 import java.util.*;
 
 /**
- * At the moment this class only selects a random move.
+ * IMPORTANT: At the moment this class only selects a random move.
  * But the goal would be to use rules for good play in a perfect information game scenario.
+ * Using a rule based bot like for example the challenge bot would be an idea hers.
  */
 public class PerfectInformationGameSolver {
 
