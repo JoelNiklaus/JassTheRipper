@@ -19,7 +19,8 @@ public class Arena {
 
 	// The bigger, the bigger the datasets are, and the longer the training takes
 	// If it is 4: each experience will be used 4 times.
-	private static int replayMemorySizeFactor = 4;
+	// Should not be bigger than 32 because it might result in OutOfMemoryErrors
+	private static final int REPLAY_MEMORY_SIZE_FACTOR = 4; // Standard: 4, 8, 16
 
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
 	private static final String BASE_PATH = "src/main/resources/";
@@ -44,8 +45,6 @@ public class Arena {
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
 	public static final int SEED = 42;
 	public static final double TOTAL_POINTS = 157.0; // TODO 257 or 157 better here?
-
-	private static final int SAVE_DATASET_FREQUENCY = 1;
 
 	private String scoreEstimatorFilePath;
 	private final int numTrainingGames;
@@ -84,7 +83,7 @@ public class Arena {
 	}
 
 	public void trainForNumEpisodes(int numEpisodes) {
-		setUp(false);
+		setUp();
 
 		List<Double> history = new ArrayList<>();
 		for (int i = 0; i < numEpisodes; i++) {
@@ -96,7 +95,7 @@ public class Arena {
 	}
 
 	public void trainUntilBetterThanRandomPlayouts() {
-		setUp(false);
+		setUp();
 
 		List<Double> history = new ArrayList<>(Collections.singletonList(0.0));
 		for (int i = 0; history.get(i) < 100; i++) {
@@ -108,7 +107,7 @@ public class Arena {
 	}
 
 	public void collectDataSetRandomPlayouts(int numGames) {
-		setUp(true);
+		setUp();
 
 		runMCTSWithRandomPlayout(random, numGames, false);
 
@@ -174,7 +173,7 @@ public class Arena {
 	}
 
 	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
-		setUp(false);
+		setUp();
 		final double performance = performMatch(random, numGames, false, false, true, configs);
 		tearDown();
 		return performance;
@@ -236,7 +235,7 @@ public class Arena {
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
 
-		for (int i = 0; i < numGames; i++) {
+		for (int i = 1; i <= numGames; i++) {
 			logger.info("Running game #{}\n", i);
 
 			if (orthogonalCardsEnabled)
@@ -250,9 +249,9 @@ public class Arena {
 
 			logger.info("Result of game #{}: {}\n", i, result);
 
-			if (saveData && i % SAVE_DATASET_FREQUENCY == 0) {
+			if (saveData && i % REPLAY_MEMORY_SIZE_FACTOR == 0) {
 				final DataSet dataSet = NeuralNetworkHelper.buildDataSet(observations, labels);
-				NeuralNetworkHelper.saveDataSet(dataSet);
+				NeuralNetworkHelper.saveDataSet(dataSet, (i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + i);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -339,7 +338,7 @@ public class Arena {
 		gameSession.startNewGame(mode, shifted);
 	}
 
-	private void setUp(boolean collectingDataSet) {
+	private void setUp() {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
@@ -347,10 +346,8 @@ public class Arena {
 			player.onSessionStarted(gameSession);
 		}
 
-		if (collectingDataSet)
-			replayMemorySizeFactor = 10000; // Enough for a lot of games...
 		// 36: Number of Cards in a game, 24: Number of color permutations (data augmentation)
-		int size = 36 * 24 * numTrainingGames * replayMemorySizeFactor;
+		int size = 36 * 24 * REPLAY_MEMORY_SIZE_FACTOR;
 		// When a new element is added and the queue is full, the head is removed.
 		observations = EvictingQueue.create(size);
 		labels = EvictingQueue.create(size);

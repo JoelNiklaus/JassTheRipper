@@ -241,16 +241,29 @@ public class NeuralNetworkHelper {
 		return directory.mkdirs();
 	}
 
-	public static boolean saveDataSet(DataSet dataSet) {
-		if (createIfNotExists(new File(Arena.DATASETS_BASE_PATH))) {
+	/**
+	 * Saves multiple files into the subdirectories "features" and "labels".
+	 * These files can then be loaded and concatenated again to form the big dataset.
+	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
+	 *
+	 * @param dataSet
+	 * @param extension
+	 * @return
+	 */
+	public static boolean saveDataSet(DataSet dataSet, String extension) {
+		String featuresDir = Arena.DATASETS_BASE_PATH + "features/";
+		String labelsDir = Arena.DATASETS_BASE_PATH + "labels/";
+		if (createIfNotExists(new File(Arena.DATASETS_BASE_PATH))
+				&& createIfNotExists(new File(featuresDir))
+				&& createIfNotExists(new File(labelsDir))) {
 			try {
-				dataSet.save(new File(Arena.DATASET_PATH));
+				// dataSet.save(new File(Arena.DATASET_PATH));
 
-				Nd4j.writeTxt(dataSet.getFeatures(), Arena.DATASETS_BASE_PATH + "features.txt");
-				Nd4j.writeTxt(dataSet.getLabels(), Arena.DATASETS_BASE_PATH + "labels.txt");
+				Nd4j.writeTxt(dataSet.getFeatures(), featuresDir + extension + ".json");
+				Nd4j.writeTxt(dataSet.getLabels(), labelsDir + extension + ".json");
 
-				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(Arena.DATASETS_BASE_PATH + "features.npy"));
-				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(Arena.DATASETS_BASE_PATH + "labels.npy"));
+				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(featuresDir + extension + ".npy"));
+				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(labelsDir + extension + ".npy"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
