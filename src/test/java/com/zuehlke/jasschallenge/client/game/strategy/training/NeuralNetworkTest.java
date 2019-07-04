@@ -22,7 +22,7 @@ public class NeuralNetworkTest {
 
 		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
 		assertTrue(network.predictScore(diamondsGame) < 120);
@@ -34,7 +34,7 @@ public class NeuralNetworkTest {
 
 		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
 		assertTrue(network.predictScore(diamondsGame) > 120);
@@ -52,7 +52,7 @@ public class NeuralNetworkTest {
 
 		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
 			NeuralNetworkHelper.pretrainScoreEstimator();
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
 		assertTrue(network.predictScore(diamondsGame) < 100);
@@ -60,7 +60,7 @@ public class NeuralNetworkTest {
 
 	@Test
 	public void testFirstForwardPassSpeed() {
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		long startTime = System.currentTimeMillis();
 		network.predictScore(diamondsGame);
 		System.out.println("The execution of one forward pass took " + (System.currentTimeMillis() - startTime) + "ms");
@@ -68,7 +68,7 @@ public class NeuralNetworkTest {
 
 	@Test
 	public void testFirstTenForwardPassSpeeds() {
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		for (int i = 0; i < 10; i++) {
 			long startTime = System.currentTimeMillis();
 			network.predictScore(diamondsGame);
@@ -78,7 +78,7 @@ public class NeuralNetworkTest {
 
 	@Test
 	public void testFirstHundredForwardPassSpeeds() {
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		for (int i = 0; i < 100; i++) {
 			long startTime = System.nanoTime() / 1000;
 			network.predictScore(diamondsGame);
@@ -88,7 +88,7 @@ public class NeuralNetworkTest {
 
 	@Test
 	public void testFirstThousandForwardPassSpeeds() {
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		for (int i = 0; i < 1000; i++) {
 			long startTime = System.nanoTime() / 1000;
 			network.predictScore(diamondsGame);
@@ -98,7 +98,7 @@ public class NeuralNetworkTest {
 
 	@Test
 	public void testAverageForwardPassSpeed() {
-		NeuralNetwork network = new NeuralNetwork();
+		ScoreEstimator network = new ScoreEstimator();
 		long startTime = System.nanoTime() / 1000;
 		double n = 10000;
 		for (int i = 0; i < n; i++)

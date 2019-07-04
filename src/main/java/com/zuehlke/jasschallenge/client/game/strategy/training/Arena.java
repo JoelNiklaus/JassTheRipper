@@ -46,7 +46,6 @@ public class Arena {
 	public static final int SEED = 42;
 	public static final double TOTAL_POINTS = 157.0; // TODO 257 or 157 better here?
 
-	private String scoreEstimatorFilePath;
 	private final int numTrainingGames;
 	private final int numTestingGames;
 	private final double improvementThresholdPercentage;
@@ -60,7 +59,7 @@ public class Arena {
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 
 	public static void main(String[] args) {
-		final Arena arena = new Arena(SCORE_ESTIMATOR_DL4J_PATH, NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
 		arena.collectDataSetRandomPlayouts(1000);
@@ -72,10 +71,9 @@ public class Arena {
 		//arena.trainForNumEpisodes(1000);
 	}
 
-	public Arena(String scoreEstimatorFilePath, int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
+	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
 		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
 
-		this.scoreEstimatorFilePath = scoreEstimatorFilePath;
 		this.numTrainingGames = numTrainingGames;
 		this.numTestingGames = numTestingGames;
 		this.improvementThresholdPercentage = improvementThresholdPercentage;
@@ -115,24 +113,31 @@ public class Arena {
 	}
 
 	public void pretrainNetwork() {
-		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
+		final ScoreEstimator scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
 		try {
 			final DataSet dataSet = NeuralNetworkHelper.loadDataSet(DATASET_PATH);
 			System.out.println(dataSet);
-			scoreEstimationNetwork.train(dataSet, 500);
-			updateAndSaveNetwork(scoreEstimationNetwork, scoreEstimatorFilePath);
-			scoreEstimationNetwork.evaluate(dataSet);
+			scoreEstimator.train(dataSet, 500);
+			updateAndSaveScoreEstimator(scoreEstimator);
+			scoreEstimator.evaluate(dataSet);
 		} catch (RuntimeException e) {
 			logger.error("{}", e);
 			logger.error("Could not find dataset to train model with. Starting with random initialization now.");
 		}
 	}
 
-	private void updateAndSaveNetwork(NeuralNetwork scoreEstimationNetwork, String scoreEstimatorFilePath) {
+	private void updateAndSaveScoreEstimator(ScoreEstimator scoreEstimator) {
 		// Set the frozen networks of the players of team 1 to a copy of the trainable network
-		gameSession.getPlayersOfTeam(1).forEach(player -> player.setScoreEstimator(new NeuralNetwork(scoreEstimationNetwork)));
+		gameSession.getPlayersOfTeam(1).forEach(player -> player.setScoreEstimator(new ScoreEstimator(scoreEstimator)));
 		// Checkpoint so we don't lose any training progress
-		scoreEstimationNetwork.save(scoreEstimatorFilePath);
+		scoreEstimator.save(Arena.SCORE_ESTIMATOR_DL4J_PATH);
+	}
+
+	private void updateAndSaveCardsEstimator(CardsEstimator cardsEstimator) {
+		// Set the frozen networks of the players of team 1 to a copy of the trainable network
+		gameSession.getPlayersOfTeam(1).forEach(player -> player.setCardsEstimator(new CardsEstimator(cardsEstimator)));
+		// Checkpoint so we don't lose any training progress
+		cardsEstimator.save(Arena.CARDS_ESTIMATOR_DL4J_PATH);
 	}
 
 
@@ -150,18 +155,18 @@ public class Arena {
 		logger.info("Running episode #{}\n", episodeNumber);
 
 		logger.info("Collecting training examples by self play with MCTS policy improvement\n");
-		runMCTSWithValueEstimators(random, numTrainingGames);
+		runMCTSWithScoreEstimators(random, numTrainingGames);
 
-		logger.info("Training the network with the collected examples\n");
+		logger.info("Training the networks with the collected examples\n");
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
-		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
-		scoreEstimationNetwork.train(observations, labels, 10);
+		final ScoreEstimator scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
+		scoreEstimator.train(observations, labels, 10);
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
 				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
 		final double improvement = runOnlyNetworks(random, numTestingGames);
 		if (improvement > improvementThresholdPercentage) { // if the learning network is significantly better
-			updateAndSaveNetwork(scoreEstimationNetwork, scoreEstimatorFilePath);
+			updateAndSaveScoreEstimator(scoreEstimator);
 			logger.info("The learning network outperformed the frozen network. Updated the frozen network\n");
 		}
 
@@ -187,7 +192,7 @@ public class Arena {
 		return performMatch(random, numGames, true, true, orthogonalCardsEnabled, configs);
 	}
 
-	private double runMCTSWithValueEstimators(Random random, int numGames) {
+	private double runMCTSWithScoreEstimators(Random random, int numGames) {
 		Config[] configs = {
 				new Config(true, true, true),
 				new Config(true, true, false)
@@ -328,12 +333,12 @@ public class Arena {
 	private void performTrumpfSelection() {
 		boolean shifted = false;
 		Player currentPlayer = gameSession.getTrumpfSelectingPlayer();
-		Mode mode = currentPlayer.chooseTrumpf(gameSession, shifted);
+		Mode mode = currentPlayer.chooseTrumpf(gameSession, false);
 
 		if (mode.equals(Mode.shift())) {
 			shifted = true;
 			final Player partner = gameSession.getPartnerOfPlayer(currentPlayer);
-			mode = partner.chooseTrumpf(gameSession, shifted);
+			mode = partner.chooseTrumpf(gameSession, true);
 		}
 		gameSession.startNewGame(mode, shifted);
 	}
@@ -354,10 +359,10 @@ public class Arena {
 
 		// NOTE: give the training a head start by using a pre-trained network
 		if (SUPERVISED_PRETRAINING_ENABLED) {
-			final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
-			if (scoreEstimationNetwork != null) {
-				scoreEstimationNetwork.loadKerasModel(SCORE_ESTIMATOR_KERAS_PATH);
-				// scoreEstimationNetwork.load(scoreEstimatorFilePath);
+			final NeuralNetwork scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
+			if (scoreEstimator != null) {
+				scoreEstimator.loadKerasModel(SCORE_ESTIMATOR_KERAS_PATH);
+				// scoreEstimator.load(scoreEstimatorFilePath);
 				logger.info("Successfully loaded pre-trained score estimator network.");
 			}
 		}
@@ -367,8 +372,8 @@ public class Arena {
 		for (Player player : gameSession.getPlayersInInitialPlayingOrder()) {
 			player.onSessionFinished();
 		}
-		final NeuralNetwork scoreEstimationNetwork = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
-		if (scoreEstimationNetwork != null) scoreEstimationNetwork.save(scoreEstimatorFilePath);
+		final NeuralNetwork scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
+		if (scoreEstimator != null) scoreEstimator.save(SCORE_ESTIMATOR_DL4J_PATH);
 		logger.info("Successfully terminated the training process\n");
 	}
 }

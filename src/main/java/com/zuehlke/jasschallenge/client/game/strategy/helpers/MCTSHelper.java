@@ -6,10 +6,11 @@ import com.zuehlke.jasschallenge.client.game.strategy.config.RunMode;
 import com.zuehlke.jasschallenge.client.game.strategy.config.StrengthLevel;
 import com.zuehlke.jasschallenge.client.game.strategy.exceptions.MCTSException;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.JassBoard;
-import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,8 @@ public class MCTSHelper {
 	 */
 	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted) throws MCTSException {
 		Board jassBoard;
-		NeuralNetwork scoreEstimator, cardsEstimator;
+		ScoreEstimator scoreEstimator;
+		CardsEstimator cardsEstimator;
 		StrengthLevel strengthLevel;
 		if (isChoosingTrumpf) {
 			strengthLevel = mctsConfig.getTrumpfStrengthLevel();

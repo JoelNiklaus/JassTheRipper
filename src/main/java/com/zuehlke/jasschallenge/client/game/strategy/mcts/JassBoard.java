@@ -9,7 +9,8 @@ import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Board;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.CallLocation;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
-import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
+import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
@@ -29,13 +30,13 @@ public class JassBoard implements Board {
 	private Game game;
 
 	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
-	private final NeuralNetwork scoreEstimator;
+	private final ScoreEstimator scoreEstimator;
 	// The neural netowrk of the player estimating the hidden cards of the other players. If null -> only use heuristics
-	private final NeuralNetwork cardsEstimator;
+	private final CardsEstimator cardsEstimator;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, NeuralNetwork scoreEstimator, NeuralNetwork cardsEstimator) {
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		this.availableCards = availableCards;
 		this.gameSession = gameSession;
 		this.shifted = shifted;
@@ -44,13 +45,13 @@ public class JassBoard implements Board {
 		this.cardsEstimator = cardsEstimator;
 	}
 
-	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, NeuralNetwork scoreEstimator, NeuralNetwork cardsEstimator) {
+	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, scoreEstimator, cardsEstimator);
 		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
 		return jassBoard;
 	}
 
-	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, NeuralNetwork scoreEstimator, NeuralNetwork cardsEstimator) {
+	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game), scoreEstimator, cardsEstimator);
 	}
 

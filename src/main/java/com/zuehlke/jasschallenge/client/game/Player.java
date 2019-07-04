@@ -2,7 +2,8 @@ package com.zuehlke.jasschallenge.client.game;
 
 import com.zuehlke.jasschallenge.client.game.strategy.*;
 import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
-import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
+import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
@@ -104,22 +105,22 @@ public class Player {
 		((JassTheRipperJassStrategy) jassStrategy).setConfig(config);
 	}
 
-	public NeuralNetwork getScoreEstimator() {
+	public ScoreEstimator getScoreEstimator() {
 		assert jassStrategy instanceof JassTheRipperJassStrategy;
 		return ((JassTheRipperJassStrategy) jassStrategy).getScoreEstimator();
 	}
 
-	public void setScoreEstimator(NeuralNetwork scoreEstimator) {
+	public void setScoreEstimator(ScoreEstimator scoreEstimator) {
 		assert jassStrategy instanceof JassTheRipperJassStrategy;
 		((JassTheRipperJassStrategy) jassStrategy).setScoreEstimator(scoreEstimator);
 	}
 
-	public NeuralNetwork getCardsEstimator() {
+	public CardsEstimator getCardsEstimator() {
 		assert jassStrategy instanceof JassTheRipperJassStrategy;
 		return ((JassTheRipperJassStrategy) jassStrategy).getCardsEstimator();
 	}
 
-	public void setCardsEstimator(NeuralNetwork cardsEstimator) {
+	public void setCardsEstimator(CardsEstimator cardsEstimator) {
 		assert jassStrategy instanceof JassTheRipperJassStrategy;
 		((JassTheRipperJassStrategy) jassStrategy).setCardsEstimator(cardsEstimator);
 	}

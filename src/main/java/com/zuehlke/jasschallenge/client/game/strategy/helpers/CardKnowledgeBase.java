@@ -4,7 +4,7 @@ import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.Round;
-import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
@@ -59,7 +59,7 @@ public class CardKnowledgeBase {
 	 * @param game
 	 * @param availableCards
 	 */
-	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards, NeuralNetwork cardsEstimator) {
+	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards, CardsEstimator cardsEstimator) {
 		// INFO: This method should only be used when new cards are distributed (at the beginning of a move).
 		for (Player player : game.getPlayers()) {
 			assert player.getCards().isEmpty();

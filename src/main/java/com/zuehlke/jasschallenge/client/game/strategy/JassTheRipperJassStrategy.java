@@ -11,9 +11,10 @@ import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelpe
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
-import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
@@ -109,8 +110,8 @@ TODO Make new experiments with the improvements so far:
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-	private NeuralNetwork scoreEstimator;
-	private NeuralNetwork cardsEstimator;
+	private ScoreEstimator scoreEstimator;
+	private CardsEstimator cardsEstimator;
 
 	private Config config;
 
@@ -224,19 +225,19 @@ TODO Make new experiments with the improvements so far:
 		logger.info("Hi there! I am JassTheRipper and these are my cards: {} ", availableCards);
 	}
 
-	public NeuralNetwork getScoreEstimator() {
+	public ScoreEstimator getScoreEstimator() {
 		return scoreEstimator;
 	}
 
-	public void setScoreEstimator(NeuralNetwork scoreEstimator) {
+	public void setScoreEstimator(ScoreEstimator scoreEstimator) {
 		this.scoreEstimator = scoreEstimator;
 	}
 
-	public NeuralNetwork getCardsEstimator() {
+	public CardsEstimator getCardsEstimator() {
 		return cardsEstimator;
 	}
 
-	public void setCardsEstimator(NeuralNetwork cardsEstimator) {
+	public void setCardsEstimator(CardsEstimator cardsEstimator) {
 		this.cardsEstimator = cardsEstimator;
 	}
 
@@ -247,9 +248,9 @@ TODO Make new experiments with the improvements so far:
 			this.mctsHelper.shutDown();
 		this.mctsHelper = new MCTSHelper(config.getMctsConfig());
 		if(config.isScoreEstimatorUsed())
-			scoreEstimator = new NeuralNetwork();
+			scoreEstimator = new ScoreEstimator();
 		if(config.isCardsEstimatorUsed())
-			cardsEstimator = new NeuralNetwork();
+			cardsEstimator = new CardsEstimator();
 	}
 
 	@Override
