@@ -26,10 +26,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator.INPUT_DIM;
+
+/**
+ * Decision not to use DL4J anymore for the following reasons:
+ * - Throws UnsupportedKerasConfigurationException: Unsupported keras layer type Softmax for special cards estimator network configuration
+ * - Training is a pain in DL4J: No Tensorboard support, own visualization tool does not work, very hard to get metrics
+ * - Documentation is horrible
+ * --> Conclusion: Use Keras and ZeroMQ for communication
+ */
 public class NeuralNetwork {
-	public static final int NUM_INPUT_ROWS = 72; // 36 + 9 + 9 + 9 + 9
-	public static final int THREE_HOT_ENCODING_LENGTH = 14; // 4 + 9 + 1
-	public static final int INPUT_DIM = NUM_INPUT_ROWS * THREE_HOT_ENCODING_LENGTH;
+
+	public static final int THREE_HOT_ENCODING_LENGTH = 4 + 9 + 1;
+
 	public static final int NUM_NEURONS = 128;
 	public static final double LEARNING_RATE = 1e-3;
 	public static final double WEIGHT_DECAY = 1e-3;

@@ -69,7 +69,7 @@ public class CardKnowledgeBase {
 		if (cardsEstimator == null) {
 			cardDistributionMap = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
 		} else {
-			cardDistributionMap = cardsEstimator.predictCardDistribution();
+			cardDistributionMap = cardsEstimator.predictCardDistribution(game, availableCards);
 		}
 
 		game.getCurrentPlayer().setCards(EnumSet.copyOf(availableCards));

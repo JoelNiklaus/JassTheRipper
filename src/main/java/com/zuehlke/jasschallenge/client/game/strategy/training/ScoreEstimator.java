@@ -16,6 +16,11 @@ import java.util.*;
 
 public class ScoreEstimator extends NeuralNetwork {
 
+	public static final int NUM_INPUT_ROWS = 1 + 36 + 9 + 9 + 9 + 9;
+
+	public static final int INPUT_DIM = NUM_INPUT_ROWS * THREE_HOT_ENCODING_LENGTH;
+	public static final int OUTPUT_DIM = 1;
+
 	public static final Logger logger = LoggerFactory.getLogger(ScoreEstimator.class);
 
 	public ScoreEstimator() {

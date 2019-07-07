@@ -1,11 +1,9 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.Move;
-import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.Team;
+import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.*;
 import com.zuehlke.jasschallenge.game.cards.Card;
+import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
 import java.util.ArrayList;
@@ -44,6 +42,35 @@ public class GameSessionBuilder {
 
 		teams.add(new Team("Team0", asList(playingOrder.get(0), playingOrder.get(2))));
 		teams.add(new Team("Team1", asList(playingOrder.get(1), playingOrder.get(3))));
+	}
+
+	/**
+	 * Convenience method to quickly get a started session
+	 *
+	 * @param mode
+	 * @return
+	 */
+	public static GameSession startedSession(Mode mode) {
+		return newSession().withStartedGame(mode).createGameSession();
+	}
+
+	/**
+	 * Convenience method to quickly get a started game
+	 *
+	 * @param mode
+	 * @return
+	 */
+	public static Game startedGame(Mode mode) {
+		return startedSession(mode).getCurrentGame();
+	}
+
+	/**
+	 * Convenience method to quickly get a started trumpf game
+	 *
+	 * @return
+	 */
+	public static Game startedClubsGame() {
+		return startedGame(Mode.trump(Color.CLUBS));
 	}
 
 	public static GameSessionBuilder newSession(List<Set<Card>> cards) {

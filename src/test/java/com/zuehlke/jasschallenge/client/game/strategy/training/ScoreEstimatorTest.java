@@ -12,7 +12,7 @@ import java.io.File;
 
 import static junit.framework.TestCase.assertTrue;
 
-public class NeuralNetworkTest {
+public class ScoreEstimatorTest {
 
 	private Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
@@ -21,10 +21,11 @@ public class NeuralNetworkTest {
 		Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
-			NeuralNetworkHelper.pretrainScoreEstimator();
+			NeuralNetworkHelper.preTrainScoreEstimator();
 		ScoreEstimator network = new ScoreEstimator();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
+		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) < 120);
 	}
 
@@ -33,10 +34,11 @@ public class NeuralNetworkTest {
 		Game diamondsGame = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
-			NeuralNetworkHelper.pretrainScoreEstimator();
+			NeuralNetworkHelper.preTrainScoreEstimator();
 		ScoreEstimator network = new ScoreEstimator();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
+		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) > 120);
 	}
 
@@ -51,10 +53,11 @@ public class NeuralNetworkTest {
 
 
 		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
-			NeuralNetworkHelper.pretrainScoreEstimator();
+			NeuralNetworkHelper.preTrainScoreEstimator();
 		ScoreEstimator network = new ScoreEstimator();
 		network.loadKerasModel(Arena.SCORE_ESTIMATOR_KERAS_PATH);
 
+		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) < 100);
 	}
 

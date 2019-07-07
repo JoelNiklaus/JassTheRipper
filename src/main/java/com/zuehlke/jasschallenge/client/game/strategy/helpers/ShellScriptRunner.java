@@ -20,10 +20,10 @@ public class ShellScriptRunner {
 	}
 
 	public static boolean runShellProcess(String directory, String command) {
-		ProcessBuilder processBuilder = ShellScriptRunner.buildShellCommand(directory, command);
+		ProcessBuilder builder = ShellScriptRunner.buildShellCommand(directory, command);
 
 		try {
-			Process process = processBuilder.start();
+			Process process = builder.start();
 
 			int exitCode = process.waitFor();
 			System.out.println("\nShell process '" + command + "' finished with exit code: " + exitCode);

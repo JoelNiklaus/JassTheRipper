@@ -3,15 +3,19 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 import com.google.common.collect.Collections2;
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.client.game.strategy.training.Arena;
+import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.jetbrains.annotations.NotNull;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.util.ArrayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,44 +25,38 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
 public class NeuralNetworkHelper {
 
 	public static final Logger logger = LoggerFactory.getLogger(NeuralNetworkHelper.class);
 
 
-	public static boolean pretrainCardsEstimator() {
-		return pretrainKerasModel("cards_estimator");
+	public static boolean preTrainCardsEstimator() {
+		return preTrainKerasModel("cards_estimator");
 	}
 
-	public static boolean pretrainScoreEstimator() {
-		return pretrainKerasModel("score_estimator");
+	public static boolean preTrainScoreEstimator() {
+		return preTrainKerasModel("score_estimator");
 	}
 
-	private static boolean pretrainKerasModel(String model) {
-		final String directory = System.getProperty("user.dir") + "/src/main/java/com/zuehlke/jasschallenge/client/game/strategy/training/python";
-		String command = "python3 " + model + ".py";
-
-		return ShellScriptRunner.runShellProcess(directory, command);
+	private static boolean preTrainKerasModel(String model) {
+		return ShellScriptRunner.runShellProcess(getPythonDirectory(), "python3 " + model + ".py");
 	}
 
-	/**
-	 * Gets the observations of all the color permutations for the given game state.
-	 * This will generate 24 instead of just 1 observation for trumpfs which are not top-down or bottom-up.
-	 * This can be used for data augmentation purposes.
-	 * TODO an additional idea for data augmentation would be adding noise (e.g. switch 6s and 7s inside every suit
-	 *
-	 * @param game
-	 * @return
-	 */
-	public static List<INDArray> getAnalogousObservations(Game game) {
-		List<INDArray> observations = new ArrayList<>();
-		if (game.getMode().isTrumpfMode()) {
-			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
-			permutations.forEach(colors -> observations.add(getObservation(game, colors)));
-		} else
-			observations.add(getObservation(game));
-		return observations;
+	@NotNull
+	public static String getPythonDirectory() {
+		return System.getProperty("user.dir") + "/src/main/java/com/zuehlke/jasschallenge/client/game/strategy/training/python";
+	}
+
+	public static INDArray getCardsObservation(INDArray observation) {
+		// Delete the cards of the other players
+		final INDArrayIndex interval = interval(0, CardsEstimator.INPUT_DIM);
+		return observation.get(interval);
+	}
+
+	public static INDArray getCardsObservation(Game game) {
+		return getCardsObservation(getObservation(game));
 	}
 
 	/**
@@ -71,27 +69,50 @@ public class NeuralNetworkHelper {
 		return Nd4j.createFromArray(ArrayUtil.flatten(generateObservation(game, null)));
 	}
 
-	private static INDArray getObservation(Game game, List<Color> colors) {
+	/**
+	 * Gets the observations of all the color permutations for the given game state.
+	 * This will generate 24 instead of just 1 observation for trumpfs which are not top-down or bottom-up.
+	 * This can be used for data augmentation purposes.
+	 * TODO an additional idea for data augmentation would be adding noise (e.g. switch 6s and 7s inside every suit)
+	 *
+	 * @param game
+	 * @return
+	 */
+	public static List<INDArray> getAnalogousObservations(Game game) {
+		List<INDArray> observations = new ArrayList<>();
+		if (game.getMode().isTrumpfMode()) {
+			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
+			permutations.forEach(colors -> observations.add(getObservationForColorsPermutation(game, colors)));
+		} else
+			observations.add(getObservation(game));
+		return observations;
+	}
+
+	private static INDArray getObservationForColorsPermutation(Game game, List<Color> colors) {
 		return Nd4j.createFromArray(ArrayUtil.flatten(generateObservation(game, colors)));
 	}
 
 	/**
 	 * Generates an observation from a game to be used by the neural network.
-	 * index 00 - 35: played cards in order of appearance, NOTE: deliberately chose 36 cards and not only minimum required 31 to provide more training examples
-	 * index 36 - 44: hand cards of current player
-	 * index 45 - 53: hand cards of first opponent player
-	 * index 54 - 62: hand cards of partner player
-	 * index 63 - 71: hand cards of second opponent player
+	 * index 00 - 00: flag if game is shifted or not
+	 * index 01 - 36: played cards in order of appearance, NOTE: deliberately chose 36 cards and not only minimum required 31 to provide more training examples
+	 * index 37 - 45: hand cards of current player
+	 * index 46 - 54: hand cards of first opponent player
+	 * index 55 - 63: hand cards of partner player
+	 * index 64 - 72: hand cards of second opponent player
 	 *
 	 * @param game
 	 * @return
 	 */
 	public static int[][] generateObservation(Game game, List<Color> colors) {
-		int[][] observation = new int[NeuralNetwork.NUM_INPUT_ROWS][NeuralNetwork.THREE_HOT_ENCODING_LENGTH];
+		int[][] observation = new int[ScoreEstimator.NUM_INPUT_ROWS][NeuralNetwork.THREE_HOT_ENCODING_LENGTH];
 
-		insertCardsIntoObservation(game.getAlreadyPlayedCardsInOrder(), game.getMode(), observation, 0, colors);
+		// May be important for card estimation network
+		observation[0] = toBinary(game.isShifted() ? 1 : 0, NeuralNetwork.THREE_HOT_ENCODING_LENGTH);
 
-		int startIndex = 36;
+		insertCardsIntoObservation(game.getAlreadyPlayedCardsInOrder(), game.getMode(), observation, 1, colors);
+
+		int startIndex = 37;
 		for (Player player : game.getOrder().getPlayersInCurrentPlayingOrder()) {
 			insertCardsIntoObservation(new ArrayList<>(player.getCards()), game.getMode(), observation, startIndex, colors);
 			startIndex += 9;
@@ -100,8 +121,7 @@ public class NeuralNetworkHelper {
 		// NOTE: adding the trumpf as another row would be an additional option
 		// observation[72] = toBinary(game.getMode().getCode(), THREE_HOT_ENCODING_LENGTH);
 
-		// TODO: Somehow add information if game is shifted or not -> may be important for card estimation network
-		// observation[72] = toBinary(game.isShifted() ? 1 : 0, THREE_HOT_ENCODING_LENGTH);
+
 
 		return observation;
 	}
@@ -142,7 +162,7 @@ public class NeuralNetworkHelper {
 		Map<String, List<Card>> reconstruction = new HashMap<>();
 
 		List<Card> alreadyPlayedCards = new ArrayList<>();
-		for (int i = 0; i <= 35; i++) {
+		for (int i = 1; i <= 36; i++) {
 			final Card card = fromThreeHotToCard(observation[i]);
 			if (card != null)
 				alreadyPlayedCards.add(card);
@@ -152,7 +172,7 @@ public class NeuralNetworkHelper {
 
 		for (int j = 0; j < 4; j++) {
 			List<Card> playerCards = new ArrayList<>();
-			for (int i = 36 + j * 9; i <= 44 + j * 9; i++) {
+			for (int i = 37 + j * 9; i <= 45 + j * 9; i++) {
 				final Card card = fromThreeHotToCard(observation[i]);
 				if (card != null)
 					playerCards.add(card);
@@ -241,29 +261,38 @@ public class NeuralNetworkHelper {
 		return directory.mkdirs();
 	}
 
+	// TODO get rid of all these INDArrays
+
 	/**
 	 * Saves multiple files into the subdirectories "features" and "labels".
 	 * These files can then be loaded and concatenated again to form the big dataset.
 	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
-	 *
-	 * @param dataSet
-	 * @param extension
-	 * @return
 	 */
-	public static boolean saveDataSet(DataSet dataSet, String extension) {
-		String featuresDir = Arena.DATASETS_BASE_PATH + "features/";
-		String labelsDir = Arena.DATASETS_BASE_PATH + "labels/";
+	public static boolean saveData(Collection<INDArray> scoreFeaturesCollection, Collection<INDArray> cardsFeaturesCollection, Collection<INDArray> scoreLabelsCollection, Collection<INDArray> cardsLabelsCollection, String extension) {
+		final INDArray scoreFeatures = buildInput(scoreFeaturesCollection);
+		final INDArray cardsFeatures = buildInput(cardsFeaturesCollection);
+		final INDArray scoreLabels = buildInput(scoreLabelsCollection);
+		final INDArray cardsLabels = buildInput(cardsLabelsCollection);
+
+		String scoreFeaturesDir = Arena.DATASETS_BASE_PATH + "score_features/";
+		String cardsFeaturesDir = Arena.DATASETS_BASE_PATH + "cards_features/";
+		String scoreLabelsDir = Arena.DATASETS_BASE_PATH + "score_labels/";
+		String cardsLabelsDir = Arena.DATASETS_BASE_PATH + "cards_labels/";
 		if (createIfNotExists(new File(Arena.DATASETS_BASE_PATH))
-				&& createIfNotExists(new File(featuresDir))
-				&& createIfNotExists(new File(labelsDir))) {
+				&& createIfNotExists(new File(scoreFeaturesDir))
+				&& createIfNotExists(new File(scoreLabelsDir))) {
 			try {
-				// dataSet.save(new File(Arena.DATASET_PATH));
+				final String json = ".json";
+				Nd4j.writeTxt(scoreFeatures, scoreFeaturesDir + extension + json);
+				Nd4j.writeTxt(cardsFeatures, cardsFeaturesDir + extension + json);
+				Nd4j.writeTxt(scoreLabels, scoreLabelsDir + extension + json);
+				Nd4j.writeTxt(cardsLabels, cardsLabelsDir + extension + json);
 
-				Nd4j.writeTxt(dataSet.getFeatures(), featuresDir + extension + ".json");
-				Nd4j.writeTxt(dataSet.getLabels(), labelsDir + extension + ".json");
-
-				Nd4j.writeAsNumpy(dataSet.getFeatures(), new File(featuresDir + extension + ".npy"));
-				Nd4j.writeAsNumpy(dataSet.getLabels(), new File(labelsDir + extension + ".npy"));
+				final String npy = ".npy";
+				Nd4j.writeAsNumpy(scoreFeatures, new File(scoreFeaturesDir + extension + npy));
+				Nd4j.writeAsNumpy(cardsFeatures, new File(cardsFeaturesDir + extension + npy));
+				Nd4j.writeAsNumpy(scoreLabels, new File(scoreLabelsDir + extension + npy));
+				Nd4j.writeAsNumpy(cardsLabels, new File(cardsLabelsDir + extension + npy));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -283,7 +312,12 @@ public class NeuralNetworkHelper {
 
 	public static INDArray buildInput(Collection<INDArray> collection) {
 		List<INDArray> list = new ArrayList<>(collection);
-		INDArray input = Nd4j.create(list.size(), list.get(0).length());
+		INDArray input = null;
+		final long[] shape = list.get(0).shape();
+		if (shape.length == 1)
+			input = Nd4j.create((long) list.size(), shape[0]);
+		if (shape.length == 2)
+			input = Nd4j.create((long) list.size(), shape[0], shape[1]);
 		for (int i = 0; i < list.size(); i++) {
 			input.putRow(i, list.get(i));
 		}

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+
+// TODO refactor this! it is way too big: Maybe take out helper method or divide into two classes with different responsibilities: data collection and experiments
 public class Arena {
 
 	// The bigger, the bigger the datasets are, and the longer the training takes
@@ -33,9 +35,9 @@ public class Arena {
 			"_seed=" + NeuralNetwork.SEED;
 	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
 	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
-	public static final String SCORE_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "score_estimator.h5";
+	public static final String SCORE_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "score_estimator.hdf5";
 	public static final String SCORE_ESTIMATOR_DL4J_PATH = MODELS_BASE_PATH + "/ScoreEstimator.zip"; // Can be opened externally
-	public static final String CARDS_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "cards_estimator.h5";
+	public static final String CARDS_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "cards_estimator.hdf5";
 	public static final String CARDS_ESTIMATOR_DL4J_PATH = MODELS_BASE_PATH + "/CardsEstimator.zip"; // Can be opened externally
 	public static final String DATASET_PATH = DATASETS_BASE_PATH + "random_playout.dataset";
 	private static final int NUM_EPISODES = 1; // TEST: 1
@@ -53,8 +55,14 @@ public class Arena {
 
 	private GameSession gameSession;
 
-	private Queue<INDArray> observations;
-	private Queue<INDArray> labels;
+	// The input for the neural networks, a representation of the game
+	private Queue<INDArray> scoreFeatures;
+	// The input for the neural networks, a representation of the game, without the cards of the other players
+	private Queue<INDArray> cardsFeatures;
+	// The labels for the score estimator, the score at the end of the game
+	private Queue<INDArray> scoreLabels;
+	// The labels for the cards estimator, the actual cards the other players had
+	private Queue<INDArray> cardsLabels;
 
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 
@@ -62,10 +70,13 @@ public class Arena {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		arena.collectDataSetRandomPlayouts(1000);
+		arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 10);
 
 		logger.info("Pre-training a score estimator network\n");
-		NeuralNetworkHelper.pretrainScoreEstimator();
+		NeuralNetworkHelper.preTrainScoreEstimator();
+
+		logger.info("Pre-training a cards estimator network\n");
+		NeuralNetworkHelper.preTrainCardsEstimator();
 
 		//logger.info("Training the score estimator network with self-play\n");
 		//arena.trainForNumEpisodes(1000);
@@ -160,7 +171,9 @@ public class Arena {
 		logger.info("Training the networks with the collected examples\n");
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
 		final ScoreEstimator scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
-		scoreEstimator.train(observations, labels, 10);
+		scoreEstimator.train(scoreFeatures, scoreLabels, 10);
+		final CardsEstimator cardsEstimator = gameSession.getPlayersOfTeam(0).get(0).getCardsEstimator();
+		cardsEstimator.train(cardsFeatures, cardsLabels, 10);
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
 				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
@@ -249,14 +262,16 @@ public class Arena {
 				Collections.shuffle(cards, random);
 				gameSession.dealCards(cards);
 			}
+
 			performTrumpfSelection();
+
 			Result result = playGame(collectExperiences);
 
 			logger.info("Result of game #{}: {}\n", i, result);
 
 			if (saveData && i % REPLAY_MEMORY_SIZE_FACTOR == 0) {
-				final DataSet dataSet = NeuralNetworkHelper.buildDataSet(observations, labels);
-				NeuralNetworkHelper.saveDataSet(dataSet, (i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + i);
+				final String extension = zeroPadded(i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + zeroPadded(i);
+				NeuralNetworkHelper.saveData(scoreFeatures, cardsFeatures, scoreLabels, cardsLabels, extension);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -271,12 +286,21 @@ public class Arena {
 		return improvement;
 	}
 
+	private static String zeroPadded(int number) {
+		return String.format("%04d", number);
+	}
+
 	/**
-	 * Plays a game and appends the made observations with the final point difference to the provided parameters (observations and labels)
+	 * Plays a game and appends the made scoreFeatures with the final point difference to the provided parameters (scoreFeatures and scoreLabels)
 	 */
 	private Result playGame(boolean collectExperiences) {
-		HashMap<INDArray, Player> observationsWithPlayer = new HashMap<>();
 		Game game = gameSession.getCurrentGame();
+
+		HashMap<Player, INDArray> cardsLabelsForPlayer = null;
+		if (collectExperiences)
+			cardsLabelsForPlayer = buildCardsLabels(game);
+
+		HashMap<INDArray, Player> observationForPlayer = new HashMap<>(); // The INDArray is the key because it is unique
 		while (!game.gameFinished()) {
 			final Round round = game.getCurrentRound();
 			while (!round.roundFinished()) {
@@ -285,21 +309,55 @@ public class Arena {
 				gameSession.makeMove(move);
 				player.onMoveMade(move);
 
-				if (collectExperiences) // NOTE: only collect high quality experiences
-					NeuralNetworkHelper.getAnalogousObservations(game).forEach(observation -> observationsWithPlayer.put(observation, player));
+				if (collectExperiences)
+					NeuralNetworkHelper.getAnalogousObservations(game).forEach(observation -> observationForPlayer.put(observation, player));
 			}
 			gameSession.startNextRound();
 		}
 
+		assert observationForPlayer.size() == 24;
 		if (collectExperiences)
-			for (Map.Entry<INDArray, Player> entry : observationsWithPlayer.entrySet()) {
-				observations.add(entry.getKey());
-				// NOTE: the label is between 0 and 1 inside the network
-				double[] label = {game.getResult().getTeamScore(entry.getValue()) / TOTAL_POINTS};
-				labels.add(Nd4j.createFromArray(label));
+			for (Map.Entry<INDArray, Player> entry : observationForPlayer.entrySet()) {
+				scoreFeatures.add(entry.getKey());
+				cardsFeatures.add(NeuralNetworkHelper.getCardsObservation(entry.getKey()));
+				// NOTE: the scoreLabel is between 0 and 1 inside the network
+				double scoreLabel = game.getResult().getTeamScore(entry.getValue()) / TOTAL_POINTS;
+				scoreLabels.add(Nd4j.createFromArray(scoreLabel));
+				cardsLabels.add(cardsLabelsForPlayer.get(entry.getValue())); // get the cardsLabel of the corresponding player
 			}
 
 		return game.getResult();
+	}
+
+	/**
+	 * For each card we have a one hot encoded vector of length 3.
+	 * The one represents the player who has that specific card.
+	 * The players are listed in the playing sequence starting from the next player (in the playing order) to the current player.
+	 *
+	 * @param game
+	 */
+	static HashMap<Player, INDArray> buildCardsLabels(Game game) {
+		final int numPlayers = 4;
+		HashMap<Player, INDArray> cardsLabelsForPlayer = new HashMap<>();
+
+		final Card[] cards = Card.values();
+		final List<Player> playingOrder = game.getOrder().getPlayersInInitialPlayingOrder();
+
+		for (int start = 0; start < 4; start++) { // for each of the four player's perspective
+			INDArray labels = Nd4j.create(36, numPlayers); // 36 cards, 4 players
+			for (int i = 0; i < cards.length; i++) { // for every card
+				int[] players = new int[numPlayers];
+				for (int p = 0; p < numPlayers; p++) { // check for all the players
+					if (playingOrder.get((start + p) % numPlayers).getCards().contains(cards[i])) { // if the player has the card
+						players[p] = 1; // set the card
+						break; // and no need to evaluate the rest of the players because they cannot have the card
+					}
+				}
+				labels.putRow(i, Nd4j.createFromArray(players));
+			}
+			cardsLabelsForPlayer.put(playingOrder.get(start), labels);
+		}
+		return cardsLabelsForPlayer;
 	}
 
 	/**
@@ -354,16 +412,24 @@ public class Arena {
 		// 36: Number of Cards in a game, 24: Number of color permutations (data augmentation)
 		int size = 36 * 24 * REPLAY_MEMORY_SIZE_FACTOR;
 		// When a new element is added and the queue is full, the head is removed.
-		observations = EvictingQueue.create(size);
-		labels = EvictingQueue.create(size);
+		scoreFeatures = EvictingQueue.create(size);
+		cardsFeatures = EvictingQueue.create(size);
+		scoreLabels = EvictingQueue.create(size);
+		cardsLabels = EvictingQueue.create(size);
 
 		// NOTE: give the training a head start by using a pre-trained network
 		if (SUPERVISED_PRETRAINING_ENABLED) {
-			final NeuralNetwork scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
+			final ScoreEstimator scoreEstimator = gameSession.getPlayersOfTeam(0).get(0).getScoreEstimator();
 			if (scoreEstimator != null) {
 				scoreEstimator.loadKerasModel(SCORE_ESTIMATOR_KERAS_PATH);
-				// scoreEstimator.load(scoreEstimatorFilePath);
+				// scoreEstimator.load(SCORE_ESTIMATOR_DL4J_PATH);
 				logger.info("Successfully loaded pre-trained score estimator network.");
+			}
+			final CardsEstimator cardsEstimator = gameSession.getPlayersOfTeam(0).get(0).getCardsEstimator();
+			if (cardsEstimator != null) {
+				cardsEstimator.loadKerasModel(SCORE_ESTIMATOR_KERAS_PATH);
+				// cardsEstimator.load(CARDS_ESTIMATOR_DL4J_PATH);
+				logger.info("Successfully loaded pre-trained cards estimator network.");
 			}
 		}
 	}
