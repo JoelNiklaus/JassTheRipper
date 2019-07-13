@@ -5,8 +5,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'application'
 
-// TODO rename entire package to to.joeli.jass
-mainClassName = "com.zuehlke.jasschallenge.Application"
+mainClassName = "to.joeli.jass.Application"
 
 def javaVersion = 1.8 // We have to use 1.8 because of the server
 
@@ -16,7 +15,7 @@ compileJava {
 }
 
 task(runExperiment, dependsOn: 'classes', type: JavaExec) {
-    main = 'com.zuehlke.jasschallenge.client.game.strategy.training.Arena'
+    main = 'to.joeli.jass.client.game.strategy.training.Arena'
     classpath = sourceSets.main.runtimeClasspath
     args 'CollectDataSet' // Retrieve with args[0]
     systemProperty 'simple.message', 'Hello ' // Retrieve with System.getProperty("simple.message")

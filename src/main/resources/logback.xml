@@ -8,11 +8,11 @@
         </encoder>
     </appender>
 
-    <logger name="com.zuehlke" level="INFO" />
+    <logger name="to.joeli" level="INFO" />
     <!-- Handy when we want to run the ArenaTest for seeing only relevant output
-    <logger name="com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy" level="OFF" />
-    <logger name="com.zuehlke.jasschallenge.client.game.strategy.mcts.src.MCTS" level="OFF" />
-    <logger name="com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper" level="OFF" />
+    <logger name="com.joeliassame.strategy.JassTheRipperJassStrategy" level="OFF" />
+    <logger name="com.joeliassame.strategy.mcts.src.MCTS" level="OFF" />
+    <logger name="com.joeliassame.strategy.helpers.TrumpfSelectionHelper" level="OFF" />
     -->
 
     <root level="INFO">
