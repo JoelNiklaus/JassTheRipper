@@ -45,8 +45,6 @@ public class JassTheRipperStrategyTest {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.createGameSession();
 
-		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
-
 		strategy.chooseTrumpf(cards1, gameSession, false);
 	}
 
@@ -55,8 +53,6 @@ public class JassTheRipperStrategyTest {
 		final GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
-
-		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		strategy.chooseCard(cards1, gameSession);
 		strategy.chooseCard(cards2, gameSession);
@@ -76,9 +72,6 @@ public class JassTheRipperStrategyTest {
 		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 
-
-		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
-
 		strategy.chooseCard(cards1, gameSession);
 	}
 
@@ -89,8 +82,6 @@ public class JassTheRipperStrategyTest {
 				.createGameSession();
 
 		Game game = gameSession.getCurrentGame();
-
-		strategy.onSessionStarted(gameSession); // Needed to initialize the mctsHelper
 
 		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards1, gameSession)));
 		gameSession.makeMove(new Move(game.getCurrentPlayer(), strategy.chooseCard(cards2, gameSession)));

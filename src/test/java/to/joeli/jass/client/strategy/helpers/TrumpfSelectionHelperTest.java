@@ -107,7 +107,6 @@ public class TrumpfSelectionHelperTest {
 		assertTrue(diamonds > clubs);
 		assertTrue(diamonds > obeAbe);
 		assertTrue(diamonds > undeUfe);
-		jassStrategy.onSessionStarted(gameSession);
 		assertEquals(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS), jassStrategy.chooseTrumpf(cards, gameSession, false));
 	}
 
@@ -129,7 +128,6 @@ public class TrumpfSelectionHelperTest {
 			assertTrue(undeUfe > spades);
 			assertTrue(undeUfe > clubs);
 			assertTrue(undeUfe > diamonds);
-			jassStrategy.onSessionStarted(gameSession);
 			assertEquals(Mode.bottomUp(), jassStrategy.chooseTrumpf(cards, gameSession, false));
 		}
 	}
@@ -154,7 +152,6 @@ public class TrumpfSelectionHelperTest {
 			assertTrue(spades < shiftValue);
 			assertTrue(clubs < shiftValue);
 			List<Mode> possibleTrumpfs = Arrays.asList(Mode.bottomUp(), Mode.shift());
-			jassStrategy.onSessionStarted(gameSession);
 			assertTrue(possibleTrumpfs.contains(jassStrategy.chooseTrumpf(cards, gameSession, false)));
 		}
 	}
@@ -176,7 +173,6 @@ public class TrumpfSelectionHelperTest {
 		assertTrue(hearts < shiftValue);
 		assertTrue(spades < shiftValue);
 		assertTrue(clubs < shiftValue);
-		jassStrategy.onSessionStarted(gameSession);
 		assertEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, false));
 	}
 
@@ -197,7 +193,6 @@ public class TrumpfSelectionHelperTest {
 		assertTrue(hearts < shiftValue);
 		assertTrue(spades < shiftValue);
 		assertTrue(clubs < shiftValue);
-		jassStrategy.onSessionStarted(gameSession);
 		assertEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, false));
 	}
 
@@ -218,7 +213,6 @@ public class TrumpfSelectionHelperTest {
 		assertTrue(obeAbe > hearts);
 		assertTrue(obeAbe > spades);
 		List<Mode> possibleTrumpfs = Arrays.asList(Mode.bottomUp(), Mode.topDown(), Mode.from(Trumpf.TRUMPF, Color.CLUBS));
-		jassStrategy.onSessionStarted(gameSession);
 		assertTrue(possibleTrumpfs.contains(jassStrategy.chooseTrumpf(cards, gameSession, false)));
 	}
 
@@ -239,7 +233,6 @@ public class TrumpfSelectionHelperTest {
 		assertTrue(hearts < shiftValue);
 		assertTrue(spades < shiftValue);
 		assertTrue(clubs < shiftValue);
-		jassStrategy.onSessionStarted(gameSession);
 		assertNotEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, true));
 	}
 }

@@ -260,11 +260,6 @@ TODO Make new experiments with the improvements so far:
 	}
 
 	@Override
-	public void onSessionFinished() {
-		mctsHelper.shutDown();
-	}
-
-	@Override
 	public String toString() {
 		return "JassTheRipperJassStrategy{" +
 				"config=" + config + "}";

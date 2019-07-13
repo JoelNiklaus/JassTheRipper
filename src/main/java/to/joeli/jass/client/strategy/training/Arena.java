@@ -341,9 +341,6 @@ public class Arena {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
-		for (Player player : gameSession.getPlayersInInitialPlayingOrder()) {
-			player.onSessionStarted(gameSession);
-		}
 
 		// 36: Number of Cards in a game, 24: Number of color permutations (data augmentation)
 		int size = 36 * 24 * REPLAY_MEMORY_SIZE_FACTOR;
@@ -354,9 +351,6 @@ public class Arena {
 	}
 
 	private void tearDown() {
-		for (Player player : gameSession.getPlayersInInitialPlayingOrder()) {
-			player.onSessionFinished();
-		}
 		logger.info("Successfully terminated the training process\n");
 	}
 }
