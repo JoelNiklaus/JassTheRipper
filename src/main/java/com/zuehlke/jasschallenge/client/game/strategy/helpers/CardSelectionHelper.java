@@ -445,7 +445,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	private static boolean wasStartingPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(0).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialOrder().get(0).equals(player);
 	}
 
 	/**
@@ -456,7 +456,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	private static boolean wasSecondPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(1).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialOrder().get(1).equals(player);
 	}
 
 	/**
@@ -467,7 +467,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	private static boolean wasThirdPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(2).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialOrder().get(2).equals(player);
 	}
 
 	/**
@@ -478,7 +478,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	private static boolean wasLastPlayer(Player player, Round round) {
-		return round.getPlayingOrder().getPlayersInInitialPlayingOrder().get(3).equals(player);
+		return round.getPlayingOrder().getPlayersInInitialOrder().get(3).equals(player);
 	}
 
 	/**

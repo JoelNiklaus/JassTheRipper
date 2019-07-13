@@ -1,77 +1,102 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.zuehlke.jasschallenge.client.game.Player;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 /**
  * https://stackoverflow.com/questions/35701316/discrete-probability-distribution-in-java
- *
- * @param <T>
  */
-public class Distribution<T> {
-	private List<Double> probabilities = new ArrayList<>();
-	private List<T> events = new ArrayList<>();
-	private double sumProbabilities;
+public class Distribution {
+	private Map<Player, Double> probabilities = new HashMap<>();
+	private boolean sampled;
 	private Random random = new Random();
 
-	Distribution(Map<T, Double> probabilities) {
-		for (Map.Entry<T, Double> entry : probabilities.entrySet()) {
-			sumProbabilities += entry.getValue();
-			events.add(entry.getKey());
-			this.probabilities.add(entry.getValue());
-		}
-		assert sumProbabilities - 1.0 < 0.000001;
-		assert sumProbabilities - 1.0 > -0.000001;
+	Distribution(Map<Player, Double> probabilities, boolean sampled) {
+		this.probabilities = new HashMap<>(probabilities);
+		this.sampled = sampled;
+		assert sumProbabilities() - 1.0 < 0.000001;
+		assert sumProbabilities() - 1.0 > -0.000001;
 	}
 
+
 	/**
-	 * Deletes the given event and distributes its probability part to the other events so that the total probability is 1 again.
+	 * Deletes the given player and distributes its probability part to the other players so that the total probability is 1 again.
 	 *
-	 * @param event
-	 * @return true when the event is not in the list or when the operation is completed successfully
-	 * false when there is only one event in the list
+	 * @param player
+	 * @return true when the player is not in the list or when the operation is completed successfully
+	 * false when there is only one player in the list
 	 */
-	public boolean deleteEventAndReBalance(T event) {
-		if (!events.contains(event))
+	public boolean deleteEventAndReBalance(Player player) {
+		if (!probabilities.keySet().contains(player))
 			return true;
 
-		if (events.size() == 1)
+		if (probabilities.size() == 1)
 			return false;
 
-		int index = events.indexOf(event);
-		events.remove(event);
+		double deletedProbability = probabilities.remove(player);
 
-		double deletedProbability = probabilities.get(index);
-		probabilities.remove(index);
+		// Redistribute the remaining probability on the other players
 		double probabilityToAdd = deletedProbability / probabilities.size();
-
-		for (int i = 0; i < probabilities.size(); i++) {
-			probabilities.set(i, probabilities.get(i) + probabilityToAdd);
+		for (Map.Entry<Player, Double> entry: probabilities.entrySet()) {
+			probabilities.put(entry.getKey(), entry.getValue() + probabilityToAdd);
 		}
 
-		assert !events.isEmpty();
-		assert sumProbabilities - 1.0 < 0.000001;
-		assert sumProbabilities - 1.0 > -0.000001;
+		assert !probabilities.keySet().isEmpty();
+		assert sumProbabilities() - 1.0 < 0.000001;
+		assert sumProbabilities() - 1.0 > -0.000001;
 
 		return true;
 	}
 
-	public T sample() {
-		double probability = random.nextDouble() * sumProbabilities;
-		int i;
-		for (i = 0; probability > 0; i++) {
-			probability -= probabilities.get(i);
+	public Player sample() {
+		// TODO take this random as a parameter so we can configure the seed
+		double threshold = random.nextDouble() * sumProbabilities();
+
+		double probability = 0;
+		for (Map.Entry<Player, Double> entry : probabilities.entrySet()) {
+			probability += entry.getValue();
+			if (probability >= threshold)
+				return entry.getKey();
 		}
-		return events.get(i - 1);
+		throw new IllegalStateException("The probability sum (" + probability + ") is not greater than the random number chosen (" + threshold + ")");
 	}
 
 	public int getNumEvents() {
-		return events.size();
+		return probabilities.keySet().size();
 	}
 
-	public boolean hasEvent(T event) {
-		return events.contains(event);
+	public boolean hasPlayer(Player player) {
+		return probabilities.keySet().contains(player);
+	}
+
+	private double sumProbabilities() {
+		return probabilities.values().stream().mapToDouble(i -> i).sum();
+	}
+
+	public boolean isSampled() {
+		return sampled;
+	}
+
+	public void setSampled(boolean sampled) {
+		this.sampled = sampled;
+	}
+
+	public double[] getProbabilitiesInSeatIdOrder() {
+		return probabilities.entrySet()
+				.stream()
+				.sorted(Map.Entry.comparingByKey())
+				.mapToDouble(Map.Entry::getValue)
+				.toArray();
+	}
+
+	@Override
+	public String toString() {
+		return "Distribution{" +
+				"probabilities=" + probabilities +
+				", sampled=" + sampled +
+				'}';
 	}
 }

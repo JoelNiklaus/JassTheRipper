@@ -1,7 +1,8 @@
 package com.zuehlke.jasschallenge.client.game.strategy;
 
 import com.google.common.collect.Iterables;
-import com.zuehlke.jasschallenge.client.game.*;
+import com.zuehlke.jasschallenge.client.game.Game;
+import com.zuehlke.jasschallenge.client.game.GameSession;
 import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
 import com.zuehlke.jasschallenge.client.game.strategy.config.MCTSConfig;
 import com.zuehlke.jasschallenge.client.game.strategy.config.StrengthLevel;
@@ -11,16 +12,16 @@ import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelpe
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.MCTSHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.TrumpfSelectionHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
-import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.TrumpfMove;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.src.Move;
+import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Set;
 
 
 /**
@@ -110,8 +111,8 @@ TODO Make new experiments with the improvements so far:
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-	private ScoreEstimator scoreEstimator;
 	private CardsEstimator cardsEstimator;
+	private ScoreEstimator scoreEstimator;
 
 	private Config config;
 
@@ -123,7 +124,7 @@ TODO Make new experiments with the improvements so far:
 		return new JassTheRipperJassStrategy(new Config(new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST)));
 	}
 
-	public  JassTheRipperJassStrategy() {
+	public JassTheRipperJassStrategy() {
 		setConfig(new Config());
 	}
 
@@ -225,14 +226,6 @@ TODO Make new experiments with the improvements so far:
 		logger.info("Hi there! I am JassTheRipper and these are my cards: {} ", availableCards);
 	}
 
-	public ScoreEstimator getScoreEstimator() {
-		return scoreEstimator;
-	}
-
-	public void setScoreEstimator(ScoreEstimator scoreEstimator) {
-		this.scoreEstimator = scoreEstimator;
-	}
-
 	public CardsEstimator getCardsEstimator() {
 		return cardsEstimator;
 	}
@@ -241,16 +234,29 @@ TODO Make new experiments with the improvements so far:
 		this.cardsEstimator = cardsEstimator;
 	}
 
+	public ScoreEstimator getScoreEstimator() {
+		return scoreEstimator;
+	}
+
+	public void setScoreEstimator(ScoreEstimator scoreEstimator) {
+		this.scoreEstimator = scoreEstimator;
+	}
+
+
 	public void setConfig(Config config) {
 		this.config = config;
 		// Because config is used in MCTSHelper, we have to restart it.
 		if (this.mctsHelper != null)
 			this.mctsHelper.shutDown();
 		this.mctsHelper = new MCTSHelper(config.getMctsConfig());
-		if(config.isScoreEstimatorUsed())
-			scoreEstimator = new ScoreEstimator();
-		if(config.isCardsEstimatorUsed())
-			cardsEstimator = new CardsEstimator();
+		if (config.isCardsEstimatorUsed())
+			cardsEstimator = new CardsEstimator(config.isCardsEstimatorTrainable());
+		if (config.isScoreEstimatorUsed())
+			scoreEstimator = new ScoreEstimator(config.isScoreEstimatorTrainable());
+	}
+
+	public Config getConfig() {
+		return config;
 	}
 
 	@Override

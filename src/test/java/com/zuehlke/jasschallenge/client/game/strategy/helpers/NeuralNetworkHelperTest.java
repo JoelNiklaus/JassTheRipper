@@ -3,14 +3,12 @@ package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Move;
 import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.strategy.training.NeuralNetwork;
 import com.zuehlke.jasschallenge.game.Trumpf;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.Color;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.Whitebox;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +18,8 @@ import static org.junit.Assert.*;
 
 public class NeuralNetworkHelperTest {
 
-	private Game obeabeGame = GameSessionBuilder.newSession().withStartedGame(Mode.topDown()).createGameSession().getCurrentGame(); //Game.startGame(Mode.topDown(), order, asList(Team0, Team1), false);
+	private static final double DELTA = 0.001;
+
 
 	@Test
 	public void testToBinary() {
@@ -47,58 +46,68 @@ public class NeuralNetworkHelperTest {
 	}
 
 	@Test
-	public void testFromCardToThreeHot() {
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.from(Trumpf.TRUMPF, Color.CLUBS)));
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.from(Trumpf.TRUMPF, Color.HEARTS)));
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.from(Trumpf.TRUMPF, Color.SPADES)));
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.from(Trumpf.TRUMPF, Color.DIAMONDS)));
+	public void testFromCardToEncoding() {
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.CLUBS), 0), DELTA);
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.HEARTS), 1), DELTA);
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.SPADES), 2), DELTA);
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.DIAMONDS), 3), DELTA);
 
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.shift()));
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.topDown()));
-		assertArrayEquals(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromCardToThreeHot(Card.DIAMOND_JACK, Mode.bottomUp()));
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.shift(), 0), DELTA);
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.topDown(), 1), DELTA);
+		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.bottomUp(), 2), DELTA);
 	}
 
 	@Test
-	public void testFromThreeHotToCard() {
-		assertEquals(Card.DIAMOND_JACK, NeuralNetworkHelper.fromThreeHotToCard(new int[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
-		assertEquals(Card.CLUB_EIGHT, NeuralNetworkHelper.fromThreeHotToCard(new int[]{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
+	public void testFromEncodingToCard() {
+		assertEquals(Card.DIAMOND_JACK, NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
+		assertEquals(Card.CLUB_EIGHT, NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
 
-		assertNull(NeuralNetworkHelper.fromThreeHotToCard(new int[]{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
-		assertNull(NeuralNetworkHelper.fromThreeHotToCard(new int[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+		assertNull(NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
+		assertNull(NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 	}
 
 	@Test
-	public void testFromGameToFeatures() {
-		System.out.println(Arrays.toString(NeuralNetworkHelper.getObservation(obeabeGame).toIntVector()));
-		System.out.println(Arrays.deepToString(NeuralNetworkHelper.generateObservation(obeabeGame, null)));
-		assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-				NeuralNetworkHelper.getObservation(obeabeGame).toIntVector());
+	public void testInfoRow() {
+		Game clubsGame = GameSessionBuilder.startedClubsGame();
+		final double[] infoRow = NeuralNetworkHelper.createInfoRow(clubsGame, clubsGame.getMode());
+		System.out.println(Arrays.toString(infoRow));
+		assertArrayEquals(new double[]{1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0}, infoRow, DELTA);
 	}
 
 	@Test
-	public void testFromStartedGameToFeatures() {
-		final Player player = obeabeGame.getCurrentPlayer();
+	public void testFeaturesAreEmptyForAlreadyPlayedCards() {
+		Game clubsGame = GameSessionBuilder.startedClubsGame();
+		final double[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
+		System.out.println(Arrays.deepToString(features));
+		for (int i = 1; i < 37; i++) {
+			assertArrayEquals(new double[18], features[i], DELTA);
+		}
+		assertEquals(73, features.length);
+	}
+
+	@Test
+	public void testStartedFeaturesPlayedCardsShowFirstMove() {
+		Game clubsGame = GameSessionBuilder.startedClubsGame();
+		final Player player = clubsGame.getCurrentPlayer();
 		final Move move = new Move(player, Card.CLUB_QUEEN);
 		player.onMoveMade(move);
-		obeabeGame.makeMove(move);
-		System.out.println(Arrays.toString(NeuralNetworkHelper.getObservation(obeabeGame).toIntVector()));
-		final int[][] observation = NeuralNetworkHelper.generateObservation(obeabeGame, null);
-		System.out.println(Arrays.deepToString(observation));
-		assertArrayEquals(new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-				NeuralNetworkHelper.getObservation(obeabeGame).toIntVector());
-		assertEquals(73, observation.length);
+		clubsGame.makeMove(move);
+		final double[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
+		System.out.println(Arrays.deepToString(features));
+		assertArrayEquals(new double[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0}, features[1], DELTA);
+
 	}
 
 	@Test
 	public void testObservationReconstruction() {
-		final Player player = obeabeGame.getCurrentPlayer();
+		Game clubsGame = GameSessionBuilder.startedClubsGame();
+		final Player player = clubsGame.getCurrentPlayer();
 		final Move move = new Move(player, Card.CLUB_QUEEN);
 		player.onMoveMade(move);
-		obeabeGame.makeMove(move);
-		System.out.println(Arrays.toString(NeuralNetworkHelper.getObservation(obeabeGame).toIntVector()));
-		System.out.println(Arrays.deepToString(NeuralNetworkHelper.generateObservation(obeabeGame, null)));
+		clubsGame.makeMove(move);
+		System.out.println(Arrays.deepToString(NeuralNetworkHelper.getScoreFeatures(clubsGame)));
 
-		final Map<String, List<Card>> reconstruction = NeuralNetworkHelper.reconstructObservation(NeuralNetworkHelper.generateObservation(obeabeGame, null));
+		final Map<String, List<Card>> reconstruction = NeuralNetworkHelper.reconstructObservation(NeuralNetworkHelper.getScoreFeatures(clubsGame));
 
 		assertEquals(1, reconstruction.get("AlreadyPlayedCards").size());
 		assertEquals(Card.CLUB_QUEEN, reconstruction.get("AlreadyPlayedCards").get(0));
@@ -112,37 +121,30 @@ public class NeuralNetworkHelperTest {
 	@Test
 	public void testAnalogousObservationsForTrumpfHas24Items() {
 		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.CLUBS)).createGameSession().getCurrentGame();
-		assertEquals(24, NeuralNetworkHelper.getAnalogousObservations(game).size());
+		assertEquals(24, NeuralNetworkHelper.getAnalogousScoreFeatures(game).size());
 	}
 
 	@Test
 	public void testAnalogousObservationsForNoTrumpfHas1Item() {
 		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.bottomUp()).createGameSession().getCurrentGame();
-		assertEquals(1, NeuralNetworkHelper.getAnalogousObservations(game).size());
+		assertEquals(1, NeuralNetworkHelper.getAnalogousScoreFeatures(game).size());
 	}
 
 	@Test
 	public void testObservationIs1022Long() {
 		final Game game = GameSessionBuilder.startedClubsGame();
-		final INDArray observation = NeuralNetworkHelper.getObservation(game);
-		assertEquals(1022, observation.length());
+		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
+		assertEquals(73, observation.length);
+		assertEquals(18, observation[0].length);
 	}
 
 	@Test
 	public void testObservationHasShiftedBit() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 		Whitebox.setInternalState(game, "shifted", true);
-		final INDArray observation = NeuralNetworkHelper.getObservation(game);
-		System.out.println(Arrays.toString(observation.data().asInt()));
-		assertEquals(1, observation.getInt(13));
+		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
+		assertEquals(0, observation[0][0], DELTA);
+		assertEquals(1, observation[0][1], DELTA);
 	}
-
-	@Test
-	public void testCardsObservationIs644Long() {
-		final Game game = GameSessionBuilder.startedClubsGame();
-		final INDArray cardsObservation = NeuralNetworkHelper.getCardsObservation(game);
-		assertEquals(644, cardsObservation.length());
-	}
-
 
 }

@@ -90,7 +90,7 @@ public class JassBoard implements Board {
 	}
 
 	/**
-	 * Duplicates the board and determinizes the the cards of the other players.
+	 * Duplicates the board and determinizes the cards of the other players.
 	 *
 	 * @return
 	 */
@@ -203,7 +203,7 @@ public class JassBoard implements Board {
 				if (!game.gameFinished()) {
 					assert round.getRoundNumber() < 9;
 
-					for (Player currentPlayer : round.getPlayingOrder().getPlayersInInitialPlayingOrder()) {
+					for (Player currentPlayer : round.getPlayingOrder().getPlayersInInitialOrder()) {
 						logger.debug("currentPlayer {}", currentPlayer);
 						logger.debug("round {}", round);
 						assert currentPlayer.getCards().size() == 9 - round.getRoundNumber();
@@ -286,14 +286,14 @@ public class JassBoard implements Board {
 
 	@Override
 	public double[] estimateScore() {
-		double value = scoreEstimator.predictScore(game);
-		// logger.info("The neural network predicted a value of " + value);
-		double[] score = new double[getQuantityOfPlayers()];
+		double score = scoreEstimator.predictScore(game);
+		// logger.info("The neural network predicted a score of " + score);
+		double[] scores = new double[getQuantityOfPlayers()];
 		for (Player player : game.getPlayers())
 			if (player.equals(game.getCurrentPlayer()) || player.equals(game.getPartnerOfPlayer(game.getCurrentPlayer())))
-				score[player.getSeatId()] = value;
+				scores[player.getSeatId()] = score;
 			else
-				score[player.getSeatId()] = Math.max(Arena.TOTAL_POINTS - value, 0); // Matchbonus disregarded for simplicity
-		return score;
+				scores[player.getSeatId()] = Math.max(Arena.TOTAL_POINTS - score, 0); // Matchbonus disregarded for simplicity
+		return scores;
 	}
 }

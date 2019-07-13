@@ -6,9 +6,6 @@ import com.zuehlke.jasschallenge.client.game.strategy.helpers.CardSelectionHelpe
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
 import com.zuehlke.jasschallenge.client.game.strategy.mcts.CardMove;
 import com.zuehlke.jasschallenge.game.cards.Card;
-import org.nd4j.evaluation.regression.RegressionEvaluation;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,28 +13,14 @@ import java.util.*;
 
 public class ScoreEstimator extends NeuralNetwork {
 
-	public static final int NUM_INPUT_ROWS = 1 + 36 + 9 + 9 + 9 + 9;
 
-	public static final int INPUT_DIM = NUM_INPUT_ROWS * THREE_HOT_ENCODING_LENGTH;
-	public static final int OUTPUT_DIM = 1;
 
 	public static final Logger logger = LoggerFactory.getLogger(ScoreEstimator.class);
 
-	public ScoreEstimator() {
-
+	public ScoreEstimator(boolean trainable) {
+		super("score", trainable);
 	}
 
-	public ScoreEstimator(ScoreEstimator scoreEstimator) {
-		super(scoreEstimator);
-	}
-
-	public void evaluate(DataSet dataSet) {
-		RegressionEvaluation evaluation = new RegressionEvaluation();
-		final INDArray predictions = model.output(dataSet.getFeatures());
-		System.out.println(predictions);
-		evaluation.eval(dataSet.getLabels(), predictions);
-		System.out.println(evaluation.stats());
-	}
 
 	public CardMove predictMove(Game game) {
 		final Player player = game.getCurrentPlayer();
@@ -70,7 +53,7 @@ public class ScoreEstimator extends NeuralNetwork {
 	 */
 	public double predictScore(Game game) {
 		// INFO: We disregard the match bonus for simplicity
-		return Arena.TOTAL_POINTS * predict(Collections.singletonList(NeuralNetworkHelper.getObservation(game)))[0];
+		return predict(Collections.singletonList(NeuralNetworkHelper.getScoreFeatures(game)))[0];
 	}
 
 
@@ -80,9 +63,8 @@ public class ScoreEstimator extends NeuralNetwork {
 	 * @param observations
 	 * @return
 	 */
-	private double[] predict(List<INDArray> observations) {
-		INDArray input = NeuralNetworkHelper.buildInput(observations);
-		final INDArray output = model.output(input);
-		return output.toDoubleVector();
+	private double[] predict(List<double[][]> observations) {
+		// TODO invoke keras prediction here!
+		return null;
 	}
 }

@@ -56,7 +56,7 @@ public class PlayingOrderTest {
 
         assertThat(order.getCurrentPlayer(), equalTo(playerC));
         order.moveToNextPlayer();
-        assertThat(order.getCurrentPlayer(), equalTo(order.getPlayersInCurrentPlayingOrder().get(0)));
+        assertThat(order.getCurrentPlayer(), equalTo(order.getPlayersInCurrentOrder().get(0)));
         order.moveToNextPlayer();
         assertThat(order.getCurrentPlayer(), equalTo(playerA));
         order.moveToNextPlayer();

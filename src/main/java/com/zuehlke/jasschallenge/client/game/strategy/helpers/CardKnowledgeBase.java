@@ -1,9 +1,7 @@
 package com.zuehlke.jasschallenge.client.game.strategy.helpers;
 
-import com.zuehlke.jasschallenge.client.game.Game;
-import com.zuehlke.jasschallenge.client.game.GameSession;
-import com.zuehlke.jasschallenge.client.game.Player;
-import com.zuehlke.jasschallenge.client.game.Round;
+import com.google.common.collect.ImmutableMap;
+import com.zuehlke.jasschallenge.client.game.*;
 import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.cards.CardValue;
@@ -65,38 +63,36 @@ public class CardKnowledgeBase {
 			assert player.getCards().isEmpty();
 		}
 
-		Map<Card, Distribution<Player>> cardDistributionMap;
+		Map<Card, Distribution> cardKnowledge;
 		if (cardsEstimator == null) {
-			cardDistributionMap = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
+			cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
 		} else {
-			cardDistributionMap = cardsEstimator.predictCardDistribution(game, availableCards);
+			cardKnowledge = cardsEstimator.predictCardDistribution(game, availableCards);
 		}
 
-		game.getCurrentPlayer().setCards(EnumSet.copyOf(availableCards));
+		//game.getCurrentPlayer().setCards(EnumSet.copyOf(availableCards));
 
 		// TODO extend this with a belief distribution: we can assume that a player has/has not some cards based on the game.
 		//  For example when a player did not take a very valuable stich he probably does not have any trumpfs or higher cards of the given suit.
 
-		while (cardsNeedToBeDistributed(cardDistributionMap)) {
+
+		while (cardsNeedToBeDistributed(cardKnowledge)) {
 			//AtomicBoolean noConflictSoFar = new AtomicBoolean(true);
-			getStreamWithNonNullDistributions(cardDistributionMap)
+			getStreamWithNotSampledDistributions(cardKnowledge)
 					.min(Comparator.comparingInt(o -> o.getValue().getNumEvents())) // Select the card with the least possible players
 					.ifPresent(cardDistributionEntry -> {
 						Card card = cardDistributionEntry.getKey();
 						Player player = cardDistributionEntry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
-						assert player != game.getCurrentPlayer();
-						Set<Card> cards = EnumSet.copyOf(player.getCards());
-						cards.add(card);
-						player.setCards(cards);
+						player.addCard(card);
 						assert player.getCards().size() <= 9;
-						// Set distribution of already distributed card to null so it is not selected anymore in future runs
-						cardDistributionEntry.setValue(null);
+						// Set distribution of already distributed card to sampled so it is not selected anymore in future runs
+						cardDistributionEntry.getValue().setSampled(true);
 
 						// As soon as a player has enough cards, delete him from all remaining distributions
 						final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0; // rounds down the number
-						if (cards.size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
-							getStreamWithNonNullDistributions(cardDistributionMap)
-									.filter(entry -> entry.getValue().hasEvent(player))
+						if (player.getCards().size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
+							getStreamWithNotSampledDistributions(cardKnowledge)
+									.filter(entry -> entry.getValue().hasPlayer(player))
 									.forEach(entry -> {
 										entry.getValue().deleteEventAndReBalance(player);
 									/*
@@ -147,6 +143,10 @@ public class CardKnowledgeBase {
 		return randomSubSet;
 	}
 
+	public static Map<Card, Distribution> initCardDistributionMap(Game game, Set<Card> availableCards) {
+		return initCardDistributionMap(game, availableCards, null);
+	}
+
 	/**
 	 * Initializes a basic card distribution based only on the information we know for sure. Only certainties are encoded.
 	 * This could be extended with rule based knowledge or with learning based approaches.
@@ -155,9 +155,18 @@ public class CardKnowledgeBase {
 	 * @param availableCards
 	 * @return
 	 */
-	private static Map<Card, Distribution<Player>> initCardDistributionMap(Game game, Set<Card> availableCards) {
-		Map<Card, Distribution<Player>> cardDistributionMap = new EnumMap<>(Card.class);
+	public static Map<Card, Distribution> initCardDistributionMap(Game game, Set<Card> availableCards, List<Color> colors) {
+		Map<Card, Distribution> cardKnowledge = new EnumMap<>(Card.class);
 
+		// Set simple distributions for the cards of the current player
+
+		availableCards.forEach(card -> {
+			final Card respectiveCard = DataAugmentationHelper.getRespectiveCard(card, colors);
+			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1d), false));
+		});
+
+
+		// Init remaining unknown cards with equal probability for the other players
 		for (Card card : getRemainingCards(availableCards, game)) {
 			Map<Player, Double> probabilitiesMap = new HashMap<>();
 			List<Player> players = new ArrayList<>(game.getPlayers());
@@ -165,19 +174,30 @@ public class CardKnowledgeBase {
 			for (Player player : players) {
 				probabilitiesMap.put(player, 1.0 / players.size());
 			}
-			cardDistributionMap.put(card, new Distribution<>(probabilitiesMap));
+			cardKnowledge.put(DataAugmentationHelper.getRespectiveCard(card, colors), new Distribution(probabilitiesMap, false));
 		}
 
+		deleteImpossibleCardsFromCardKnowledge(game, colors, cardKnowledge);
+
+		final List<Move> historyMoves = DataAugmentationHelper.getRespectiveMoves(game.getAlreadyPlayedMovesInOrder(), colors);
+		// Add already played moves to card knowledge
+		historyMoves.forEach(move -> cardKnowledge.put(move.getPlayedCard(), new Distribution(Collections.singletonMap(move.getPlayer(), 1d), true)));
+
+		return cardKnowledge;
+	}
+
+
+	private static void deleteImpossibleCardsFromCardKnowledge(Game game, List<Color> colors, Map<Card, Distribution> cardKnowledge) {
 		for (Player player : game.getPlayers()) {
 			Set<Card> impossibleCardsForPlayer = getImpossibleCardsForPlayer(game, player);
 			for (Card card : impossibleCardsForPlayer) {
-				if (cardDistributionMap.containsKey(card))
-					cardDistributionMap.get(card).deleteEventAndReBalance(player);
+				card = DataAugmentationHelper.getRespectiveCard(card, colors);
+				if (cardKnowledge.containsKey(card))
+					cardKnowledge.get(card).deleteEventAndReBalance(player);
 			}
 		}
-
-		return cardDistributionMap;
 	}
+
 
 	private static int getNumberOfCardsToAdd(Game game, double numberOfCards, Player player) {
 		if (game.getCurrentRound().hasPlayerAlreadyPlayed(player))
@@ -185,12 +205,12 @@ public class CardKnowledgeBase {
 		return (int) Math.ceil(numberOfCards);
 	}
 
-	private static Stream<Map.Entry<Card, Distribution<Player>>> getStreamWithNonNullDistributions(Map<Card, Distribution<Player>> cardDistributionMap) {
-		return cardDistributionMap.entrySet().stream().filter(entry -> entry.getValue() != null);
+	private static Stream<Map.Entry<Card, Distribution>> getStreamWithNotSampledDistributions(Map<Card, Distribution> cardDistributionMap) {
+		return cardDistributionMap.entrySet().stream().filter(entry -> !entry.getValue().isSampled());
 	}
 
-	private static boolean cardsNeedToBeDistributed(Map<Card, Distribution<Player>> cardDistributionMap) {
-		return getStreamWithNonNullDistributions(cardDistributionMap).count() > 0;
+	private static boolean cardsNeedToBeDistributed(Map<Card, Distribution> cardDistributionMap) {
+		return getStreamWithNotSampledDistributions(cardDistributionMap).count() > 0;
 	}
 
 	/**
@@ -249,4 +269,5 @@ public class CardKnowledgeBase {
 		cards.removeAll(alreadyPlayedCards);
 		return cards;
 	}
+
 }

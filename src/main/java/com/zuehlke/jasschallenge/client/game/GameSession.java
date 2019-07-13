@@ -3,7 +3,10 @@ package com.zuehlke.jasschallenge.client.game;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
 
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrder;
 import static com.zuehlke.jasschallenge.client.game.PlayingOrder.createOrderStartingFromPlayer;
@@ -57,6 +60,20 @@ public class GameSession {
 		return teams.get(teamIndex).getPlayers();
 	}
 
+	public Player getFirstPlayerWithUsedCardsEstimator(boolean trainable) {
+		return getCurrentGame().getPlayers().stream()
+				.filter(player -> player.getConfig().isCardsEstimatorUsed() && player.getCardsEstimator().isTrainable() == trainable)
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("No player has a trainable cards estimator."));
+	}
+
+	public Player getFirstPlayerWithUsedScoreEstimator(boolean trainable) {
+		return getCurrentGame().getPlayers().stream()
+				.filter(player -> player.getConfig().isScoreEstimatorUsed() && player.getScoreEstimator().isTrainable() == trainable)
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("No player has a trainable score estimator."));
+	}
+
 	public Team getTeamOfPlayer(Player player) {
 		for (Team team : teams) {
 			if (team.getPlayers().contains(player))
@@ -91,7 +108,7 @@ public class GameSession {
 	}
 
 	public List<Player> getPlayersInInitialPlayingOrder() {
-		return gameStartingPlayingOrder.getPlayersInInitialPlayingOrder();
+		return gameStartingPlayingOrder.getPlayersInInitialOrder();
 	}
 
 	public PlayingOrder getGameStartingPlayingOrder() {
@@ -130,7 +147,7 @@ public class GameSession {
 
 	public void dealCards(List<Card> cards) {
 		int startIndex = 0;
-		for (Player player : gameStartingPlayingOrder.getPlayersInInitialPlayingOrder()) {
+		for (Player player : gameStartingPlayingOrder.getPlayersInInitialOrder()) {
 			player.setCards(EnumSet.copyOf(cards.subList(startIndex, startIndex + 9)));
 			startIndex += 9;
 		}

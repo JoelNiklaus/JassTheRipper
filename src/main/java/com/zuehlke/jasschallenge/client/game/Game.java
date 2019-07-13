@@ -92,6 +92,15 @@ public class Game {
 		return cards;
 	}
 
+	public List<Move> getAlreadyPlayedMovesInOrder() {
+		List<Move> moves = new ArrayList<>();
+		for (Round round : previousRounds) {
+			moves.addAll(round.getMoves());
+		}
+		moves.addAll(currentRound.getMoves());
+		return moves;
+	}
+
 	public boolean gameFinished() {
 		return currentRound.getRoundNumber() == 9;
 	}
@@ -116,13 +125,13 @@ public class Game {
 	}
 
 	private Round createNextRound() {
-		final PlayingOrder nextPlayingOrder = PlayingOrder.createOrderStartingFromPlayer(getOrder().getPlayersInInitialPlayingOrder(), currentRound.getWinner());
+		final PlayingOrder nextPlayingOrder = PlayingOrder.createOrderStartingFromPlayer(getOrder().getPlayersInInitialOrder(), currentRound.getWinner());
 		final int nextRoundNumber = currentRound.getRoundNumber() + 1;
 		return Round.createRound(mode, nextRoundNumber, nextPlayingOrder);
 	}
 
 	public Player getPartnerOfPlayer(Player player) {
-		for (Player other : getOrder().getPlayersInInitialPlayingOrder()) {
+		for (Player other : getOrder().getPlayersInInitialOrder()) {
 			if (other.isPartner(player))
 				return other;
 		}
@@ -138,7 +147,7 @@ public class Game {
 	}
 
 	public List<Player> getPlayers() {
-		return getOrder().getPlayersInInitialPlayingOrder();
+		return getOrder().getPlayersInInitialOrder();
 	}
 
 	@Override

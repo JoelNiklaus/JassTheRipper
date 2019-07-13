@@ -1,18 +1,21 @@
 package com.zuehlke.jasschallenge.client.game;
 
-import com.zuehlke.jasschallenge.client.game.strategy.*;
+import com.zuehlke.jasschallenge.client.game.strategy.JassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.JassTheRipperJassStrategy;
+import com.zuehlke.jasschallenge.client.game.strategy.RandomJassStrategy;
 import com.zuehlke.jasschallenge.client.game.strategy.config.Config;
 import com.zuehlke.jasschallenge.client.game.strategy.training.CardsEstimator;
 import com.zuehlke.jasschallenge.client.game.strategy.training.ScoreEstimator;
 import com.zuehlke.jasschallenge.game.cards.Card;
 import com.zuehlke.jasschallenge.game.mode.Mode;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-public class Player {
+public class Player implements Comparable<Player> {
 
 	private static final Logger logger = LoggerFactory.getLogger(Player.class);
 
@@ -60,7 +63,8 @@ public class Player {
 	}
 
 	public boolean wasStartingPlayer(Round round) {
-		assert !round.getMoves().isEmpty();
+		if (round.getMoves().isEmpty())
+			throw new IllegalArgumentException("The round has to contain at least one Move to find the starting player.");
 		return round.getMoves().get(0).getPlayer().equals(this);
 	}
 
@@ -101,8 +105,19 @@ public class Player {
 		this.cards.addAll(cards);
 	}
 
+	public boolean addCard(Card card) {
+		if (this.getCards().size() == 9)
+			throw new UnsupportedOperationException("Cannot add a card to a player with 9 cards. No player can have more than 9 cards.");
+		return this.cards.add(card);
+	}
+
 	public void setConfig(Config config) {
 		((JassTheRipperJassStrategy) jassStrategy).setConfig(config);
+	}
+
+	public Config getConfig() {
+		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		return ((JassTheRipperJassStrategy) jassStrategy).getConfig();
 	}
 
 	public ScoreEstimator getScoreEstimator() {
@@ -199,4 +214,8 @@ public class Player {
 				'}';
 	}
 
+	@Override
+	public int compareTo(@NotNull Player o) {
+		return this.seatId - o.seatId;
+	}
 }

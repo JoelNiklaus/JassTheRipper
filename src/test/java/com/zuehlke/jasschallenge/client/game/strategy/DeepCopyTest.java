@@ -98,10 +98,10 @@ public class DeepCopyTest {
 		assertFalse(originalGameSession.getCurrentGame().getCurrentRound().getMoves().contains(move));
 
 		// check playing order
-		for (Player player : originalGameSession.getCurrentGame().getOrder().getPlayersInInitialPlayingOrder()) {
+		for (Player player : originalGameSession.getCurrentGame().getOrder().getPlayersInInitialOrder()) {
 			assertEquals(9, player.getCards().size());
 		}
-		for (Player player : gameSession.getCurrentGame().getOrder().getPlayersInInitialPlayingOrder()) {
+		for (Player player : gameSession.getCurrentGame().getOrder().getPlayersInInitialOrder()) {
 			assertEquals(9, player.getCards().size());
 		}
 		gameSession.getCurrentGame().getOrder().getCurrentPlayer().getCards().remove(Card.CLUB_ACE);
@@ -110,7 +110,7 @@ public class DeepCopyTest {
 
 		// NOTE: At the moment we dont have this constraint. It is very complex to implement, because of many interdependencies!
 		//final Player teamPlayer = gameSession.getTeams().get(0).getPlayers().get(1);
-		//final Player orderPlayer = gameSession.getGameStartingPlayingOrder().getPlayersInInitialPlayingOrder().get(2);
+		//final Player orderPlayer = gameSession.getGameStartingPlayingOrder().getPlayersInInitialOrder().get(2);
 		//ssertSame(teamPlayer, orderPlayer); // References of the two players should be the same!
 	}
 
@@ -139,10 +139,10 @@ public class DeepCopyTest {
 		assertFalse(originalGame.getCurrentRound().getMoves().contains(move));
 
 		// check playing order
-		for (Player player : originalGame.getOrder().getPlayersInInitialPlayingOrder()) {
+		for (Player player : originalGame.getOrder().getPlayersInInitialOrder()) {
 			assertEquals(9, player.getCards().size());
 		}
-		for (Player player : game.getOrder().getPlayersInInitialPlayingOrder()) {
+		for (Player player : game.getOrder().getPlayersInInitialOrder()) {
 			assertEquals(9, player.getCards().size());
 		}
 		game.getOrder().getCurrentPlayer().getCards().remove(Card.CLUB_ACE);

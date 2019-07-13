@@ -30,17 +30,17 @@ public class PlayingOrder {
 	 */
 	public PlayingOrder(PlayingOrder playingOrder) {
 		this.playersInInitialPlayingOrder = new ArrayList<>();
-		for (Player player : playingOrder.getPlayersInInitialPlayingOrder())
+		for (Player player : playingOrder.getPlayersInInitialOrder())
 			this.playersInInitialPlayingOrder.add(new Player(player));
 		this.startingPlayerIndex = playingOrder.getStartingPlayerIndex();
 		this.currentPlayerIndex = playingOrder.getCurrentPlayerIndex();
 	}
 
-	public List<Player> getPlayersInInitialPlayingOrder() {
+	public List<Player> getPlayersInInitialOrder() {
 		return playersInInitialPlayingOrder;
 	}
 
-	public List<Player> getPlayersInCurrentPlayingOrder() {
+	public List<Player> getPlayersInCurrentOrder() {
 		List<Player> playersInCurrentPlayingOrder = new ArrayList<>();
 		for (int i = currentPlayerIndex; i < 4; i++) {
 			playersInCurrentPlayingOrder.add(getPlayerByIndex(i));

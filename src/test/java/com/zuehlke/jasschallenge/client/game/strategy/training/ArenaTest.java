@@ -3,8 +3,8 @@ package com.zuehlke.jasschallenge.client.game.strategy.training;
 import com.zuehlke.jasschallenge.client.game.Game;
 import com.zuehlke.jasschallenge.client.game.Player;
 import com.zuehlke.jasschallenge.client.game.strategy.helpers.GameSessionBuilder;
+import com.zuehlke.jasschallenge.client.game.strategy.helpers.NeuralNetworkHelper;
 import org.junit.Test;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.HashMap;
 
@@ -19,10 +19,10 @@ public class ArenaTest {
 	public void testBuildCardsLabels() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 
-		final HashMap<Player, INDArray> playerINDArrayHashMap = Arena.buildCardsLabels(game);
-		System.out.println(playerINDArrayHashMap);
+		final HashMap<Player, int[][]> cardsLabels = NeuralNetworkHelper.buildCardsLabels(game);
+		System.out.println(cardsLabels);
 
-		final int[][] cardsOfPlayers = playerINDArrayHashMap.get(game.getCurrentPlayer()).toIntMatrix();
+		final int[][] cardsOfPlayers = cardsLabels.get(game.getCurrentPlayer());
 		assertArrayEquals(new int[]{1, 0, 0, 0}, cardsOfPlayers[0]); // Current player is first
 		assertArrayEquals(new int[]{0, 0, 1, 0}, cardsOfPlayers[1]);
 		assertArrayEquals(new int[]{0, 1, 0, 0}, cardsOfPlayers[2]);
