@@ -1,6 +1,6 @@
 package to.joeli.jass.client.game;
 
-import to.joeli.jass.client.game.strategy.helpers.GameSessionBuilder;
+import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 import org.junit.Test;

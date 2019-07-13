@@ -1,9 +1,9 @@
 package to.joeli.jass.client.game;
 
-import to.joeli.jass.client.game.strategy.helpers.GameSessionBuilder;
+import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
-import to.joeli.jass.client.game.strategy.JassStrategy;
+import to.joeli.jass.client.strategy.JassStrategy;
 import org.junit.Test;
 import org.mockito.Matchers;
 

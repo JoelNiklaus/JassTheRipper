@@ -15,7 +15,7 @@ compileJava {
 }
 
 task(runExperiment, dependsOn: 'classes', type: JavaExec) {
-    main = 'to.joeli.jass.client.game.strategy.training.Arena'
+    main = 'to.joeli.jass.client.strategy.training.Arena'
     classpath = sourceSets.main.runtimeClasspath
     args 'CollectDataSet' // Retrieve with args[0]
     systemProperty 'simple.message', 'Hello ' // Retrieve with System.getProperty("simple.message")

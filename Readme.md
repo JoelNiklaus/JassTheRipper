@@ -29,7 +29,7 @@ ssh -i ~/.ssh/diufpc29 joel@diufpc29
 
 Run specific test
 ```bash
-./gradlew test --tests to.joeli.jass.client.game.strategy.training.ArenaTest.train
+./gradlew test --tests to.joeli.jass.client.strategy.training.ArenaTest.train
 ```
 
 Run experiment

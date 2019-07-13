@@ -2,7 +2,7 @@ package to.joeli.jass;
 
 import to.joeli.jass.client.RemoteGame;
 import to.joeli.jass.client.game.Player;
-import to.joeli.jass.client.game.strategy.RandomJassStrategy;
+import to.joeli.jass.client.strategy.RandomJassStrategy;
 import to.joeli.jass.messages.type.SessionType;
 
 import java.util.Arrays;
