@@ -1,19 +1,18 @@
 package to.joeli.jass.client.strategy.helpers;
 
 import com.google.common.collect.Collections2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
-import to.joeli.jass.client.strategy.training.*;
+import to.joeli.jass.client.strategy.training.Arena;
+import to.joeli.jass.client.strategy.training.CardsEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.CardValue;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -242,7 +241,7 @@ public class NeuralNetworkHelper {
 	public static double[] fromMoveToEncoding(Card card, Mode mode, double[] probabilities) {
 		double[] encoded = Arrays.copyOf(fromCardToEncoding(card, mode), 18);
 		for (int i = 0; i < probabilities.length; i++) {
-			encoded[14+ i] = probabilities[i]; // copy probabilities
+			encoded[14 + i] = probabilities[i]; // copy probabilities
 		}
 
 		return encoded;
@@ -311,46 +310,6 @@ public class NeuralNetworkHelper {
 		return result;
 	}
 
-	public static boolean createIfNotExists(File directory) {
-		if (directory.isDirectory())
-			return true;
-		return directory.mkdirs();
-	}
-
-	/**
-	 * Saves multiple files into the subdirectories "features" and "labels".
-	 * These files can then be loaded and concatenated again to form the big dataset.
-	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
-	 */
-	public static boolean saveData(Collection<double[][]> featuresCollection, Collection<Double> scoreLabelsCollection, Collection<int[][]> cardsLabelsCollection, String extension, TrainMode trainMode) {
-		final List features = new ArrayList<>(featuresCollection);
-		final List cardsTargets = new ArrayList<>(cardsLabelsCollection);
-		final List scoreTargets = new ArrayList<>(scoreLabelsCollection);
-
-		String basePath = Arena.DATASETS_BASE_PATH + trainMode.getPath();
-		String featuresDir = basePath + "features/";
-		String cardsTargetsDir = basePath + "targets/cards/";
-		String scoreTargetsDir = basePath + "targets/score/";
-		if (createIfNotExists(new File(featuresDir))
-				&& createIfNotExists(new File(cardsTargetsDir))
-				&& createIfNotExists(new File(scoreTargetsDir))) {
-			try {
-				String cbor = ".cbor";
-
-				IOHelper.writeCBOR(features, featuresDir + extension + cbor);
-				IOHelper.writeCBOR(cardsTargets, cardsTargetsDir + extension + cbor);
-				IOHelper.writeCBOR(scoreTargets, scoreTargetsDir + extension + cbor);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			logger.info("Saved datasets to {}", Arena.DATASETS_BASE_PATH);
-			return true;
-		} else {
-			logger.error("Failed to save datasets to {}", Arena.DATASETS_BASE_PATH);
-			return false;
-		}
-	}
-
 	/**
 	 * For each card we have a one hot encoded vector of length 4.
 	 * The one represents the player who has/had that specific card.
@@ -399,7 +358,6 @@ public class NeuralNetworkHelper {
 		// NOTE: the scoreTarget is between 0 and 157 inside the network
 		return Math.min(game.getResult().getTeamScore(player), Arena.TOTAL_POINTS);
 	}
-
 
 
 }

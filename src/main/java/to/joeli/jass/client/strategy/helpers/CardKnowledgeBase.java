@@ -1,13 +1,13 @@
 package to.joeli.jass.client.strategy.helpers;
 
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.*;
 import to.joeli.jass.client.strategy.training.CardsEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.CardValue;
 import to.joeli.jass.game.cards.Color;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,17 +67,13 @@ public class CardKnowledgeBase {
 		if (cardsEstimator == null) {
 			cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
 		} else {
+			// The cards estimator extends this with a belief distribution: we can assume that a player has/has not some cards based on the game.
+			// For example when a player did not take a very valuable stich he probably does not have any trumpfs or higher cards of the given suit.
+			// This could also be solved with rule based approaches but we hope that the learning based one is superior
 			cardKnowledge = cardsEstimator.predictCardDistribution(game, availableCards);
 		}
 
-		//game.getCurrentPlayer().setCards(EnumSet.copyOf(availableCards));
-
-		// TODO extend this with a belief distribution: we can assume that a player has/has not some cards based on the game.
-		//  For example when a player did not take a very valuable stich he probably does not have any trumpfs or higher cards of the given suit.
-
-
 		while (cardsNeedToBeDistributed(cardKnowledge)) {
-			//AtomicBoolean noConflictSoFar = new AtomicBoolean(true);
 			getStreamWithNotSampledDistributions(cardKnowledge)
 					.min(Comparator.comparingInt(o -> o.getValue().getNumEvents())) // Select the card with the least possible players
 					.ifPresent(cardDistributionEntry -> {
@@ -93,32 +89,9 @@ public class CardKnowledgeBase {
 						if (player.getCards().size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
 							getStreamWithNotSampledDistributions(cardKnowledge)
 									.filter(entry -> entry.getValue().hasPlayer(player))
-									.forEach(entry -> {
-										entry.getValue().deleteEventAndReBalance(player);
-									/*
-									noConflictSoFar.set(entry.getValue().deleteEventAndReBalance(player));
-										if (!noConflictSoFar.get()) {
-											//logger.debug("{}", card);
-											//logger.debug("{}", player);
-										}
-										*/
-									});
+									.forEach(entry -> entry.getValue().deleteEventAndReBalance(player));
 						}
 					});
-			/* NOTE: It seems to be stable enough so we can make this simplification here
-			// There has been a conflict in distributing the cards. Rollback and try again.
-			if (!noConflictSoFar.get()) {
-
-				logger.info("There has been a conflict in sampling the card determinizations for the players. Rolling back and trying again now.");
-				logger.debug("{}", game);
-				// Deletes the set cards from the players again.
-				for (Player player : game.getPlayers()) {
-					player.setCards(EnumSet.noneOf(Card.class));
-				}
-				sampleCardDeterminizationToPlayers(game, availableCards);
-				return; // We started a new try. So do not finish the old one by continuing the while loop.
-			}
-			*/
 		}
 
 		for (Player player : game.getPlayers())
@@ -159,7 +132,6 @@ public class CardKnowledgeBase {
 		Map<Card, Distribution> cardKnowledge = new EnumMap<>(Card.class);
 
 		// Set simple distributions for the cards of the current player
-
 		availableCards.forEach(card -> {
 			final Card respectiveCard = DataAugmentationHelper.getRespectiveCard(card, colors);
 			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1d), false));

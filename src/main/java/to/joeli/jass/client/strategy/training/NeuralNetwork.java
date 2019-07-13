@@ -19,12 +19,12 @@ public class NeuralNetwork {
 
 	protected final String name;
 	protected final boolean trainable;
-	protected final boolean pretrainingEnabled;
+	protected final boolean preTrainingEnabled;
 
 	public NeuralNetwork(String name, boolean trainable) {
 		this.name = name;
 		this.trainable = trainable;
-		this.pretrainingEnabled = true; // TODO maybe at some point we also want to train from scratch. But for now this is ok
+		this.preTrainingEnabled = true; // TODO maybe at some point we also want to train from scratch. But for now this is ok
 	}
 
 
@@ -46,7 +46,7 @@ public class NeuralNetwork {
 		return trainable;
 	}
 
-	public boolean isPretrainingEnabled() {
-		return pretrainingEnabled;
+	public boolean isPreTrainingEnabled() {
+		return preTrainingEnabled;
 	}
 }

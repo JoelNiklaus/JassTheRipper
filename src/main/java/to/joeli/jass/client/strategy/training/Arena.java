@@ -1,16 +1,13 @@
 package to.joeli.jass.client.strategy.training;
 
 import com.google.common.collect.EvictingQueue;
-import to.joeli.jass.client.game.*;
-import to.joeli.jass.client.strategy.config.Config;
-import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
-import to.joeli.jass.client.strategy.helpers.Distribution;
-import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
-import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
-import to.joeli.jass.game.cards.Card;
-import to.joeli.jass.game.mode.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import to.joeli.jass.client.game.*;
+import to.joeli.jass.client.strategy.config.Config;
+import to.joeli.jass.client.strategy.helpers.*;
+import to.joeli.jass.game.cards.Card;
+import to.joeli.jass.game.mode.Mode;
 
 import java.util.*;
 
@@ -24,6 +21,7 @@ public class Arena {
 	private static final int REPLAY_MEMORY_SIZE_FACTOR = 1; // Standard: 4, 8, 16
 
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
+	private static final boolean DATA_AUGMENTATION_ENABLED = false;
 	private static final String BASE_PATH = "src/main/resources/";
 	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
 	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
@@ -45,7 +43,8 @@ public class Arena {
 	private GameSession gameSession;
 
 	// The input for the neural networks, a representation of the game
-	private Queue<double[][]> features;
+	private Queue<double[][]> cardFeatures;
+	private Queue<double[][]> scoreFeatures;
 	// The labels for the score estimator, the score at the end of the game
 	private Queue<Double> scoreTargets;
 	// The labels for the cards estimator, the actual cards the other players had
@@ -232,8 +231,8 @@ public class Arena {
 			logger.info("Result of game #{}: {}\n", i, result);
 
 			if (trainMode.isSavingData() && i % REPLAY_MEMORY_SIZE_FACTOR == 0) {
-				final String extension = zeroPadded(i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + zeroPadded(i);
-				NeuralNetworkHelper.saveData(features, scoreTargets, cardsTargets, extension, trainMode);
+				final String name = zeroPadded(i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + zeroPadded(i);
+				IOHelper.saveData(new DataSet(cardFeatures, scoreFeatures, cardsTargets, scoreTargets), trainMode, name);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -253,14 +252,19 @@ public class Arena {
 	}
 
 	/**
-	 * Plays a game and appends the made features with the final point difference to the provided parameters (features and scoreTargets)
+	 * Plays a game and appends the made scoreFeatures with the final point difference to the provided parameters (scoreFeatures and scoreTargets)
 	 */
 	private Result playGame(boolean savingData) {
 		Game game = gameSession.getCurrentGame();
 
 		int[][] cardsTarget = null;
-		if (savingData)
-			cardsTarget = NeuralNetworkHelper.getCardsTargets(game);
+		if (savingData) {
+			if (DATA_AUGMENTATION_ENABLED) {
+
+			} else {
+				cardsTarget = NeuralNetworkHelper.getCardsTargets(game);
+			}
+		}
 
 		HashMap<double[][], Player> cardsFeaturesForPlayer = new HashMap<>(); // The int[][] is the key because it is unique
 		HashMap<double[][], Player> scoreFeaturesForPlayer = new HashMap<>(); // The int[][] is the key because it is unique
@@ -273,12 +277,15 @@ public class Arena {
 				player.onMoveMade(move);
 
 				if (savingData) {
-					final Map<Card, Distribution> cardDistributionMap = CardKnowledgeBase.initCardDistributionMap(game, game.getCurrentPlayer().getCards());
-					cardsFeaturesForPlayer.put(NeuralNetworkHelper.getCardsFeatures(game, cardDistributionMap), player);
-					scoreFeaturesForPlayer.put(NeuralNetworkHelper.getScoreFeatures(game), player);
 
 					// TODO enable data augmentation later again
-					//	NeuralNetworkHelper.getAnalogousScoreFeatures(game).forEach(feature -> scoreFeaturesForPlayer.put(feature, player));
+					if (DATA_AUGMENTATION_ENABLED) {
+						//NeuralNetworkHelper.getAnalogousScoreFeatures(game).forEach(feature -> scoreFeaturesForPlayer.put(feature, player));
+					} else {
+						final Map<Card, Distribution> cardDistributionMap = CardKnowledgeBase.initCardDistributionMap(game, game.getCurrentPlayer().getCards());
+						cardsFeaturesForPlayer.put(NeuralNetworkHelper.getCardsFeatures(game, cardDistributionMap), player);
+						scoreFeaturesForPlayer.put(NeuralNetworkHelper.getScoreFeatures(game), player);
+					}
 				}
 
 			}
@@ -286,12 +293,16 @@ public class Arena {
 		}
 
 		assert scoreFeaturesForPlayer.size() == 24;
-		if (savingData)
+		if (savingData) {
 			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
-				features.add(entry.getKey());
+				scoreFeatures.add(entry.getKey());
 				scoreTargets.add(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
+			}
+			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
+				cardFeatures.add(entry.getKey());
 				cardsTargets.add(cardsTarget); // get the cardsTarget of the corresponding player
 			}
+		}
 
 		return game.getResult();
 	}
@@ -341,13 +352,15 @@ public class Arena {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
-
-		// 36: Number of Cards in a game, 24: Number of color permutations (data augmentation)
-		int size = 36 * 24 * REPLAY_MEMORY_SIZE_FACTOR;
+		// 36: Number of Cards in a game
+		int size = 36 * REPLAY_MEMORY_SIZE_FACTOR;
+		if (DATA_AUGMENTATION_ENABLED)
+			size *= 24; // 24: Number of color permutations (data augmentation)
 		// When a new element is added and the queue is full, the head is removed.
-		features = EvictingQueue.create(size);
-		scoreTargets = EvictingQueue.create(size);
+		cardFeatures = EvictingQueue.create(size);
+		scoreFeatures = EvictingQueue.create(size);
 		cardsTargets = EvictingQueue.create(size);
+		scoreTargets = EvictingQueue.create(size);
 	}
 
 	private void tearDown() {
