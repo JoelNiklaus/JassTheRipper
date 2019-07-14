@@ -195,15 +195,14 @@ public class NeuralNetworkHelper {
 		reconstruction.put("AlreadyPlayedCards", alreadyPlayedCards);
 
 
-		for (int j = 0; j < 4; j++) {
-			List<Card> playerCards = new ArrayList<>();
-			for (int i = 37 + j * 9; i <= 45 + j * 9; i++) {
-				final Card card = fromEncodingToCard(observation[i]);
-				if (card != null)
-					playerCards.add(card);
-			}
-			reconstruction.put("PlayerCards-" + j, playerCards);
+		List<Card> cards = new ArrayList<>();
+		for (int i = 37; i < 73; i++) {
+			final Card card = fromEncodingToCard(observation[i]);
+			if (card != null)
+				cards.add(card);
 		}
+		reconstruction.put("CardsDistribution", cards);
+
 
 		return reconstruction;
 	}

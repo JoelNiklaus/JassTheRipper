@@ -112,10 +112,7 @@ public class NeuralNetworkHelperTest {
 		assertEquals(1, reconstruction.get("AlreadyPlayedCards").size());
 		assertEquals(Card.CLUB_QUEEN, reconstruction.get("AlreadyPlayedCards").get(0));
 
-		assertEquals(9, reconstruction.get("PlayerCards-0").size());
-		assertEquals(9, reconstruction.get("PlayerCards-1").size());
-		assertEquals(9, reconstruction.get("PlayerCards-2").size());
-		assertEquals(8, reconstruction.get("PlayerCards-3").size());
+		assertEquals(36, reconstruction.get("CardsDistribution").size());
 	}
 
 	@Test
