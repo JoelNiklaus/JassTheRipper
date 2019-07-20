@@ -107,9 +107,9 @@ public class CardKnowledgeBase {
 	 * @return
 	 */
 	public static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
-		if ((numberOfCards <= 0 && numberOfCards > 9)) throw new AssertionError();
+		if ((numberOfCards <= 0 || numberOfCards > 9)) throw new AssertionError();
+		if (numberOfCards > cards.size()) throw new AssertionError();
 		List<Card> listOfCards = new LinkedList<>(cards);
-		if (numberOfCards > listOfCards.size()) throw new AssertionError();
 		Collections.shuffle(listOfCards);
 		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
 		Set<Card> randomSubSet = EnumSet.copyOf(randomSublist);
@@ -130,7 +130,7 @@ public class CardKnowledgeBase {
 	 * @return
 	 */
 	public static Map<Card, Distribution> initCardKnowledge(Game game, Set<Card> availableCards, List<Color> colors) {
-		if (availableCards.isEmpty()) throw new AssertionError();
+		assert !availableCards.isEmpty();
 
 		Map<Card, Distribution> cardKnowledge = new EnumMap<>(Card.class);
 
@@ -162,18 +162,6 @@ public class CardKnowledgeBase {
 	}
 
 
-	private static void deleteImpossibleCardsFromCardKnowledge(Game game, List<Color> colors, Map<Card, Distribution> cardKnowledge) {
-		for (Player player : game.getPlayers()) {
-			Set<Card> impossibleCardsForPlayer = getImpossibleCardsForPlayer(game, player);
-			for (Card card : impossibleCardsForPlayer) {
-				card = DataAugmentationHelper.getRespectiveCard(card, colors);
-				if (cardKnowledge.containsKey(card))
-					cardKnowledge.get(card).deleteEventAndReBalance(player);
-			}
-		}
-	}
-
-
 	private static int getNumberOfCardsToAdd(Game game, double numberOfCards, Player player) {
 		if (game.getCurrentRound().hasPlayerAlreadyPlayed(player))
 			return (int) Math.floor(numberOfCards);
@@ -189,6 +177,24 @@ public class CardKnowledgeBase {
 	}
 
 	/**
+	 * Deletes all the cards which are not possible to be held by players given the previous rounds.
+	 *
+	 * @param game
+	 * @param colors
+	 * @param cardKnowledge
+	 */
+	private static void deleteImpossibleCardsFromCardKnowledge(Game game, List<Color> colors, Map<Card, Distribution> cardKnowledge) {
+		for (Player player : game.getPlayers()) {
+			Set<Card> impossibleCardsForPlayer = getImpossibleCardsForPlayer(game, player);
+			for (Card card : impossibleCardsForPlayer) {
+				card = DataAugmentationHelper.getRespectiveCard(card, colors);
+				if (cardKnowledge.containsKey(card))
+					cardKnowledge.get(card).deleteEventAndReBalance(player);
+			}
+		}
+	}
+
+	/**
 	 * Composes a set of cards which are impossible for a given player to be held at a given point in a game
 	 * If player did not follow suit earlier in the game, add all cards of this suit to this set.
 	 *
@@ -198,16 +204,23 @@ public class CardKnowledgeBase {
 	 */
 	public static Set<Card> getImpossibleCardsForPlayer(Game game, Player player) {
 		Set<Card> impossibleCards = EnumSet.noneOf(Card.class);
-		game.getPreviousRounds().forEach(round -> addImpossibleCardsForRound(game, player, impossibleCards, round));
-		addImpossibleCardsForRound(game, player, impossibleCards, game.getCurrentRound());
+		game.getPreviousRounds().forEach(round -> addImpossibleCardsFromRoundForPlayer(impossibleCards, round, player));
+		addImpossibleCardsFromRoundForPlayer(impossibleCards, game.getCurrentRound(), player);
 		return impossibleCards;
 	}
 
-	private static void addImpossibleCardsForRound(Game game, Player player, Set<Card> impossibleCards, Round round) {
+	/**
+	 * Adds cards which are impossible for a player to hold based on a given round
+	 *
+	 * @param impossibleCards
+	 * @param round
+	 * @param player
+	 */
+	private static void addImpossibleCardsFromRoundForPlayer(Set<Card> impossibleCards, Round round, Player player) {
 		if (!round.hasPlayerAlreadyPlayed(player))
 			return;
 		Color playerCardColor = round.getCardOfPlayer(player).getColor();
-		Color trumpfColor = game.getMode().getTrumpfColor();
+		Color trumpfColor = round.getMode().getTrumpfColor();
 		Color leadingColor = round.getMoves().get(0).getPlayedCard().getColor();
 		boolean playerPlayedTrumpf = playerCardColor.equals(trumpfColor);
 		boolean playerFollowedSuit = playerCardColor.equals(leadingColor);
@@ -219,6 +232,14 @@ public class CardKnowledgeBase {
 		}
 	}
 
+	/**
+	 * Determines if it is allowed by the rules to play a card based on the trumpf color and the color of the leading card
+	 *
+	 * @param trumpfColor
+	 * @param leadingColor
+	 * @param card
+	 * @return
+	 */
 	private static boolean cardIsPossible(Color trumpfColor, Color leadingColor, Card card) {
 		if (card.getColor().equals(leadingColor)) {
 			boolean cardIsTrumpfJack = card.getColor().equals(trumpfColor) && card.getValue().equals(CardValue.JACK);

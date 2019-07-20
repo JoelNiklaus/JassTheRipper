@@ -49,6 +49,13 @@ public class NeuralNetworkHelper {
 		return targets;
 	}
 
+	/**
+	 * Gets the target for the score estimator: The score at the end of the game.
+	 *
+	 * @param game
+	 * @param player
+	 * @return
+	 */
 	public static double getScoreTarget(Game game, Player player) {
 		// NOTE: the scoreTarget is between 0 and 157 inside the network
 		return Math.min(game.getResult().getTeamScore(player), Arena.TOTAL_POINTS);
@@ -344,6 +351,9 @@ public class NeuralNetworkHelper {
 		return reconstruction;
 	}
 
+	/**
+	 * Defines a card and an array of probabilities for a player having the given card on the hand or having played it in a previous round.
+	 */
 	static class ProbabilityMove {
 		private final Card card;
 		private final double[] probabilities;

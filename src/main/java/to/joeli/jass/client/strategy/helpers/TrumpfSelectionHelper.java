@@ -90,7 +90,7 @@ public class TrumpfSelectionHelper {
 			trumpfRatings.put(Mode.from(Trumpf.TRUMPF, color), rateColorForTrumpf(availableCards, color));
 
 		//  IMPORTANT: This filters out obeabe and undeufe for easier training of the neural network
-		if (!ALL_TRUMPFS) {
+		if (ALL_TRUMPFS) {
 			// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
 			float noTrumpfWeight = 0.8f; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
 			if (isGschobe)

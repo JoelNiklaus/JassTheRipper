@@ -21,8 +21,8 @@ public class Distribution {
 	Distribution(Map<Player, Double> probabilities, boolean sampled) {
 		this.probabilities = new HashMap<>(probabilities);
 		this.sampled = sampled;
-		if (!(sumProbabilities() - 1.0 < 0.000001)) throw new AssertionError();
-		if (!(sumProbabilities() - 1.0 > -0.000001)) throw new AssertionError();
+		if (sumProbabilities() - 1.0 >= 0.000001) throw new AssertionError();
+		if (sumProbabilities() - 1.0 <= -0.000001) throw new AssertionError();
 	}
 
 
@@ -49,12 +49,17 @@ public class Distribution {
 		}
 
 		if (probabilities.keySet().isEmpty()) throw new AssertionError();
-		if (!(sumProbabilities() - 1.0 < 0.000001)) throw new AssertionError();
-		if (!(sumProbabilities() - 1.0 > -0.000001)) throw new AssertionError();
+		if (sumProbabilities() - 1.0 >= 0.000001) throw new AssertionError();
+		if (sumProbabilities() - 1.0 <= -0.000001) throw new AssertionError();
 
 		return true;
 	}
 
+	/**
+	 * Samples randomly from the probability distribution and returns a player.
+	 *
+	 * @return
+	 */
 	public Player sample() {
 		// TODO take this random as a parameter so we can configure the seed
 		double threshold = random.nextDouble() * sumProbabilities();
@@ -88,6 +93,11 @@ public class Distribution {
 		this.sampled = sampled;
 	}
 
+	/**
+	 * Retrieves a double array from the probabilities hashmap for use in the neural networks
+	 *
+	 * @return
+	 */
 	public double[] getProbabilitiesInSeatIdOrder() {
 		double[] result = new double[4];
 		probabilities.forEach((player, probability) -> result[player.getSeatId()] = probability);

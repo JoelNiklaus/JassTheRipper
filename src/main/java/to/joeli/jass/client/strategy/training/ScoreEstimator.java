@@ -21,7 +21,11 @@ public class ScoreEstimator extends NeuralNetwork {
 		super(NetworkType.SCORE, trainable);
 	}
 
-
+	/**
+	 * Predicts a move based on the neural network predictions for states after a possible card is played
+	 * @param game
+	 * @return
+	 */
 	public CardMove predictMove(Game game) {
 		Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(game.getCurrentPlayer().getCards()), game);
 

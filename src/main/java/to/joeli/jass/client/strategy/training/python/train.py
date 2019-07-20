@@ -96,7 +96,7 @@ def train(train_mode, network_type):
     # print(numpy.ndarray.flatten(features))
 
     tb = TensorBoard(log_dir='./Graph', write_images=True)
-    es = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     mc = ModelCheckpoint(model_path, save_best_only=True, save_weights_only=False, period=1)
     wc = ModelCheckpoint(weights_path, save_best_only=True, save_weights_only=True, period=1)
 

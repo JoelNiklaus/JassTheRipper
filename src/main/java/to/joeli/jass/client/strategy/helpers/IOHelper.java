@@ -19,11 +19,25 @@ public class IOHelper {
 	public static final Logger logger = LoggerFactory.getLogger(IOHelper.class);
 
 
+	/**
+	 * Writes a given object to a file at the given path in CBOR format
+	 *
+	 * @param array
+	 * @param path
+	 * @throws IOException
+	 */
 	public static void writeCBOR(Object array, String path) throws IOException {
 		FileUtils.writeByteArrayToFile(new File(path), convertToCBOR(array));
 		new ObjectMapper().writeValue(new File(path + ".json"), array);
 	}
 
+	/**
+	 * Converts an object to CBOR (https://cbor.io/)
+	 *
+	 * @param array
+	 * @return
+	 * @throws JsonProcessingException
+	 */
 	public static byte[] convertToCBOR(Object array) throws JsonProcessingException {
 		return new ObjectMapper(new CBORFactory()).writeValueAsBytes(array);
 	}
@@ -37,6 +51,12 @@ public class IOHelper {
 		return new ObjectMapper(new CBORFactory()).readValue(bytes, List.class);
 	}
 
+	/**
+	 * Creates the directory and all necessary subdirectories if they do not yet exist.
+	 *
+	 * @param directory
+	 * @return
+	 */
 	private static boolean createIfNotExists(File directory) {
 		if (directory.isDirectory())
 			return true;

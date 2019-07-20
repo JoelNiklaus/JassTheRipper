@@ -1,6 +1,11 @@
 package to.joeli.jass.client.strategy.mcts;
 
-import to.joeli.jass.client.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import to.joeli.jass.client.game.Game;
+import to.joeli.jass.client.game.GameSession;
+import to.joeli.jass.client.game.Player;
+import to.joeli.jass.client.game.Result;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
 import to.joeli.jass.client.strategy.helpers.CardSelectionHelper;
 import to.joeli.jass.client.strategy.helpers.PerfectInformationGameSolver;
@@ -13,10 +18,11 @@ import to.joeli.jass.client.strategy.training.CardsEstimator;
 import to.joeli.jass.client.strategy.training.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -45,12 +51,31 @@ public class JassBoard implements Board {
 		this.cardsEstimator = cardsEstimator;
 	}
 
+	/**
+	 * Constructs a JassBoard which can be used in the trumpf selection phase. The game session is defined and the game null.
+	 *
+	 * @param availableCards
+	 * @param gameSession
+	 * @param shifted
+	 * @param scoreEstimator
+	 * @param cardsEstimator
+	 * @return
+	 */
 	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, scoreEstimator, cardsEstimator);
 		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
 		return jassBoard;
 	}
 
+	/**
+	 * Constructs a JassBoard which can be used in the card selection phase. The game session is null and the game defined.
+	 *
+	 * @param availableCards
+	 * @param game
+	 * @param scoreEstimator
+	 * @param cardsEstimator
+	 * @return
+	 */
 	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game), scoreEstimator, cardsEstimator);
 	}

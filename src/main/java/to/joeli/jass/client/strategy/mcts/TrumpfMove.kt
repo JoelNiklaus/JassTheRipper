@@ -10,14 +10,14 @@ import to.joeli.jass.game.mode.Mode
  */
 class TrumpfMove(val player: Player, val chosenTrumpf: Mode) : Move {
 
-    override fun compareTo(o: Move): Int {
+    override fun compareTo(other: Move): Int {
         return 0
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val that = o as TrumpfMove?
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as TrumpfMove?
         return player == that!!.player && chosenTrumpf == that.chosenTrumpf
     }
 
