@@ -19,13 +19,11 @@ public class NeuralNetwork {
 
 	protected final NetworkType networkType;
 	protected final boolean trainable;
-	protected final boolean preTrainingEnabled;
 
 
 	public NeuralNetwork(NetworkType networkType, boolean trainable) {
 		this.networkType = networkType;
 		this.trainable = trainable;
-		this.preTrainingEnabled = true; // TODO maybe at some point we also want to train from scratch. But for now this is ok
 	}
 
 
@@ -37,12 +35,7 @@ public class NeuralNetwork {
 		return ZeroMQClient.loadWeights(networkType);
 	}
 
-
 	public boolean isTrainable() {
 		return trainable;
-	}
-
-	public boolean isPreTrainingEnabled() {
-		return preTrainingEnabled;
 	}
 }

@@ -1,5 +1,7 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.junit.Test;
+import org.mockito.internal.util.reflection.Whitebox;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
@@ -7,8 +9,6 @@ import to.joeli.jass.game.Trumpf;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.Arrays;
 import java.util.List;
@@ -142,6 +142,18 @@ public class NeuralNetworkHelperTest {
 		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
 		assertEquals(0, observation[0][0], DELTA);
 		assertEquals(1, observation[0][1], DELTA);
+	}
+
+	@Test
+	public void testGetCardsTargets() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+
+		final int[][] cardsTargets = NeuralNetworkHelper.getCardsTargets(game);
+		System.out.println(Arrays.deepToString(cardsTargets));
+
+		assertArrayEquals(new int[]{1, 0, 0, 0}, cardsTargets[0]); // First player has HEART_SIX
+		assertArrayEquals(new int[]{0, 0, 1, 0}, cardsTargets[1]); // Third player has HEART_SEVEN
+		assertArrayEquals(new int[]{0, 1, 0, 0}, cardsTargets[2]); // Second player has HEART_EIGHT
 	}
 
 }

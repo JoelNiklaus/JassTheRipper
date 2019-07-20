@@ -87,14 +87,7 @@ public class NeuralNetworkHelper {
 		final List<double[]> historyEncodings = getListOfEncodings(historyMoves, respectiveMode);
 		addListToArray(historyEncodings, features, 1);
 
-		// TODO first test this very thoroughly
-
-		// TODO Cards features von score features trennen
-
-		// TODO Mit CardKnowledgeBase vereinbaren
 		// CARDS_DISTRIBUTION
-
-
 		final List<double[]> distributionEncodings = new ArrayList<>();
 
 		if (cardKnowledge == null) {
@@ -146,26 +139,6 @@ public class NeuralNetworkHelper {
 		infoRow[2 + 7 + 4 + currentPlayerSeatId] = 1;
 
 		return infoRow;
-	}
-
-	/**
-	 * Converts the cards into the three hot encoding format and inserts them in the observation at starting from the start index.
-	 * For data augmentation purposes a permutation of colors can be supplied. This makes it possible to generate 24 observations from a single game.
-	 * NOTE: This is only possible for trumpf modes. For top-down and bottom-up it is not available yet.
-	 *
-	 * @param moves
-	 * @param mode
-	 * @param observation
-	 * @param startIndex
-	 * @param colors      the permutation of colors to generate the observation from. Set to null to generate an observation of the actual game
-	 */
-	private static void insertCardsIntoObservation(List<Move> moves, Mode mode, double[][] observation, int startIndex, List<Color> colors) {
-		mode = DataAugmentationHelper.getRespectiveMode(mode, colors);
-		for (int i = 0; i < moves.size(); i++) {
-			Card card = moves.get(i).getPlayedCard();
-			card = DataAugmentationHelper.getRespectiveCard(card, colors);
-			observation[startIndex + i] = fromMoveToEncoding(card, mode, moves.get(i).getPlayer().getSeatId());
-		}
 	}
 
 	private static List<double[]> getListOfEncodings(List<Move> moves, Mode mode) {
@@ -316,30 +289,6 @@ public class NeuralNetworkHelper {
 	 *
 	 * @param game
 	 */
-	public static HashMap<Player, int[][]> buildCardsLabels(Game game) {
-		HashMap<Player, int[][]> cardsLabelsForPlayer = new HashMap<>();
-
-		final Card[] cards = Card.values();
-		final List<Player> playingOrder = game.getOrder().getPlayersInInitialOrder();
-
-		for (int start = 0; start < 4; start++) { // for each of the four player's perspective
-			int[][] labels = new int[36][4];
-			for (int i = 0; i < cards.length; i++) { // for every card
-				int[] players = new int[4];
-				for (int p = 0; p < 4; p++) { // check for all the players
-					if (playingOrder.get((start + p) % 4).getCards().contains(cards[i])) { // if the player has the card
-						players[p] = 1; // set the card
-						break; // and no need to evaluate the rest of the players because they cannot have the card
-					}
-				}
-				labels[i] = players;
-			}
-			cardsLabelsForPlayer.put(playingOrder.get(start), labels);
-		}
-		return cardsLabelsForPlayer;
-	}
-
-
 	public static int[][] getCardsTargets(Game game) {
 		int[][] targets = new int[36][4];
 		final Card[] cards = Card.values();

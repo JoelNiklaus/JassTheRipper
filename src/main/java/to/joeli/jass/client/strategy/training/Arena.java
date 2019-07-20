@@ -65,6 +65,16 @@ public class Arena {
 		//arena.trainForNumEpisodes(1000);
 	}
 
+
+	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
+		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
+
+		this.numTrainingGames = numTrainingGames;
+		this.numTestingGames = numTestingGames;
+		this.improvementThresholdPercentage = improvementThresholdPercentage;
+		random = new Random(seed);
+	}
+
 	private void preTrainNetworks() {
 		setUp();
 
@@ -78,15 +88,6 @@ public class Arena {
 		cardsEstimatorPlayer.getCardsEstimator().train(TrainMode.PRE_TRAIN);
 		final Player scoreEstimatorPlayer = gameSession.getFirstPlayerWithUsedScoreEstimator(true);
 		scoreEstimatorPlayer.getScoreEstimator().train(TrainMode.PRE_TRAIN);
-	}
-
-	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
-		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
-
-		this.numTrainingGames = numTrainingGames;
-		this.numTestingGames = numTestingGames;
-		this.improvementThresholdPercentage = improvementThresholdPercentage;
-		random = new Random(seed);
 	}
 
 	public void trainForNumEpisodes(int numEpisodes) {
