@@ -1,4 +1,4 @@
-package to.joeli.jass.client.strategy.mcts.src;
+package to.joeli.jass.client.strategy.mcts.src
 
 /**
  * Use this as a replacement for the conventional
@@ -10,6 +10,6 @@ package to.joeli.jass.client.strategy.mcts.src;
  *
  * @author joelniklaus
  */
-public interface PlayoutSelection {
-	Move getBestMove(Board board);
+interface PlayoutSelection {
+    fun getBestMove(board: Board): Move
 }

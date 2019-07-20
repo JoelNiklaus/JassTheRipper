@@ -1,6 +1,8 @@
 package to.joeli.jass.client.strategy;
 
 import com.google.common.collect.Iterables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.GameSession;
 import to.joeli.jass.client.strategy.config.Config;
@@ -18,8 +20,6 @@ import to.joeli.jass.client.strategy.training.CardsEstimator;
 import to.joeli.jass.client.strategy.training.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 

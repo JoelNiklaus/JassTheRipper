@@ -117,6 +117,7 @@ public class ShellScriptRunner {
 
 	/**
 	 * Gets the directory where the deep learning with keras is done
+	 *
 	 * @return
 	 */
 	@NotNull
