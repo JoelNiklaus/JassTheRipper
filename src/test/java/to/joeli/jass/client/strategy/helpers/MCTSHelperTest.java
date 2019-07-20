@@ -67,9 +67,6 @@ public class MCTSHelperTest {
 		mctsHelper.predictMove(cards, gameSession, false, false);
 	}
 
-	// TODO spätere runden testen
-	// TODO andere trümpfe testen
-
 	@Test
 	public void testMCTSDuringFirstRound() throws MCTSException {
 		final GameSession gameSession = GameSessionBuilder.newSession()

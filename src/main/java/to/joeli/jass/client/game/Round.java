@@ -72,9 +72,7 @@ public class Round {
 	}
 
 	public Card getWinningCard() {
-		return mode.determineWinningCard(getPlayedCards().stream().collect(Collectors.toList()));
-		// TODO maybe not always returns a card ...
-		//return moves.stream().filter(move -> move.getPlayer().equals(getWinner())).findFirst().get().getPlayedCard();
+		return mode.determineWinningCard(new ArrayList<>(getPlayedCards()));
 	}
 
 	public Set<Card> getPlayedCards() {

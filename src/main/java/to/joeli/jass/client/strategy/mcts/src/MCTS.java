@@ -11,8 +11,6 @@ import java.util.concurrent.*;
 
 // TODO calculate how big the tree gets at each point in the game
 
-// TODO try out score bounds
-
 
 /**
  * The main class responsible for the Monte Carlo Tree Search Method.
@@ -25,6 +23,7 @@ public class MCTS {
 	private double explorationConstant = Math.sqrt(2.0);
 	private double pessimisticBias;
 	private double optimisticBias;
+	private int numPlayouts = 2; // Scored the best in experiments
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD;
 	private HeuristicFunction heuristicFunction;
 	private PlayoutSelection playoutPolicy;
@@ -153,6 +152,13 @@ public class MCTS {
 		}
 	}
 
+	/**
+	 * This implements a majority vote from the different determinizations (mcts trees parallelised at the root)
+	 *
+	 * @param moves
+	 * @return
+	 * @throws MCTSException
+	 */
 	private Move vote(ArrayList<Move> moves) throws MCTSException {
 		HashMap<Move, Integer> numberOfSelections = new HashMap<>();
 		if (moves.isEmpty())
@@ -171,41 +177,6 @@ public class MCTS {
 				.min(Map.Entry.comparingByValue(Collections.reverseOrder())).orElseThrow(() -> new IllegalStateException("There must be at least one move!"));
 
 		return entryOptional.getKey();
-
-
-
-		/*
-		Collections.sort(moves);
-		ArrayList<Integer> counts = new ArrayList<Integer>();
-		ArrayList<Move> cmoves = new ArrayList<Move>();
-
-		Move omove = moves.get(0);
-		int count = 0;
-		for (Move m : moves) {
-			if (omove.compareTo(m) == 0) {
-				count++;
-			} else {
-				cmoves.add(omove);
-				counts.add(count);
-				omove = m;
-				count = 1;
-			}
-		}
-
-		int mostvotes = 0;
-		ArrayList<Move> mostVotedMove = new ArrayList<Move>();
-		for (int i = 0; i < counts.size(); i++) {
-			if (mostvotes < counts.get(i)) {
-				mostvotes = counts.get(i);
-				mostVotedMove.clear();
-				mostVotedMove.add(cmoves.get(i));
-			} else if (mostvotes == counts.get(i)) {
-				mostVotedMove.add(cmoves.get(i));
-			}
-		}
-
-		return mostVotedMove.get(random.nextInt(mostVotedMove.size()));
-		*/
 	}
 
 	/**
@@ -251,8 +222,7 @@ public class MCTS {
 					board.makeMove(temp.getMove());
 					return new BoardNodePair(board, temp);
 				} else {
-					List<Node> bestNodes = findChildren(node, board, optimisticBias, pessimisticBias,
-							explorationConstant);
+					List<Node> bestNodes = findChildren(node, board, optimisticBias, pessimisticBias, explorationConstant);
 
 					if (bestNodes.isEmpty()) {
 						// We have failed to find a single child to visit
@@ -296,83 +266,6 @@ public class MCTS {
 		return new BoardNodePair(board, node);
 	}
 
-	/**
-	 * This is the final step of the algorithm, to pick the best move to
-	 * actually make.
-	 *
-	 * @param node this is the node whose children are considered
-	 * @return the best Move the algorithm can find or null if the node is invalid
-	 */
-	private Move finalMoveSelection(Node node) {
-		if (!node.isValid()) // if there was no run completed
-			return null;
-
-		Node finalMove;
-		switch (finalSelectionPolicy) {
-			case MAX_CHILD:
-				finalMove = maxChild(node);
-				break;
-			case ROBUST_CHILD:
-				finalMove = robustChild(node);
-				break;
-			default:
-				finalMove = robustChild(node);
-				break;
-		}
-
-		return finalMove.getMove();
-	}
-
-	/**
-	 * Select the most visited child node
-	 *
-	 * @param node
-	 * @return
-	 */
-	private Node robustChild(Node node) {
-		double bestValue = Double.NEGATIVE_INFINITY;
-		double tempBest;
-		ArrayList<Node> bestNodes = new ArrayList<>();
-
-		for (Node current : node.getChildren()) {
-			tempBest = current.getGames();
-			bestValue = getBestValue(bestValue, tempBest, bestNodes, current);
-		}
-
-		return bestNodes.get(random.nextInt(bestNodes.size()));
-	}
-
-	private double getBestValue(double bestValue, double tempBest, ArrayList<Node> bestNodes, Node node) {
-		if (tempBest > bestValue) {
-			bestNodes.clear();
-			bestNodes.add(node);
-			bestValue = tempBest;
-		} else if (tempBest == bestValue) {
-			bestNodes.add(node);
-		}
-		return bestValue;
-	}
-
-	/**
-	 * Select the child node with the highest score
-	 *
-	 * @param node
-	 * @return
-	 */
-	private Node maxChild(Node node) {
-		double bestValue = Double.NEGATIVE_INFINITY;
-		double tempBest;
-		ArrayList<Node> bestNodes = new ArrayList<>();
-
-		for (Node s : node.getChildren()) {
-			tempBest = s.getScore()[node.getPlayer()];
-			tempBest += s.getOpti()[node.getPlayer()] * optimisticBias;
-			tempBest += s.getPess()[node.getPlayer()] * pessimisticBias;
-			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
-		}
-
-		return bestNodes.get(random.nextInt(bestNodes.size()));
-	}
 
 	/**
 	 * Playout function for MCTS
@@ -385,13 +278,32 @@ public class MCTS {
 		if (oldBoard.hasScoreEstimator())
 			return oldBoard.estimateScore();
 
-		List<Move> moves;
-		Move move;
-		Board board = oldBoard.duplicate(false);
+		// INFO: Run multiple playouts and take average to get a more reliable outcome. If numPlayouts = 1 take the outcome directly
+		double[] scoreAggregate = new double[oldBoard.getQuantityOfPlayers()];
+		for (int i = 0; i < numPlayouts; i++) {
+			final double[] score = runPlayout(oldBoard.duplicate(false));
+			for (int j = 0; j < score.length; j++) {
+				scoreAggregate[j] += score[j];
+			}
+		}
+		for (int i = 0; i < scoreAggregate.length; i++) {
+			scoreAggregate[i] /= numPlayouts;
+		}
+		return scoreAggregate;
+	}
 
+	/**
+	 * Runs one playout of the board
+	 *
+	 * @param board
+	 * @return
+	 */
+	private double[] runPlayout(Board board) {
 		// Start playing random moves until the game is over
 		while (!board.gameOver()) {
+			Move move;
 			if (playoutPolicy == null) {
+				List<Move> moves;
 				moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
 				if (moves.isEmpty()) throw new AssertionError();
 				if (board.getCurrentPlayer() >= 0) {
@@ -474,6 +386,85 @@ public class MCTS {
 	}
 
 	/**
+	 * This is the final step of the algorithm, to pick the best move to
+	 * actually make.
+	 *
+	 * @param node this is the node whose children are considered
+	 * @return the best Move the algorithm can find or null if the node is invalid
+	 */
+	private Move finalMoveSelection(Node node) {
+		if (!node.isValid()) // if there was no run completed
+			return null;
+
+		Node finalMove;
+		switch (finalSelectionPolicy) {
+			case MAX_CHILD:
+				finalMove = maxChild(node);
+				break;
+			case ROBUST_CHILD:
+				finalMove = robustChild(node);
+				break;
+			default:
+				finalMove = robustChild(node);
+				break;
+		}
+
+		return finalMove.getMove();
+	}
+
+	/**
+	 * Select the most visited child node
+	 *
+	 * @param node
+	 * @return
+	 */
+	private Node robustChild(Node node) {
+		double bestValue = Double.NEGATIVE_INFINITY;
+		double tempBest;
+		ArrayList<Node> bestNodes = new ArrayList<>();
+
+		for (Node current : node.getChildren()) {
+			tempBest = current.getGames();
+			bestValue = getBestValue(bestValue, tempBest, bestNodes, current);
+		}
+
+		return bestNodes.get(random.nextInt(bestNodes.size()));
+	}
+
+	/**
+	 * Select the child node with the highest score
+	 *
+	 * @param node
+	 * @return
+	 */
+	private Node maxChild(Node node) {
+		double bestValue = Double.NEGATIVE_INFINITY;
+		double tempBest;
+		ArrayList<Node> bestNodes = new ArrayList<>();
+
+		for (Node s : node.getChildren()) {
+			tempBest = s.getScore()[node.getPlayer()];
+			tempBest += s.getOpti()[node.getPlayer()] * optimisticBias;
+			tempBest += s.getPess()[node.getPlayer()] * pessimisticBias;
+			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
+		}
+
+		return bestNodes.get(random.nextInt(bestNodes.size()));
+	}
+
+
+	private double getBestValue(double bestValue, double tempBest, ArrayList<Node> bestNodes, Node node) {
+		if (tempBest > bestValue) {
+			bestNodes.clear();
+			bestNodes.add(node);
+			bestValue = tempBest;
+		} else if (tempBest == bestValue) {
+			bestNodes.add(node);
+		}
+		return bestValue;
+	}
+
+	/**
 	 * Determines if score bounds should be used or not.
 	 *
 	 * @param scoreBoundsUsed
@@ -493,7 +484,22 @@ public class MCTS {
 		this.explorationConstant = explorationConstant;
 	}
 
-	public void setMoveSelectionPolicy(FinalSelectionPolicy finalSelectionPolicy) {
+	/**
+	 * Sets the number of playouts that are performed. The average of the performed playouts is returned.
+	 * The higher, the better the quality but the longer the time for an iteration through the tree.
+	 *
+	 * @param numPlayouts
+	 */
+	public void setNumPlayouts(int numPlayouts) {
+		this.numPlayouts = numPlayouts;
+	}
+
+	/**
+	 * Sets the selection policy to choose the move at the end of the tree search
+	 *
+	 * @param finalSelectionPolicy
+	 */
+	public void setFinalSelectionPolicy(FinalSelectionPolicy finalSelectionPolicy) {
 		this.finalSelectionPolicy = finalSelectionPolicy;
 	}
 

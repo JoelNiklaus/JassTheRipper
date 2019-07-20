@@ -58,7 +58,7 @@ public class Node {
 	 * Return the upper confidence bound of this state
 	 *
 	 * @param c typically sqrt(2). Increase to emphasize exploration. Decrease
-	 *          to incr. exploitation
+	 *          to increase exploitation
 	 * @return
 	 */
 	public double upperConfidenceBound(double c) {

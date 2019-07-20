@@ -60,9 +60,6 @@ public class JassTheRipperStrategyTest {
 		strategy.chooseCard(cards4, gameSession);
 	}
 
-	// TODO spätere runden testen
-
-
 	@Test
 	public void testMCTSDuringFirstRound() {
 		final GameSession gameSession = GameSessionBuilder.newSession()

@@ -15,11 +15,30 @@ class MCTSConfig {
     var explorationConstant = sqrt(2.0)
     var pessimisticBias = 0.0
     var optimisticBias = 0.0
+    var numPlayouts = 2 // Scored the best in experiments
     var finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD
     var heuristicFunction: HeuristicFunction? = null
     var playoutPolicy: PlayoutSelection? = null
 
     constructor()
+
+    constructor(scoreBoundsUsed: Boolean, pessimisticBias: Double, optimisticBias: Double) {
+        this.scoreBoundsUsed = scoreBoundsUsed
+        this.pessimisticBias = pessimisticBias
+        this.optimisticBias = optimisticBias
+    }
+
+    constructor(explorationConstant: Double) {
+        this.explorationConstant = explorationConstant
+    }
+
+    constructor(numPlayouts: Int) {
+        this.numPlayouts = numPlayouts
+    }
+
+    constructor(finalSelectionPolicy: FinalSelectionPolicy) {
+        this.finalSelectionPolicy = finalSelectionPolicy
+    }
 
     constructor(trumpfStrengthLevel: StrengthLevel, cardStrengthLevel: StrengthLevel) {
         this.trumpfStrengthLevel = trumpfStrengthLevel

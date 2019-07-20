@@ -34,13 +34,13 @@ public class MCTSHelper {
 	public MCTSHelper(MCTSConfig mctsConfig) {
 		this.mctsConfig = mctsConfig;
 
-		// TODO tune parameters
 		mcts.setRandom(mctsConfig.getSeed());
 		mcts.setScoreBoundsUsed(mctsConfig.getScoreBoundsUsed());
 		mcts.setExplorationConstant(mctsConfig.getExplorationConstant());
 		mcts.setOptimisticBias(mctsConfig.getOptimisticBias());
 		mcts.setPessimisticBias(mctsConfig.getPessimisticBias());
-		mcts.setMoveSelectionPolicy(mctsConfig.getFinalSelectionPolicy());
+		mcts.setNumPlayouts(mctsConfig.getNumPlayouts());
+		mcts.setFinalSelectionPolicy(mctsConfig.getFinalSelectionPolicy());
 		mcts.setHeuristicFunction(mctsConfig.getHeuristicFunction());
 		mcts.setPlayoutSelection(mctsConfig.getPlayoutPolicy());
 

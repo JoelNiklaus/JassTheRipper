@@ -12,6 +12,7 @@ import to.joeli.jass.client.strategy.config.StrengthLevel;
 import to.joeli.jass.client.strategy.config.TrumpfSelectionMethod;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
+import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.ScoreEstimator;
 
@@ -24,7 +25,7 @@ public class MCTSBenchmarkTest {
 
 	private static final boolean RUN_BENCHMARKS = false;
 
-	private static final long SEED = 42;
+	private static final long SEED = 43; // To get a match at the start use 42
 	private static final int NUM_GAMES = 10;
 
 	private Arena arena = new Arena(2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
@@ -52,8 +53,8 @@ public class MCTSBenchmarkTest {
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
-			assertTrue(performance > 100);
 			System.out.println(performance);
+			assertTrue(performance > 100);
 		}
 	}
 
@@ -72,8 +73,8 @@ public class MCTSBenchmarkTest {
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
-			assertTrue(performance > 100);
 			System.out.println(performance);
+			assertTrue(performance > 100);
 		}
 	}
 
@@ -93,8 +94,8 @@ public class MCTSBenchmarkTest {
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
-			assertTrue(performance > 100);
 			System.out.println(performance);
+			assertTrue(performance > 100);
 		}
 	}
 
@@ -114,8 +115,115 @@ public class MCTSBenchmarkTest {
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 
-			assertTrue(performance > 100);
 			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testRobustChildIsBetterThanMaxChild() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(FinalSelectionPolicy.ROBUST_CHILD));
+			configs[1].setMctsConfig(new MCTSConfig(FinalSelectionPolicy.MAX_CHILD));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testPlayoutsAggregateIsBeneficial() {
+		// This probably depends on the computation time as well: The longer the time, the higher numPlayouts can be
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(2));
+			configs[1].setMctsConfig(new MCTSConfig(1));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testUsingScoreBoundsIsBad() {
+		// TODO run experiments with more games!!
+
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(false, 0.0, 0.0));
+			configs[1].setMctsConfig(new MCTSConfig(true, 0.0, 10.0));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testMoreThanStandardExploitationIsGood() {
+		// TODO run experiments with more games!!
+
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(0));
+			configs[1].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testNegativeExplorationConstantIsBad() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(0.0));
+			configs[1].setMctsConfig(new MCTSConfig(-0.3));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testMoreThanStandardExplorationIsBad() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, false, false),
+					new Config(true, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
+			configs[1].setMctsConfig(new MCTSConfig(1.7));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
 		}
 	}
 
