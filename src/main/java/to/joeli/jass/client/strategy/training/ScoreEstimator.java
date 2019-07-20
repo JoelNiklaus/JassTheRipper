@@ -23,15 +23,17 @@ public class ScoreEstimator extends NeuralNetwork {
 
 
 	public CardMove predictMove(Game game) {
-		final Player player = game.getCurrentPlayer();
-		Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
+		Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(game.getCurrentPlayer().getCards()), game);
 
 		assert !possibleCards.isEmpty();
 
 		EnumMap<Card, Double> actionValuePairs = new EnumMap<>(Card.class);
 		for (Card card : possibleCards) {
 			Game clonedGame = new Game(game);
-			clonedGame.makeMove(new CardMove(player, card));
+			final Player player = clonedGame.getCurrentPlayer();
+			final CardMove move = new CardMove(player, card);
+			clonedGame.makeMove(move);
+			player.onMoveMade(move);
 
 			// TODO maybe it is more efficient to do all the forward passes at the same time and not one by one
 			// NOTE: 157 - value because the value is from the perspective of a player of the opponent team
@@ -43,7 +45,7 @@ public class ScoreEstimator extends NeuralNetwork {
 				.map(Map.Entry::getKey)
 				.orElse(null);
 
-		return new CardMove(player, bestCard);
+		return new CardMove(game.getCurrentPlayer(), bestCard);
 	}
 
 	/**
