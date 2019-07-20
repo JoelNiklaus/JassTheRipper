@@ -1,13 +1,13 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.game.Round;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,9 +29,9 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	public static Card getRandomCard(Set<Card> availableCards, Game game) {
-		return getCardsPossibleToPlay(availableCards, game).stream()
-				.findAny()
-				.orElseThrow(() -> new RuntimeException("There should always be a card to play"));
+		final List<Card> possibleCards = new ArrayList<>(getCardsPossibleToPlay(availableCards, game));
+		if (possibleCards.isEmpty()) throw new RuntimeException("There should always be a card to play");
+		return possibleCards.get(new Random().nextInt(possibleCards.size()));
 	}
 
 	/**
