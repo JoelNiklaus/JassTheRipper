@@ -189,9 +189,9 @@ public class CardSelectionHelper {
 		List<Round> previousRounds = game.getPreviousRounds();
 		for (Round round : previousRounds) {
 			Card myCard = round.getCardOfPlayer(player);
-			assert myCard != null;
+			if (myCard == null) throw new AssertionError();
 			Card cardOfPartner = round.getCardOfPlayer(partner);
-			assert cardOfPartner != null;
+			if (cardOfPartner == null) throw new AssertionError();
 			if (JassHelper.isBrettli(cardOfPartner, mode)) {
 				// ANZIEHEN STARTING
 				if (wasStartingPlayer(partner, round))
@@ -222,9 +222,9 @@ public class CardSelectionHelper {
 			if (wasStartingPlayer(player, round)
 					&& round.getWinner().equals(player)) {
 				Card myCard = round.getCardOfPlayer(player);
-				assert myCard != null;
+				if (myCard == null) throw new AssertionError();
 				Card cardOfPartner = round.getCardOfPlayer(partner);
-				assert cardOfPartner != null;
+				if (cardOfPartner == null) throw new AssertionError();
 
 				if (!cardOfPartner.getColor().equals(myCard.getColor()) && JassHelper.isBrettli(cardOfPartner, mode))
 					return cardOfPartner.getColor();
@@ -423,7 +423,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	public static Set<Card> getCardsPossibleToPlay(Set<Card> availableCards, Game game) {
-		assert !availableCards.isEmpty();
+		if (availableCards.isEmpty()) throw new AssertionError();
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card

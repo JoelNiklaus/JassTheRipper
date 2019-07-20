@@ -25,7 +25,7 @@ public class ScoreEstimator extends NeuralNetwork {
 	public CardMove predictMove(Game game) {
 		Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(game.getCurrentPlayer().getCards()), game);
 
-		assert !possibleCards.isEmpty();
+		if (possibleCards.isEmpty()) throw new AssertionError();
 
 		EnumMap<Card, Double> actionValuePairs = new EnumMap<>(Card.class);
 		for (Card card : possibleCards) {

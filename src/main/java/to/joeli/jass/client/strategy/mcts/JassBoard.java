@@ -131,7 +131,7 @@ public class JassBoard implements Board {
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 
-			assert !possibleCards.isEmpty();
+			if (possibleCards.isEmpty()) throw new AssertionError();
 
 			// INFO: This would be pruning for cards. At the moment we do not want to do this.
 			// It could be a possibility later on if we see that the bot still plays badly in the first 1-3 moves of a game.
@@ -148,9 +148,9 @@ public class JassBoard implements Board {
 
 			for (Card card : possibleCards)
 				moves.add(new CardMove(player, card));
-			assert (!moves.isEmpty());
+			if ((moves.isEmpty())) throw new AssertionError();
 		}
-		assert !moves.isEmpty();
+		if (moves.isEmpty()) throw new AssertionError();
 		return moves;
 	}
 
@@ -162,12 +162,12 @@ public class JassBoard implements Board {
 	 */
 	@Override
 	public void makeMove(Move move) {
-		assert move != null;
+		if (move == null) throw new AssertionError();
 
 		if (isChoosingTrumpf()) {
-			assert move instanceof TrumpfMove;
+			if (!(move instanceof TrumpfMove)) throw new AssertionError();
 			final TrumpfMove trumpfMove = (TrumpfMove) move;
-			assert trumpfMove != null;
+			if (trumpfMove == null) throw new AssertionError();
 
 			Mode mode = trumpfMove.getChosenTrumpf();
 			if (mode.equals(Mode.shift())) {
@@ -176,20 +176,18 @@ public class JassBoard implements Board {
 			} else {
 				//logger.debug("Started game with trumpf {}", mode);
 				this.gameSession.startNewGame(mode, shifted);
-				assert gameSession.getCurrentGame() != null;
+				if (gameSession.getCurrentGame() == null) throw new AssertionError();
 				this.game = gameSession.getCurrentGame();
 				this.gameSession = null; // NOTE: this is needed so that the method isChoosingTrumpf() will evaluate to false afterwards
 			}
 		} else {
 			Player player = game.getCurrentPlayer();
 
-			assert move instanceof CardMove;
+			if (!(move instanceof CardMove)) throw new AssertionError();
 			// We can do that because we are only creating CardMoves
 			final CardMove cardMove = (CardMove) move;
 
-			assert cardMove != null;
-
-			assert cardMove.getPlayer().equals(player);
+			if (!cardMove.getPlayer().equals(player)) throw new AssertionError();
 
 			player.onMoveMade(cardMove);
 			game.makeMove(cardMove);
@@ -231,7 +229,7 @@ public class JassBoard implements Board {
 				return gameSession.getPartnerOfPlayer(trumpfSelectingPlayer);
 			return trumpfSelectingPlayer;
 		}
-		assert game != null;
+		if (game == null) throw new AssertionError();
 		return game.getCurrentPlayer();
 	}
 
@@ -239,13 +237,13 @@ public class JassBoard implements Board {
 	public boolean gameOver() {
 		if (isChoosingTrumpf())
 			return false;
-		assert game != null;
+		if (game == null) throw new AssertionError();
 		return game.gameFinished();
 	}
 
 	@Override
 	public double[] getScore() {
-		assert game != null;
+		if (game == null) throw new AssertionError();
 
 		double[] score = new double[getQuantityOfPlayers()];
 		Result result = game.getResult();

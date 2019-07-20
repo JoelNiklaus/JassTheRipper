@@ -21,8 +21,8 @@ public class Distribution {
 	Distribution(Map<Player, Double> probabilities, boolean sampled) {
 		this.probabilities = new HashMap<>(probabilities);
 		this.sampled = sampled;
-		assert sumProbabilities() - 1.0 < 0.000001;
-		assert sumProbabilities() - 1.0 > -0.000001;
+		if (!(sumProbabilities() - 1.0 < 0.000001)) throw new AssertionError();
+		if (!(sumProbabilities() - 1.0 > -0.000001)) throw new AssertionError();
 	}
 
 
@@ -48,9 +48,9 @@ public class Distribution {
 			probabilities.put(entry.getKey(), entry.getValue() + probabilityToAdd);
 		}
 
-		assert !probabilities.keySet().isEmpty();
-		assert sumProbabilities() - 1.0 < 0.000001;
-		assert sumProbabilities() - 1.0 > -0.000001;
+		if (probabilities.keySet().isEmpty()) throw new AssertionError();
+		if (!(sumProbabilities() - 1.0 < 0.000001)) throw new AssertionError();
+		if (!(sumProbabilities() - 1.0 > -0.000001)) throw new AssertionError();
 
 		return true;
 	}

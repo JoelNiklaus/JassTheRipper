@@ -120,27 +120,27 @@ public class Player implements Comparable<Player> {
 	}
 
 	public Config getConfig() {
-		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		if (!(jassStrategy instanceof JassTheRipperJassStrategy)) throw new AssertionError();
 		return ((JassTheRipperJassStrategy) jassStrategy).getConfig();
 	}
 
 	public ScoreEstimator getScoreEstimator() {
-		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		if (!(jassStrategy instanceof JassTheRipperJassStrategy)) throw new AssertionError();
 		return ((JassTheRipperJassStrategy) jassStrategy).getScoreEstimator();
 	}
 
 	public void setScoreEstimator(ScoreEstimator scoreEstimator) {
-		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		if (!(jassStrategy instanceof JassTheRipperJassStrategy)) throw new AssertionError();
 		((JassTheRipperJassStrategy) jassStrategy).setScoreEstimator(scoreEstimator);
 	}
 
 	public CardsEstimator getCardsEstimator() {
-		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		if (!(jassStrategy instanceof JassTheRipperJassStrategy)) throw new AssertionError();
 		return ((JassTheRipperJassStrategy) jassStrategy).getCardsEstimator();
 	}
 
 	public void setCardsEstimator(CardsEstimator cardsEstimator) {
-		assert jassStrategy instanceof JassTheRipperJassStrategy;
+		if (!(jassStrategy instanceof JassTheRipperJassStrategy)) throw new AssertionError();
 		((JassTheRipperJassStrategy) jassStrategy).setCardsEstimator(cardsEstimator);
 	}
 

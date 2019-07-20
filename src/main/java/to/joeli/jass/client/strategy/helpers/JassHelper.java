@@ -320,7 +320,7 @@ public class JassHelper {
 	 */
 	public static Set<Card> getSchmierCards(Set<Card> possibleCards, Card cardOfPartner, Mode mode) {
 		Set<Card> cardsOfColour = getCardsOfColor(possibleCards, cardOfPartner.getColor());
-		assert !cardsOfColour.isEmpty();
+		if (cardsOfColour.isEmpty()) throw new AssertionError();
 
 		List<CardValue> possibleCardValues = new LinkedList<>();
 		possibleCardValues.add(CardValue.TEN);

@@ -1,11 +1,10 @@
 package to.joeli.jass.client.strategy.mcts.src;
 
-import to.joeli.jass.client.strategy.exceptions.MCTSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import to.joeli.jass.client.strategy.exceptions.MCTSException;
 
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.*;
 
 // TODO evaluate which is more important: many runs or many root parallelisations
@@ -131,8 +130,9 @@ public class MCTS {
 				Thread.sleep(10);
 			}
 
-			for (FutureTask<Move> future : futures)
-				assert future.isDone();
+			for (FutureTask<Move> future : futures) {
+				if (!future.isDone()) throw new AssertionError();
+			}
 
 			ArrayList<Move> moves = new ArrayList<>();
 
@@ -167,10 +167,10 @@ public class MCTS {
 		}
 		// Print statistics so we can get insights into the decision process of the algorithm
 		numberOfSelections.forEach((move, numTimesSelected) -> logger.info("{} selected {} times.", move, numTimesSelected));
-		Optional<Map.Entry<Move, Integer>> entryOptional = numberOfSelections.entrySet().stream().min(Map.Entry.comparingByValue(Collections.reverseOrder()));
+		Map.Entry<Move, Integer> entryOptional = numberOfSelections.entrySet().stream()
+				.min(Map.Entry.comparingByValue(Collections.reverseOrder())).orElseThrow(() -> new IllegalStateException("There must be at least one move!"));
 
-		assert entryOptional.isPresent();
-		return entryOptional.get().getKey();
+		return entryOptional.getKey();
 
 
 
@@ -393,7 +393,7 @@ public class MCTS {
 		while (!board.gameOver()) {
 			if (playoutPolicy == null) {
 				moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
-				assert !moves.isEmpty();
+				if (moves.isEmpty()) throw new AssertionError();
 				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally
 					move = moves.get(random.nextInt(moves.size()));

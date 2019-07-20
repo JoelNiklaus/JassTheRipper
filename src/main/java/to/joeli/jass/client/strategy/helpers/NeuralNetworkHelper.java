@@ -162,7 +162,7 @@ public class NeuralNetworkHelper {
 
 		final List<double[]> distributionEncodings = new ArrayList<>(getListOfEncodings(distributionMoves, respectiveMode));
 
-		assert distributionEncodings.size() == 36;
+		if (distributionEncodings.size() != 36) throw new AssertionError();
 		addListToArray(distributionEncodings, features, 37);
 
 		return features;

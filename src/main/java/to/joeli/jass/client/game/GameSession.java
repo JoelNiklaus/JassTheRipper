@@ -21,7 +21,7 @@ public class GameSession {
 
 	public GameSession(List<Team> teams, List<Player> playersInPlayingOrder) {
 		this.teams = teams;
-		assert teams.size() == 2;
+		if (teams.size() != 2) throw new AssertionError();
 
 		this.gameStartingPlayingOrder = createOrder(playersInPlayingOrder);
 

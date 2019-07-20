@@ -145,7 +145,7 @@ TODO Make new experiments with the improvements so far:
 
 			if (config.getTrumpfSelectionMethod() == TrumpfSelectionMethod.MCTS)
 				try {
-					assert mctsHelper != null;
+					if (mctsHelper == null) throw new AssertionError();
 					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe);
 					mode = ((TrumpfMove) move).getChosenTrumpf();
 				} catch (MCTSException e) {
@@ -183,7 +183,7 @@ TODO Make new experiments with the improvements so far:
 			} else { // Start searching for a good card
 				if (config.isMctsEnabled()) {
 					try {
-						assert mctsHelper != null;
+						if (mctsHelper == null) throw new AssertionError();
 						Move move = mctsHelper.predictMove(availableCards, session, false, game.isShifted());
 						card = ((CardMove) move).getPlayedCard();
 						logger.info("Chose Card based on MCTS, Hurra!");

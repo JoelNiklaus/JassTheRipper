@@ -38,14 +38,14 @@ public class CardKnowledgeBase {
 
 		Set<Card> remainingCards = EnumSet.allOf(Card.class);
 		remainingCards.removeAll(availableCards);
-		assert !remainingCards.isEmpty();
+		if (remainingCards.isEmpty()) throw new AssertionError();
 		for (Player player : gameSession.getPlayersInInitialPlayingOrder())
 			if (!player.equals(currentPlayer)) {
 				Set<Card> cards = pickRandomSubSet(remainingCards, 9);
 				player.setCards(cards);
 				remainingCards.removeAll(cards);
 			}
-		assert remainingCards.isEmpty();
+		if (!remainingCards.isEmpty()) throw new AssertionError();
 	}
 
 
@@ -60,7 +60,7 @@ public class CardKnowledgeBase {
 	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards, CardsEstimator cardsEstimator) {
 		// INFO: This method should only be used when new cards are distributed (at the beginning of a move).
 		for (Player player : game.getPlayers()) {
-			assert player.getCards().isEmpty();
+			if (!player.getCards().isEmpty()) throw new AssertionError();
 		}
 
 		Map<Card, Distribution> cardKnowledge;
@@ -80,7 +80,7 @@ public class CardKnowledgeBase {
 						Card card = cardDistributionEntry.getKey();
 						Player player = cardDistributionEntry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
 						player.addCard(card);
-						assert player.getCards().size() <= 9;
+						if (player.getCards().size() > 9) throw new AssertionError();
 						// Set distribution of already distributed card to sampled so it is not selected anymore in future runs
 						cardDistributionEntry.getValue().setSampled(true);
 
@@ -94,8 +94,9 @@ public class CardKnowledgeBase {
 					});
 		}
 
-		for (Player player : game.getPlayers())
-			assert !player.getCards().isEmpty();
+		for (Player player : game.getPlayers()) {
+			if (player.getCards().isEmpty()) throw new AssertionError();
+		}
 	}
 
 	/**
@@ -106,13 +107,13 @@ public class CardKnowledgeBase {
 	 * @return
 	 */
 	public static Set<Card> pickRandomSubSet(Set<Card> cards, int numberOfCards) {
-		assert (numberOfCards > 0 || numberOfCards <= 9);
+		if ((numberOfCards <= 0 && numberOfCards > 9)) throw new AssertionError();
 		List<Card> listOfCards = new LinkedList<>(cards);
-		assert numberOfCards <= listOfCards.size();
+		if (numberOfCards > listOfCards.size()) throw new AssertionError();
 		Collections.shuffle(listOfCards);
 		List<Card> randomSublist = listOfCards.subList(0, numberOfCards);
 		Set<Card> randomSubSet = EnumSet.copyOf(randomSublist);
-		assert (cards.containsAll(randomSubSet));
+		if ((!cards.containsAll(randomSubSet))) throw new AssertionError();
 		return randomSubSet;
 	}
 
@@ -129,7 +130,7 @@ public class CardKnowledgeBase {
 	 * @return
 	 */
 	public static Map<Card, Distribution> initCardKnowledge(Game game, Set<Card> availableCards, List<Color> colors) {
-		assert !availableCards.isEmpty();
+		if (availableCards.isEmpty()) throw new AssertionError();
 
 		Map<Card, Distribution> cardKnowledge = new EnumMap<>(Card.class);
 
@@ -235,11 +236,12 @@ public class CardKnowledgeBase {
 	 */
 	private static Set<Card> getRemainingCards(Set<Card> availableCards, Game game) {
 		Set<Card> cards = EnumSet.allOf(Card.class);
-		assert cards.size() == 36;
+		if (cards.size() != 36) throw new AssertionError();
 		cards.removeAll(availableCards);
 		Set<Card> alreadyPlayedCards = game.getAlreadyPlayedCards();
 		Round round = game.getCurrentRound();
-		assert alreadyPlayedCards.size() == round.getRoundNumber() * 4 + round.getPlayedCards().size();
+		if (alreadyPlayedCards.size() != round.getRoundNumber() * 4 + round.getPlayedCards().size())
+			throw new AssertionError();
 		cards.removeAll(alreadyPlayedCards);
 		return cards;
 	}

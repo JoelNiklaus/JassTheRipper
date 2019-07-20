@@ -299,7 +299,7 @@ public class Arena {
 		}
 
 		if (savingData) {
-			assert scoreFeaturesForPlayer.size() == 24;
+			if (scoreFeaturesForPlayer.size() != 24) throw new AssertionError();
 			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
 				scoreFeatures.add(entry.getKey());
 				scoreTargets.add(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
