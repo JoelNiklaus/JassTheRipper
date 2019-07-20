@@ -89,11 +89,9 @@ public class Distribution {
 	}
 
 	public double[] getProbabilitiesInSeatIdOrder() {
-		return probabilities.entrySet()
-				.stream()
-				.sorted(Map.Entry.comparingByKey())
-				.mapToDouble(Map.Entry::getValue)
-				.toArray();
+		double[] result = new double[4];
+		probabilities.forEach((player, probability) -> result[player.getSeatId()] = probability);
+		return result;
 	}
 
 	@Override
