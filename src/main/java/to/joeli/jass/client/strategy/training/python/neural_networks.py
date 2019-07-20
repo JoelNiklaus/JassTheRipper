@@ -1,6 +1,5 @@
-from keras import Sequential, Input, Model
+from keras import Input, Model
 from keras.layers import Dense, Reshape, Softmax, Dropout
-
 
 num_cards = 36
 num_player_cards = 9

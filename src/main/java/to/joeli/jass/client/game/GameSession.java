@@ -1,5 +1,6 @@
 package to.joeli.jass.client.game;
 
+import to.joeli.jass.client.strategy.config.Config;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 
@@ -58,6 +59,11 @@ public class GameSession {
 
 	public List<Player> getPlayersOfTeam(int teamIndex) {
 		return teams.get(teamIndex).getPlayers();
+	}
+
+	public void setConfigs(Config[] configs) {
+		getPlayersOfTeam(0).forEach(player -> player.setConfig(configs[0]));
+		getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
 	}
 
 

@@ -21,6 +21,40 @@ public class NeuralNetworkHelper {
 
 	public static final Logger logger = LoggerFactory.getLogger(NeuralNetworkHelper.class);
 
+
+	public static int[][] getCardsTargets(Game game) {
+		return getCardsTargets(game, null);
+	}
+
+	/**
+	 * For each card we have a one hot encoded vector of length 4.
+	 * The one represents the player who has/had that specific card.
+	 * The players are listed by seatId.
+	 * The order of the cards is the natural order
+	 *
+	 * @param game
+	 */
+	public static int[][] getCardsTargets(Game game, List<Color> colors) {
+		int[][] targets = new int[36][4];
+		final Card[] cards = Card.values();
+		for (int i = 0; i < cards.length; i++) {
+			for (Player player : game.getPlayers()) {
+				Set<Card> playerCards = player.getCards().stream()
+						.map(card -> DataAugmentationHelper.getRespectiveCard(card, colors))
+						.collect(Collectors.toSet());
+				if (playerCards.contains(cards[i]))
+					targets[i][player.getSeatId()] = 1;
+			}
+		}
+		return targets;
+	}
+
+	public static double getScoreTarget(Game game, Player player) {
+		// NOTE: the scoreTarget is between 0 and 157 inside the network
+		return Math.min(game.getResult().getTeamScore(player), Arena.TOTAL_POINTS);
+	}
+
+
 	/**
 	 * Gets the observations of all the color permutations for the given game state.
 	 * This will generate 24 instead of just 1 observation for trumpfs which are not top-down or bottom-up.
@@ -38,6 +72,26 @@ public class NeuralNetworkHelper {
 		} else
 			features.add(getScoreFeatures(game));
 		return features;
+	}
+
+	public static List<double[][]> getAnalogousCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge) {
+		List<double[][]> features = new ArrayList<>();
+		if (game.getMode().isTrumpfMode()) {
+			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
+			permutations.forEach(colors -> features.add(getCardsFeatures(game, cardKnowledge, colors)));
+		} else
+			features.add(getCardsFeatures(game, cardKnowledge));
+		return features;
+	}
+
+	public static List<int[][]> getAnalogousCardsTargets(Game game) {
+		List<int[][]> targets = new ArrayList<>();
+		if (game.getMode().isTrumpfMode()) {
+			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
+			permutations.forEach(colors -> targets.add(getCardsTargets(game, colors)));
+		} else
+			targets.add(getCardsTargets(game));
+		return targets;
 	}
 
 	public static double[][] getScoreFeatures(Game game) {
@@ -83,30 +137,32 @@ public class NeuralNetworkHelper {
 		features[0] = createInfoRow(game, respectiveMode);
 
 		// CARDS_HISTORY
-		final List<Move> historyMoves = DataAugmentationHelper.getRespectiveMoves(game.getAlreadyPlayedMovesInOrder(), colors);
+		final List<Move> history = DataAugmentationHelper.getRespectiveMoves(game.getAlreadyPlayedMovesInOrder(), colors);
+		final List<ProbabilityMove> historyMoves = history.stream().map(move -> new ProbabilityMove(move.getPlayer(), move.getPlayedCard())).collect(Collectors.toList());
 		final List<double[]> historyEncodings = getListOfEncodings(historyMoves, respectiveMode);
 		addListToArray(historyEncodings, features, 1);
 
 		// CARDS_DISTRIBUTION
-		final List<double[]> distributionEncodings = new ArrayList<>();
-
-		if (cardKnowledge == null) {
-			List<Move> distributionMoves = new ArrayList<>();
+		List<ProbabilityMove> distributionMoves = new ArrayList<>();
+		if (cardKnowledge != null) { // collect the cards features: this gets called when we are in a imperfect information game setting
+			cardKnowledge.forEach((key, value) -> {
+				Card card = DataAugmentationHelper.getRespectiveCard(key, colors);
+				distributionMoves.add(new ProbabilityMove(card, value.getProbabilitiesInSeatIdOrder()));
+			});
+			// INFO: Here we do not have to add the history Moves because the card knowledge already contains them
+		} else { // collect the score features: this gets called when we are in a perfect information game setting
 			final List<Player> order = game.getOrder().getPlayersInCurrentOrder();
 			for (Player player : order) {
-				player.getCards().forEach(card -> distributionMoves.add(new Move(player, DataAugmentationHelper.getRespectiveCard(card, colors))));
+				player.getCards().forEach(card -> distributionMoves.add(new ProbabilityMove(player, DataAugmentationHelper.getRespectiveCard(card, colors))));
 			}
 			distributionMoves.addAll(historyMoves);
-			// Sort distributionMoves by card order
-			distributionMoves.sort(Comparator.comparing(Move::getPlayedCard));
-
-			distributionEncodings.addAll(getListOfEncodings(distributionMoves, respectiveMode));
-		} else {
-			cardKnowledge.forEach((key, value) -> {
-				distributionEncodings.add(fromMoveToEncoding(key, respectiveMode, value.getProbabilitiesInSeatIdOrder()));
-			});
 		}
+		// Sort distributionMoves by card order
+		distributionMoves.sort(Comparator.comparing(ProbabilityMove::getCard));
 
+		final List<double[]> distributionEncodings = new ArrayList<>(getListOfEncodings(distributionMoves, respectiveMode));
+
+		assert distributionEncodings.size() == 36;
 		addListToArray(distributionEncodings, features, 37);
 
 		return features;
@@ -141,43 +197,19 @@ public class NeuralNetworkHelper {
 		return infoRow;
 	}
 
-	private static List<double[]> getListOfEncodings(List<Move> moves, Mode mode) {
-		return moves.stream().
-				map(move -> fromMoveToEncoding(move.getPlayedCard(), mode, move.getPlayer().getSeatId()))
+	/**
+	 * Converts the probability moves to encodings
+	 *
+	 * @param moves
+	 * @param mode
+	 * @return
+	 */
+	private static List<double[]> getListOfEncodings(List<ProbabilityMove> moves, Mode mode) {
+		return moves.stream()
+				.map(move -> fromMoveToEncoding(move.getCard(), mode, move.getProbabilities()))
 				.collect(Collectors.toList());
 	}
 
-
-	/**
-	 * Reconstructs the information from an observation (list of three hot encoded vectors representing a card each)
-	 *
-	 * @param observation
-	 * @return
-	 */
-	public static Map<String, List<Card>> reconstructObservation(double[][] observation) {
-		Map<String, List<Card>> reconstruction = new HashMap<>();
-
-		List<Card> alreadyPlayedCards = new ArrayList<>();
-		for (int i = 1; i < 37; i++) {
-			final Card card = fromEncodingToCard(observation[i]);
-			if (card != null)
-				alreadyPlayedCards.add(card);
-		}
-
-		reconstruction.put("AlreadyPlayedCards", alreadyPlayedCards);
-
-
-		List<Card> cards = new ArrayList<>();
-		for (int i = 37; i < 73; i++) {
-			final Card card = fromEncodingToCard(observation[i]);
-			if (card != null)
-				cards.add(card);
-		}
-		reconstruction.put("CardsDistribution", cards);
-
-
-		return reconstruction;
-	}
 
 	/**
 	 * Example:
@@ -202,14 +234,14 @@ public class NeuralNetworkHelper {
 	/**
 	 * Example:
 	 * >|    suit   |           value          | isTrumpf | probabilities
-	 * > 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,          0.2, 0.4, 0.4, 0    for DIAMOND_JACK and TrumpfColor CLUBS
-	 * > 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,          0,   0.1, 0.9, 0    for HEARTS_QUEEN and TrumpfColor HEARTS
+	 * > 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,          0.2, 0.4, 0.4, 0.0    for DIAMOND_JACK and TrumpfColor CLUBS
+	 * > 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,          1,   0.0, 0.0  0.0    for HEARTS_QUEEN and TrumpfColor HEARTS
 	 *
 	 * @param card
 	 * @param mode
 	 * @return
 	 */
-	public static double[] fromMoveToEncoding(Card card, Mode mode, double[] probabilities) {
+	private static double[] fromMoveToEncoding(Card card, Mode mode, double[] probabilities) {
 		double[] encoded = Arrays.copyOf(fromCardToEncoding(card, mode), 18);
 		for (int i = 0; i < probabilities.length; i++) {
 			encoded[14 + i] = probabilities[i]; // copy probabilities
@@ -219,7 +251,7 @@ public class NeuralNetworkHelper {
 	}
 
 
-	public static double[] fromCardToEncoding(Card card, Mode mode) {
+	private static double[] fromCardToEncoding(Card card, Mode mode) {
 		double[] encoded = new double[14]; // first 4 for suit, second 9 for value, third 1 for trumpf, last 4 for player seatid
 
 		encoded[card.getColor().getValue()] = 1; // set suit
@@ -282,29 +314,57 @@ public class NeuralNetworkHelper {
 	}
 
 	/**
-	 * For each card we have a one hot encoded vector of length 4.
-	 * The one represents the player who has/had that specific card.
-	 * The players are listed by seatId.
-	 * The order of the cards is the natural order
+	 * Reconstructs the information from an observation (list of three hot encoded vectors representing a card each)
 	 *
-	 * @param game
+	 * @param observation
+	 * @return
 	 */
-	public static int[][] getCardsTargets(Game game) {
-		int[][] targets = new int[36][4];
-		final Card[] cards = Card.values();
-		for (int i = 0; i < cards.length; i++) {
-			for (Player player : game.getPlayers()) {
-				if (player.getCards().contains(cards[i]))
-					targets[i][player.getSeatId()] = 1;
-			}
+	public static Map<String, List<Card>> reconstructFeatures(double[][] observation) {
+		Map<String, List<Card>> reconstruction = new HashMap<>();
+
+		List<Card> alreadyPlayedCards = new ArrayList<>();
+		for (int i = 1; i < 37; i++) {
+			final Card card = fromEncodingToCard(observation[i]);
+			if (card != null)
+				alreadyPlayedCards.add(card);
 		}
-		return targets;
+
+		reconstruction.put("AlreadyPlayedCards", alreadyPlayedCards);
+
+
+		List<Card> cards = new ArrayList<>();
+		for (int i = 37; i < 73; i++) {
+			final Card card = fromEncodingToCard(observation[i]);
+			if (card != null)
+				cards.add(card);
+		}
+		reconstruction.put("CardsDistribution", cards);
+
+
+		return reconstruction;
 	}
 
-	public static double getScoreTarget(Game game, Player player) {
-		// NOTE: the scoreTarget is between 0 and 157 inside the network
-		return Math.min(game.getResult().getTeamScore(player), Arena.TOTAL_POINTS);
+	static class ProbabilityMove {
+		private final Card card;
+		private final double[] probabilities;
+
+		ProbabilityMove(Player player, Card card) {
+			this.card = card;
+			this.probabilities = new double[4];
+			this.probabilities[player.getSeatId()] = 1;
+		}
+
+		ProbabilityMove(Card card, double[] probabilities) {
+			this.card = card;
+			this.probabilities = probabilities;
+		}
+
+		Card getCard() {
+			return card;
+		}
+
+		double[] getProbabilities() {
+			return probabilities;
+		}
 	}
-
-
 }

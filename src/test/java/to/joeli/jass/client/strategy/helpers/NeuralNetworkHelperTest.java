@@ -107,7 +107,7 @@ public class NeuralNetworkHelperTest {
 		clubsGame.makeMove(move);
 		System.out.println(Arrays.deepToString(NeuralNetworkHelper.getScoreFeatures(clubsGame)));
 
-		final Map<String, List<Card>> reconstruction = NeuralNetworkHelper.reconstructObservation(NeuralNetworkHelper.getScoreFeatures(clubsGame));
+		final Map<String, List<Card>> reconstruction = NeuralNetworkHelper.reconstructFeatures(NeuralNetworkHelper.getScoreFeatures(clubsGame));
 
 		assertEquals(1, reconstruction.get("AlreadyPlayedCards").size());
 		assertEquals(Card.CLUB_QUEEN, reconstruction.get("AlreadyPlayedCards").get(0));

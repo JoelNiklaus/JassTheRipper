@@ -21,7 +21,7 @@ public class Arena {
 	private static final int REPLAY_MEMORY_SIZE_FACTOR = 1; // Standard: 4, 8, 16
 
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
-	private static final boolean DATA_AUGMENTATION_ENABLED = false;
+	private static final boolean DATA_AUGMENTATION_ENABLED = true;
 	public static final String BASE_PATH = "src/main/resources/";
 	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
 	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
@@ -43,7 +43,7 @@ public class Arena {
 	private GameSession gameSession;
 
 	// The input for the neural networks, a representation of the game
-	private Queue<double[][]> cardFeatures;
+	private Queue<double[][]> cardsFeatures;
 	private Queue<double[][]> scoreFeatures;
 	// The labels for the score estimator, the score at the end of the game
 	private Queue<Double> scoreTargets;
@@ -56,7 +56,7 @@ public class Arena {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		//arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 1);
+		arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 1);
 
 		logger.info("Pre-training the neural networks\n");
 		arena.preTrainNetworks();
@@ -75,6 +75,12 @@ public class Arena {
 		random = new Random(seed);
 	}
 
+
+	public Arena(GameSession gameSession) {
+		this(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+		this.gameSession = gameSession;
+	}
+
 	private void preTrainNetworks() {
 		setUp();
 
@@ -82,7 +88,7 @@ public class Arena {
 				new Config(true, true, true, true, true),
 				new Config(true, false, false)
 		};
-		setConfigs(configs);
+		gameSession.setConfigs(configs);
 
 		final Player cardsEstimatorPlayer = gameSession.getFirstPlayerWithUsedCardsEstimator(true);
 		cardsEstimatorPlayer.getCardsEstimator().train(TrainMode.PRE_TRAIN);
@@ -204,14 +210,9 @@ public class Arena {
 	 * @return
 	 */
 	private double performMatch(Random random, int numGames, TrainMode trainMode, Config[] configs) {
-		setConfigs(configs);
+		gameSession.setConfigs(configs);
 
 		return playGames(random, numGames, trainMode);
-	}
-
-	private void setConfigs(Config[] configs) {
-		gameSession.getPlayersOfTeam(0).forEach(player -> player.setConfig(configs[0]));
-		gameSession.getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
 	}
 
 	private double playGames(Random random, int numGames, TrainMode trainMode) {
@@ -237,7 +238,7 @@ public class Arena {
 
 			if (trainMode.isSavingData() && i % REPLAY_MEMORY_SIZE_FACTOR == 0) {
 				final String name = zeroPadded(i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + zeroPadded(i);
-				IOHelper.saveData(new DataSet(cardFeatures, scoreFeatures, cardsTargets, scoreTargets), trainMode, name);
+				IOHelper.saveData(new DataSet(cardsFeatures, scoreFeatures, cardsTargets, scoreTargets), trainMode, name);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -256,23 +257,20 @@ public class Arena {
 		return String.format("%04d", number);
 	}
 
-	/**
-	 * Plays a game and appends the made scoreFeatures with the final point difference to the provided parameters (scoreFeatures and scoreTargets)
-	 */
-	private Result playGame(boolean savingData) {
+	public Result playGame(boolean savingData) {
 		Game game = gameSession.getCurrentGame();
 
+		HashMap<double[][], Player> scoreFeaturesForPlayer = new HashMap<>(); // The double[][] is the key because it is unique
 		int[][] cardsTarget = null;
+		List<int[][]> analogousCardsTargets = new ArrayList<>();
 		if (savingData) {
 			if (DATA_AUGMENTATION_ENABLED) {
-
+				analogousCardsTargets = NeuralNetworkHelper.getAnalogousCardsTargets(game);
 			} else {
 				cardsTarget = NeuralNetworkHelper.getCardsTargets(game);
 			}
 		}
 
-		HashMap<double[][], Player> cardsFeaturesForPlayer = new HashMap<>(); // The int[][] is the key because it is unique
-		HashMap<double[][], Player> scoreFeaturesForPlayer = new HashMap<>(); // The int[][] is the key because it is unique
 		while (!game.gameFinished()) {
 			final Round round = game.getCurrentRound();
 			while (!round.roundFinished()) {
@@ -282,30 +280,29 @@ public class Arena {
 				player.onMoveMade(move);
 
 				if (savingData) {
-
-					// TODO enable data augmentation later again
+					final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, game.getCurrentPlayer().getCards());
 					if (DATA_AUGMENTATION_ENABLED) {
-						//NeuralNetworkHelper.getAnalogousScoreFeatures(game).forEach(feature -> scoreFeaturesForPlayer.put(feature, player));
+						// INFO: Because the permutations are always in the same order we can just add the analogous features and targets. They
+						cardsFeatures.addAll(NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge));
+						cardsTargets.addAll(analogousCardsTargets);
+
+						NeuralNetworkHelper.getAnalogousScoreFeatures(game).forEach(feature -> scoreFeaturesForPlayer.put(feature, player));
 					} else {
-						final Map<Card, Distribution> cardDistributionMap = CardKnowledgeBase.initCardDistributionMap(game, game.getCurrentPlayer().getCards());
-						cardsFeaturesForPlayer.put(NeuralNetworkHelper.getCardsFeatures(game, cardDistributionMap), player);
+						cardsFeatures.add(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
+						cardsTargets.add(cardsTarget);
+
 						scoreFeaturesForPlayer.put(NeuralNetworkHelper.getScoreFeatures(game), player);
 					}
 				}
-
 			}
 			gameSession.startNextRound();
 		}
 
-		assert scoreFeaturesForPlayer.size() == 24;
 		if (savingData) {
+			assert scoreFeaturesForPlayer.size() == 24;
 			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
 				scoreFeatures.add(entry.getKey());
 				scoreTargets.add(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
-			}
-			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
-				cardFeatures.add(entry.getKey());
-				cardsTargets.add(cardsTarget); // get the cardsTarget of the corresponding player
 			}
 		}
 
@@ -362,7 +359,7 @@ public class Arena {
 		if (DATA_AUGMENTATION_ENABLED)
 			size *= 24; // 24: Number of color permutations (data augmentation)
 		// When a new element is added and the queue is full, the head is removed.
-		cardFeatures = EvictingQueue.create(size);
+		cardsFeatures = EvictingQueue.create(size);
 		scoreFeatures = EvictingQueue.create(size);
 		cardsTargets = EvictingQueue.create(size);
 		scoreTargets = EvictingQueue.create(size);

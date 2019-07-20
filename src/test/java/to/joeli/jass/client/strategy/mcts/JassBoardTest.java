@@ -1,5 +1,7 @@
 package to.joeli.jass.client.strategy.mcts;
 
+import org.junit.Before;
+import org.junit.Test;
 import to.joeli.jass.client.game.*;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
 import to.joeli.jass.client.strategy.helpers.CardSelectionHelper;
@@ -8,10 +10,10 @@ import to.joeli.jass.game.Trumpf;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
@@ -29,7 +31,6 @@ public class JassBoardTest {
 	private Team Team1 = new Team("Team1", asList(player1, player3));
 	private Game diamondsGame = Game.startGame(Mode.from(Trumpf.TRUMPF, Color.DIAMONDS), order, asList(Team0, Team1), false);
 	private Game obeAbeGame = Game.startGame(Mode.topDown(), order, asList(Team0, Team1), false);
-
 
 
 	@Before
@@ -127,5 +128,4 @@ public class JassBoardTest {
 		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_KING));
 		assertTrue(impossibleCardsForPlayer.contains(Card.DIAMOND_ACE));
 	}
-
 }

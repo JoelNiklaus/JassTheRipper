@@ -23,7 +23,7 @@ public class Player implements Comparable<Player> {
 	private final String name;
 	private int seatId;
 	private final Set<Card> cards;
-	private final JassStrategy jassStrategy;
+	private JassStrategy jassStrategy;
 
 	public Player(String id, String name, int seatId) {
 		this(name);
@@ -74,6 +74,10 @@ public class Player implements Comparable<Player> {
 
 	public JassStrategy getJassStrategy() {
 		return jassStrategy;
+	}
+
+	public void setJassStrategy(JassStrategy jassStrategy) {
+		this.jassStrategy = jassStrategy;
 	}
 
 	public String getId() {

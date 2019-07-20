@@ -1,18 +1,16 @@
 package to.joeli.jass.client.strategy.helpers;
 
 import to.joeli.jass.client.game.*;
-import to.joeli.jass.client.strategy.*;
+import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static to.joeli.jass.game.cards.Card.*;
 import static java.util.Arrays.asList;
+import static to.joeli.jass.game.cards.Card.*;
 
 public class GameSessionBuilder {
 
@@ -22,7 +20,7 @@ public class GameSessionBuilder {
 			EnumSet.of(CLUB_QUEEN, CLUB_ACE, HEART_SIX, HEART_JACK, HEART_KING, DIAMOND_SEVEN, DIAMOND_QUEEN, SPADE_TEN, SPADE_KING),
 			EnumSet.of(CLUB_NINE, CLUB_JACK, HEART_EIGHT, HEART_NINE, DIAMOND_EIGHT, DIAMOND_NINE, DIAMOND_TEN, SPADE_EIGHT, SPADE_QUEEN),
 			EnumSet.of(CLUB_KING, CLUB_EIGHT, HEART_SEVEN, HEART_QUEEN, DIAMOND_JACK, DIAMOND_KING, SPADE_SEVEN, SPADE_JACK, SPADE_ACE),
-			EnumSet.of(CLUB_SIX, CLUB_TEN, CLUB_SEVEN, HEART_TEN, HEART_ACE, DIAMOND_SIX, DIAMOND_ACE, SPADE_SIX, SPADE_NINE));
+			EnumSet.of(CLUB_SIX, CLUB_SEVEN, CLUB_TEN, HEART_TEN, HEART_ACE, DIAMOND_SIX, DIAMOND_ACE, SPADE_SIX, SPADE_NINE));
 
 	public static final List<Set<Card>> topDiamondsCards = asList(
 			EnumSet.of(DIAMOND_SIX, DIAMOND_EIGHT, DIAMOND_NINE, DIAMOND_JACK, DIAMOND_QUEEN, DIAMOND_ACE, HEART_ACE, SPADE_SEVEN, SPADE_KING),
@@ -34,7 +32,7 @@ public class GameSessionBuilder {
 
 	private List<Team> teams = new ArrayList<>();
 
-	private Card[] playedCards = {};
+	private List<Card> playedCards = new ArrayList<>();
 
 	public GameSessionBuilder(List<Set<Card>> cards) {
 		for (int i = 0; i < 4; i++)
@@ -87,8 +85,12 @@ public class GameSessionBuilder {
 			gameSession.startNewGame(startedGameMode, false);
 
 			for (Card card : playedCards) {
-				gameSession.makeMove(new Move(gameSession.getCurrentRound().getPlayingOrder().getCurrentPlayer(), card));
-				gameSession.getCurrentRound().getPlayingOrder().moveToNextPlayer();
+				final Player player = gameSession.getCurrentRound().getPlayingOrder().getCurrentPlayer();
+				final Move move = new Move(player, card);
+				gameSession.makeMove(move);
+				player.onMoveMade(move);
+				if (gameSession.getCurrentRound().roundFinished())
+					gameSession.startNextRound();
 			}
 		}
 		return gameSession;
@@ -99,17 +101,31 @@ public class GameSessionBuilder {
 		return this;
 	}
 
-	/**
-	 * Make sure not to pass more than 3 played cards!
-	 *
-	 * @param cards
-	 * @return
-	 */
 	public GameSessionBuilder withCardsPlayed(Card... cards) {
-		if (cards.length > 3)
-			throw new IllegalArgumentException("Please do not pass more than 3 cards to this method.");
-		playedCards = cards;
+		playedCards.addAll(Arrays.stream(cards).collect(Collectors.toList()));
 		return this;
+	}
+
+	public GameSessionBuilder withStartedClubsGameWithRoundsPlayed(int roundsPlayed) {
+		if (roundsPlayed > 0)
+			playedCards.addAll(Arrays.asList(CLUB_QUEEN, CLUB_NINE, CLUB_EIGHT, CLUB_SIX));
+		if (roundsPlayed > 1)
+			playedCards.addAll(Arrays.asList(CLUB_JACK, CLUB_KING, CLUB_SEVEN, CLUB_ACE));
+		if (roundsPlayed > 2)
+			playedCards.addAll(Arrays.asList(HEART_NINE, HEART_QUEEN, HEART_ACE, HEART_SIX));
+		if (roundsPlayed > 3)
+			playedCards.addAll(Arrays.asList(DIAMOND_ACE, DIAMOND_SEVEN, DIAMOND_TEN, DIAMOND_JACK));
+		if (roundsPlayed > 4)
+			playedCards.addAll(Arrays.asList(SPADE_SIX, SPADE_TEN, SPADE_QUEEN, SPADE_ACE));
+		if (roundsPlayed > 5)
+			playedCards.addAll(Arrays.asList(DIAMOND_KING, DIAMOND_SIX, DIAMOND_QUEEN, DIAMOND_EIGHT));
+		if (roundsPlayed > 6)
+			playedCards.addAll(Arrays.asList(SPADE_SEVEN, SPADE_NINE, SPADE_KING, SPADE_EIGHT));
+		if (roundsPlayed > 7)
+			playedCards.addAll(Arrays.asList(HEART_KING, HEART_EIGHT, HEART_SEVEN, HEART_TEN));
+		if (roundsPlayed > 8)
+			playedCards.addAll(Arrays.asList(HEART_JACK, DIAMOND_NINE, SPADE_JACK, CLUB_TEN));
+		return withStartedGame(Mode.trump(Color.CLUBS));
 	}
 
 }
