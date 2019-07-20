@@ -22,7 +22,7 @@ public class Arena {
 
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
 	private static final boolean DATA_AUGMENTATION_ENABLED = false;
-	private static final String BASE_PATH = "src/main/resources/";
+	public static final String BASE_PATH = "src/main/resources/";
 	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
 	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
 	public static final String SCORE_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "score_estimator.hdf5";
@@ -56,7 +56,7 @@ public class Arena {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 1);
+		//arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 1);
 
 		logger.info("Pre-training the neural networks\n");
 		arena.preTrainNetworks();
@@ -66,11 +66,18 @@ public class Arena {
 	}
 
 	private void preTrainNetworks() {
+		setUp();
+
+		Config[] configs = {
+				new Config(true, true, true, true, true),
+				new Config(true, false, false)
+		};
+		setConfigs(configs);
+
 		final Player cardsEstimatorPlayer = gameSession.getFirstPlayerWithUsedCardsEstimator(true);
 		cardsEstimatorPlayer.getCardsEstimator().train(TrainMode.PRE_TRAIN);
 		final Player scoreEstimatorPlayer = gameSession.getFirstPlayerWithUsedScoreEstimator(true);
 		scoreEstimatorPlayer.getScoreEstimator().train(TrainMode.PRE_TRAIN);
-
 	}
 
 	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
@@ -90,8 +97,6 @@ public class Arena {
 			history.add(i, runEpisode(i));
 		}
 		logger.info("Performance over the episodes:\n{}", history);
-
-		tearDown();
 	}
 
 	public void trainUntilBetterThanRandomPlayouts() {
@@ -102,16 +107,12 @@ public class Arena {
 			history.add(i, runEpisode(i));
 		}
 		logger.info("Performance over the episodes:\n{}", history);
-
-		tearDown();
 	}
 
 	public void collectDataSetRandomPlayouts(int numGames) {
 		setUp();
 
 		runMCTSWithRandomPlayout(random, numGames);
-
-		tearDown();
 	}
 
 	/**
@@ -158,7 +159,6 @@ public class Arena {
 	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
 		setUp();
 		final double performance = performMatch(random, numGames, TrainMode.EVALUATION, configs);
-		tearDown();
 		return performance;
 	}
 
@@ -203,10 +203,14 @@ public class Arena {
 	 * @return
 	 */
 	private double performMatch(Random random, int numGames, TrainMode trainMode, Config[] configs) {
-		gameSession.getPlayersOfTeam(0).forEach(player -> player.setConfig(configs[0]));
-		gameSession.getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
+		setConfigs(configs);
 
 		return playGames(random, numGames, trainMode);
+	}
+
+	private void setConfigs(Config[] configs) {
+		gameSession.getPlayersOfTeam(0).forEach(player -> player.setConfig(configs[0]));
+		gameSession.getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
 	}
 
 	private double playGames(Random random, int numGames, TrainMode trainMode) {
@@ -361,9 +365,5 @@ public class Arena {
 		scoreFeatures = EvictingQueue.create(size);
 		cardsTargets = EvictingQueue.create(size);
 		scoreTargets = EvictingQueue.create(size);
-	}
-
-	private void tearDown() {
-		logger.info("Successfully terminated the training process\n");
 	}
 }

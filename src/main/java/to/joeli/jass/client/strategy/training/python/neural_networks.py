@@ -1,6 +1,6 @@
-import numpy
 from keras import Sequential, Input, Model
 from keras.layers import Dense, Reshape, Softmax, Dropout
+
 
 num_cards = 36
 num_player_cards = 9
@@ -11,43 +11,44 @@ num_neurons = 128  # TODO Try 64, 128, 256, 512, 1024
 
 
 def define_score_estimator_model():
-    model = Sequential()
-    model.add(Dense(units=128, activation='relu',
-                    input_dim=(0 + num_cards + num_players * num_player_cards) * three_hot_length))
-    model.add(Dense(units=128, activation='relu'))
-    model.add(Dense(units=128, activation='relu'))
-    model.add(Dense(units=1, activation='sigmoid'))
+    inp = input()
+    hid = hidden(inp)
+    out = score(hid)
+
+    model = Model(inp, out)
+
+    model.summary()
+
     return model
 
 
 def define_cards_estimator_model():
-    model = Sequential()
-    model.add(Dense(units=128, activation='relu', input_dim=(0 + num_cards + num_player_cards) * three_hot_length))
-    model.add(Dense(units=128, activation='relu'))
-    model.add(Dense(units=128, activation='relu'))
-    model.add(Dense(units=36 * 4))
-    model.add(Reshape((36, 4)))
-    model.add(Softmax())
+    inp = input()
+    hid = hidden(inp)
+    out = cards(hid)
+
+    model = Model(inp, out)
+
+    model.summary()
+
     return model
 
 
-def define_model():
-    inp = Input((73, 18,))
+def define_separate_model(network_type):
+    if network_type == "cards/":
+        return define_cards_estimator_model()
+    if network_type == "score/":
+        return define_score_estimator_model()
+    else:
+        print("Please define a valid network type!")
 
-    # finetune architecture
-    hid = Reshape((73 * 18,))(inp)
-    hid = Dense(units=num_neurons, activation='relu')(hid)
-    #hid = Dropout(0.2)(hid)
-    hid = Dense(units=num_neurons, activation='relu')(hid)
-    #hid = Dropout(0.2)(hid)
-    hid = Dense(units=num_neurons, activation='relu')(hid)
-    # TODO try dropout, regularization, different number of hidden layers etc.
 
-    cards_out = Dense(units=36 * 4)(hid)
-    cards_out = Reshape((36, 4))(cards_out)
-    cards_out = Softmax(name='cards_out')(cards_out)
+def define_combined_model():
+    inp = input()
+    hid = hidden(inp)
 
-    score_out = Dense(units=1, activation='linear', name='score_out')(hid)
+    cards_out = cards(hid)
+    score_out = score(hid)
 
     model = Model(inp, [cards_out, score_out])
 
@@ -56,4 +57,29 @@ def define_model():
     return model
 
 
+def score(hid):
+    score = Dense(units=1, activation='linear', name='score')(hid)
+    return score
 
+
+def cards(hid):
+    cards = Dense(units=36 * 4)(hid)
+    cards = Reshape((36, 4))(cards)
+    cards = Softmax(name='cards')(cards)
+    return cards
+
+
+def hidden(inp):
+    inp = Reshape((73 * 18,))(inp)
+    # finetune architecture
+    hid = Dense(units=num_neurons, activation='relu')(inp)
+    # hid = Dropout(0.2)(hid)
+    hid = Dense(units=num_neurons, activation='relu')(hid)
+    # hid = Dropout(0.2)(hid)
+    hid = Dense(units=num_neurons, activation='relu')(hid)
+    # TODO try dropout, regularization, different number of hidden layers etc.
+    return hid
+
+
+def input():
+    return Input((73, 18,))

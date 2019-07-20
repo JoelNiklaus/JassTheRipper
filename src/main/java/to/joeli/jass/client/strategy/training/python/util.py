@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 from os.path import isfile, join
 from pathlib import Path
 
@@ -20,7 +19,13 @@ def load_json(path):
 
 def load_cbor(path):
     with open(path, 'rb') as file:
-        return np.array(cbor.loads(file.read()))
+        return read_cbor(file.read())
+
+
+def read_cbor(string):
+    string = cbor.loads(string)
+    print(string)
+    return np.array(string)
 
 
 def load_npy(path):
@@ -57,20 +62,22 @@ root_path = Path(os.path.realpath(__file__)).parent.parent.parent.parent.parent.
 
 base_path = str(root_path) + "/resources/"
 
-dataset_path = base_path + "datasets/"
+#dataset_path = base_path + "datasets/"
 # create_if_not_exists(dataset_path)
 
-score_features_path = dataset_path + "score_features/"
-cards_features_path = dataset_path + "cards_features/"
-score_labels_path = dataset_path + "score_labels/"
-cards_labels_path = dataset_path + "cards_labels/"
+#score_features_path = dataset_path + "score_features/"
+#cards_features_path = dataset_path + "cards_features/"
+#score_labels_path = dataset_path + "score_labels/"
+#cards_labels_path = dataset_path + "cards_labels/"
 
-models_path = base_path + "models/"
-estimator_model_path = models_path + "estimator_model.hdf5"
-estimator_weights_path = models_path + "estimator_weights.hdf5"
+#models_path = base_path + "models/"
+#estimator_model_path = models_path + "estimator_model.hdf5"
+#estimator_weights_path = models_path + "estimator_weights.hdf5"
 
-score_estimator_path = models_path + 'score_estimator.hdf5'
-cards_estimator_path = models_path + 'cards_estimator.hdf5'
+#cards_estimator_model_path = models_path + 'cards_estimator_model.hdf5'
+#cards_estimator_weights_path = models_path + 'cards_estimator_weights.hdf5'
+#score_estimator_model_path = models_path + 'score_estimator_model.hdf5'
+#score_estimator_weights_path = models_path + 'score_estimator_weights.hdf5'
 # create_if_not_exists(models_path)
 
 # labels = load_json(dataset_path + "labels.json")

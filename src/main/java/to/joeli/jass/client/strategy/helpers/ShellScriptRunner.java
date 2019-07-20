@@ -1,13 +1,28 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.List;
 
 public class ShellScriptRunner {
 
-	public static void startShellProcessInThread(ArrayList<Process> processes, String directory, String command) {
+	public static final Logger logger = LoggerFactory.getLogger(ShellScriptRunner.class);
+
+
+	/**
+	 * This can be used to start independent services we want to use. The started process is saved into the passed list.
+	 * This list can then be used to access running processes and kill them if needed.
+	 *
+	 * @param processes
+	 * @param directory
+	 * @param command
+	 */
+	public static void startShellProcessInThread(List<Process> processes, String directory, String command) {
 		Thread thread = new Thread(() -> {
 			ProcessBuilder builder = buildShellCommand(directory, command);
 			try {
@@ -19,6 +34,13 @@ public class ShellScriptRunner {
 		thread.start();
 	}
 
+	/**
+	 * Runs a shell process in the calling thread and blocks until it is finished.
+	 *
+	 * @param directory
+	 * @param command
+	 * @return
+	 */
 	public static boolean runShellProcess(String directory, String command) {
 		ProcessBuilder builder = ShellScriptRunner.buildShellCommand(directory, command);
 
@@ -37,7 +59,14 @@ public class ShellScriptRunner {
 		return false;
 	}
 
-	public static ProcessBuilder buildShellCommand(String directory, String command) {
+	/**
+	 * Uses the ProcessBuilder to assemble a shell command out of the directory and command strings
+	 *
+	 * @param directory
+	 * @param command
+	 * @return
+	 */
+	private static ProcessBuilder buildShellCommand(String directory, String command) {
 		ProcessBuilder builder = new ProcessBuilder();
 		builder.inheritIO();
 		builder.directory(new File(directory));
@@ -45,6 +74,15 @@ public class ShellScriptRunner {
 		return builder;
 	}
 
+	/**
+	 * Can be used to shutdown a process which cannot be stopped gracefully
+	 *
+	 * @param process
+	 * @param signal
+	 * @throws InterruptedException
+	 * @throws IOException
+	 * @throws IllegalStateException
+	 */
 	public static void killProcess(Process process, int signal) throws InterruptedException, IOException, IllegalStateException {
 		ProcessBuilder builder = buildShellCommand("/", "kill " + signal + " " + getPidOfProcess(process));
 		int exitCode = builder.start().waitFor();
@@ -75,5 +113,14 @@ public class ShellScriptRunner {
 		}
 		System.out.println("PID of " + process + " is " + pid);
 		return pid;
+	}
+
+	/**
+	 * Gets the directory where the deep learning with keras is done
+	 * @return
+	 */
+	@NotNull
+	public static String getPythonDirectory() {
+		return System.getProperty("user.dir") + "/src/main/java/to/joeli/jass/client/strategy/training/python";
 	}
 }

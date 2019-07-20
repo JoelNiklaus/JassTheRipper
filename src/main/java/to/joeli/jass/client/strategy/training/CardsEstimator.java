@@ -1,24 +1,26 @@
 package to.joeli.jass.client.strategy.training;
 
-import to.joeli.jass.client.game.Game;
-import to.joeli.jass.client.strategy.helpers.Distribution;
-import to.joeli.jass.game.cards.Card;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import to.joeli.jass.client.game.Game;
+import to.joeli.jass.client.game.Player;
+import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
+import to.joeli.jass.client.strategy.helpers.Distribution;
+import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
+import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
+import to.joeli.jass.game.cards.Card;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class CardsEstimator extends NeuralNetwork {
 
-	public static final int NUM_OUTPUT_COLS = 4; // Other Players
-
 	public static final Logger logger = LoggerFactory.getLogger(CardsEstimator.class);
 
 	public CardsEstimator(boolean trainable) {
-		super("cards", trainable);
+		super(NetworkType.CARDS, trainable);
 	}
 
 
@@ -29,13 +31,23 @@ public class CardsEstimator extends NeuralNetwork {
 	 * @return
 	 */
 	public Map<Card, Distribution> predictCardDistribution(Game game, Set<Card> availableCards) {
-		game = new Game(game);
-		game.getCurrentPlayer().setCards(availableCards);
+		Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
 
-		final double[] distribution = null;// TODO invoke keras prediction here
-		logger.info(Arrays.toString(distribution));
+		final double[][] probabilities = ZeroMQClient.predictCards(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
 
-		Map<Card, Distribution> cardDistribution = new HashMap<>();
-		return cardDistribution;
+		final List<Player> players = game.getPlayersBySeatId();
+
+
+		cardKnowledge = new HashMap<>();
+		final Card[] cards = Card.values();
+		for (int c = 0; c < cards.length; c++) {
+			HashMap<Player, Double> playerProbabilities = new HashMap<>();
+			for (int p = 0; p < players.size(); p++) {
+				playerProbabilities.put(players.get(p), probabilities[c][p]);
+			}
+			cardKnowledge.put(cards[c], new Distribution(playerProbabilities));
+		}
+
+		return cardKnowledge;
 	}
 }

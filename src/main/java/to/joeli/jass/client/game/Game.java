@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Game {
 	public static final int LAST_ROUND_NUMBER = 8;
@@ -176,5 +177,10 @@ public class Game {
 				", result=" + result +
 				//", previousRounds=" + previousRounds +
 				'}';
+	}
+
+	public List<Player> getPlayersBySeatId() {
+		// Player implements Comparable and is compared using the seatId
+		return getPlayers().stream().sorted().collect(Collectors.toList());
 	}
 }

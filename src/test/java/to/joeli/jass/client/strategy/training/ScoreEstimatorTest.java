@@ -1,15 +1,16 @@
 package to.joeli.jass.client.strategy.training;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
+import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
-
-import java.io.File;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -17,13 +18,16 @@ public class ScoreEstimatorTest {
 
 	private Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
+	@Before
+	public void setUp() {
+		ZeroMQClient.startServer();
+	}
+
 	@Test
 	public void testPreTrainedScoreEstimatorPredictionsIsMediocreForShiftCards() {
 		Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		ScoreEstimator network = new ScoreEstimator(true);
-		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
-			network.train(TrainMode.PRE_TRAIN);
 
 		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) < 120);
@@ -34,8 +38,6 @@ public class ScoreEstimatorTest {
 		Game diamondsGame = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		ScoreEstimator network = new ScoreEstimator(true);
-		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
-			network.train(TrainMode.PRE_TRAIN);
 
 		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) > 120);
@@ -52,8 +54,6 @@ public class ScoreEstimatorTest {
 
 
 		ScoreEstimator network = new ScoreEstimator(true);
-		if (!new File(Arena.SCORE_ESTIMATOR_KERAS_PATH).exists())
-			network.train(TrainMode.PRE_TRAIN);
 
 		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) < 100);
@@ -88,23 +88,18 @@ public class ScoreEstimatorTest {
 	}
 
 	@Test
-	public void testFirstThousandForwardPassSpeeds() {
-		ScoreEstimator network = new ScoreEstimator(true);
-		for (int i = 0; i < 1000; i++) {
-			long startTime = System.nanoTime() / 1000;
-			network.predictScore(diamondsGame);
-			System.out.println("The execution of one forward pass took " + (System.nanoTime() / 1000 - startTime) / 1000.0 + "ms");
-		}
-	}
-
-	@Test
 	public void testAverageForwardPassSpeed() {
 		ScoreEstimator network = new ScoreEstimator(true);
 		long startTime = System.nanoTime() / 1000;
-		double n = 10000;
+		double n = 100;
 		for (int i = 0; i < n; i++)
 			network.predictScore(diamondsGame);
 		System.out.println("The execution of " + n + " forward passes took " + (System.nanoTime() / 1000 - startTime) / (1000.0 * n) + "ms on average");
+	}
+
+	@After
+	public void tearDown() {
+		ZeroMQClient.stopServer();
 	}
 
 }

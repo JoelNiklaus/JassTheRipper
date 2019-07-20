@@ -1,5 +1,6 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.commons.io.FileUtils;
@@ -19,19 +20,21 @@ public class IOHelper {
 
 
 	public static void writeCBOR(Object array, String path) throws IOException {
-		CBORFactory factory = new CBORFactory();
-		ObjectMapper mapper = new ObjectMapper(factory);
-		byte[] bytes = mapper.writeValueAsBytes(array);
-		FileUtils.writeByteArrayToFile(new File(path), bytes);
+		FileUtils.writeByteArrayToFile(new File(path), convertToCBOR(array));
 		new ObjectMapper().writeValue(new File(path + ".json"), array);
 	}
 
+	public static byte[] convertToCBOR(Object array) throws JsonProcessingException {
+		return new ObjectMapper(new CBORFactory()).writeValueAsBytes(array);
+	}
+
 	public static void readCBOR(Object array, String path) throws IOException {
-		CBORFactory factory = new CBORFactory();
-		ObjectMapper mapper = new ObjectMapper(factory);
-		byte[] bytes = FileUtils.readFileToByteArray(new File(path));
-		List features = mapper.readValue(bytes, List.class);
+		List features = convertFromCBOR(FileUtils.readFileToByteArray(new File(path)));
 		System.out.println(features);
+	}
+
+	public static List convertFromCBOR(byte[] bytes) throws IOException {
+		return new ObjectMapper(new CBORFactory()).readValue(bytes, List.class);
 	}
 
 	private static boolean createIfNotExists(File directory) {
@@ -41,21 +44,22 @@ public class IOHelper {
 	}
 
 	/**
-	 * Saves multiple files into the subdirectories "features" and "labels".
+	 * Saves multiple files into the subdirectories "features" and "targets".
 	 * These files can then be loaded and concatenated again to form the big dataset.
 	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
 	 *
 	 * @param dataSet
 	 */
 	public static boolean saveData(DataSet dataSet, TrainMode trainMode, String name) {
-		String basePath = Arena.DATASETS_BASE_PATH + trainMode.getPath();
-		String featuresDir = basePath + "features/";
-		String cardsFeaturesDir = featuresDir + "cards/";
-		String scoreFeaturesDir = featuresDir + "score/";
-		String targetsDir = basePath + "targets/";
-		String cardsTargetsDir = targetsDir + "cards/";
-		String scoreTargetsDir = targetsDir + "score/";
-		if (createIfNotExists(new File(featuresDir))
+		String trainModePath = Arena.BASE_PATH + trainMode.getPath();
+		String cardsDir = trainModePath + "cards/";
+		String scoreDir = trainModePath + "score/";
+		String cardsFeaturesDir = cardsDir + "features/";
+		String scoreFeaturesDir = scoreDir + "features/";
+		String cardsTargetsDir = cardsDir + "targets/";
+		String scoreTargetsDir = scoreDir + "targets/";
+		if (createIfNotExists(new File(cardsFeaturesDir))
+				&& createIfNotExists(new File(scoreFeaturesDir))
 				&& createIfNotExists(new File(cardsTargetsDir))
 				&& createIfNotExists(new File(scoreTargetsDir))) {
 			try {
@@ -68,10 +72,10 @@ public class IOHelper {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			logger.info("Saved datasets to {}", Arena.DATASETS_BASE_PATH);
+			logger.info("Saved datasets to {}", Arena.BASE_PATH);
 			return true;
 		} else {
-			logger.error("Failed to save datasets to {}", Arena.DATASETS_BASE_PATH);
+			logger.error("Failed to save datasets to {}", Arena.BASE_PATH);
 			return false;
 		}
 	}

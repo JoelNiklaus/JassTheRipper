@@ -1,5 +1,8 @@
 package to.joeli.jass.client.game;
 
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.strategy.JassStrategy;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.client.strategy.RandomJassStrategy;
@@ -8,9 +11,6 @@ import to.joeli.jass.client.strategy.training.CardsEstimator;
 import to.joeli.jass.client.strategy.training.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
 import java.util.Set;

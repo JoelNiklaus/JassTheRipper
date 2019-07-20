@@ -7,7 +7,6 @@ import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.strategy.training.Arena;
-import to.joeli.jass.client.strategy.training.CardsEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.CardValue;
 import to.joeli.jass.game.cards.Color;
@@ -324,11 +323,11 @@ public class NeuralNetworkHelper {
 		final List<Player> playingOrder = game.getOrder().getPlayersInInitialOrder();
 
 		for (int start = 0; start < 4; start++) { // for each of the four player's perspective
-			int[][] labels = new int[36][CardsEstimator.NUM_OUTPUT_COLS];
+			int[][] labels = new int[36][4];
 			for (int i = 0; i < cards.length; i++) { // for every card
-				int[] players = new int[CardsEstimator.NUM_OUTPUT_COLS];
-				for (int p = 0; p < CardsEstimator.NUM_OUTPUT_COLS; p++) { // check for all the players
-					if (playingOrder.get((start + p) % CardsEstimator.NUM_OUTPUT_COLS).getCards().contains(cards[i])) { // if the player has the card
+				int[] players = new int[4];
+				for (int p = 0; p < 4; p++) { // check for all the players
+					if (playingOrder.get((start + p) % 4).getCards().contains(cards[i])) { // if the player has the card
 						players[p] = 1; // set the card
 						break; // and no need to evaluate the rest of the players because they cannot have the card
 					}

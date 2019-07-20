@@ -25,12 +25,12 @@ class Config {
         this.isScoreEstimatorTrainable = scoreEstimatorTrainable
     }
 
-    constructor(mctsEnabled: Boolean, scoreEstimatorUsed: Boolean, scoreEstimatorTrainable: Boolean, cardsEstimatorUsed: Boolean, cardsEstimatorTrainable: Boolean) {
+    constructor(mctsEnabled: Boolean, cardsEstimatorUsed: Boolean, cardsEstimatorTrainable: Boolean, scoreEstimatorUsed: Boolean, scoreEstimatorTrainable: Boolean) {
         this.isMctsEnabled = mctsEnabled
-        this.isScoreEstimatorUsed = scoreEstimatorUsed
-        this.isScoreEstimatorTrainable = scoreEstimatorTrainable
         this.isCardsEstimatorUsed = cardsEstimatorUsed
         this.isCardsEstimatorTrainable = cardsEstimatorTrainable
+        this.isScoreEstimatorUsed = scoreEstimatorUsed
+        this.isScoreEstimatorTrainable = scoreEstimatorTrainable
     }
 
     constructor(mctsConfig: MCTSConfig) {

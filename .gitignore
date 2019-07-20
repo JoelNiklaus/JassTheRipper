@@ -4,5 +4,5 @@ build
 *.log
 *.iml
 out
-src/main/resources/datasets
-src/main/resources/models
+src/main/resources/pre_train
+src/main/resources/self_play

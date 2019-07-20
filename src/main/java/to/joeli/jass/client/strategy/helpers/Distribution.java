@@ -10,9 +10,13 @@ import java.util.Random;
  * https://stackoverflow.com/questions/35701316/discrete-probability-distribution-in-java
  */
 public class Distribution {
-	private Map<Player, Double> probabilities = new HashMap<>();
+	private final Map<Player, Double> probabilities;
 	private boolean sampled;
 	private Random random = new Random();
+
+	public Distribution(Map<Player, Double> probabilities) {
+		this(probabilities, false);
+	}
 
 	Distribution(Map<Player, Double> probabilities, boolean sampled) {
 		this.probabilities = new HashMap<>(probabilities);
@@ -40,7 +44,7 @@ public class Distribution {
 
 		// Redistribute the remaining probability on the other players
 		double probabilityToAdd = deletedProbability / probabilities.size();
-		for (Map.Entry<Player, Double> entry: probabilities.entrySet()) {
+		for (Map.Entry<Player, Double> entry : probabilities.entrySet()) {
 			probabilities.put(entry.getKey(), entry.getValue() + probabilityToAdd);
 		}
 

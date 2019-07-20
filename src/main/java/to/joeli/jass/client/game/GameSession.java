@@ -34,7 +34,7 @@ public class GameSession {
 	 */
 	public GameSession(GameSession gameSession) {
 		// INFO: Certain Objects (e.g. Players, Teams) are duplicated multiple times
-		// -> we have different references! When we update one Player in the Playingorder, the corresponding Player in the Team will not be updated!
+		// -> we have different references! When we update one Player in the PlayingOrder, the corresponding Player in the Team will not be updated!
 		this.teams = new ArrayList<>();
 		for (Team team : gameSession.getTeams())
 			this.teams.add(new Team(team));
@@ -60,18 +60,19 @@ public class GameSession {
 		return teams.get(teamIndex).getPlayers();
 	}
 
+
 	public Player getFirstPlayerWithUsedCardsEstimator(boolean trainable) {
-		return getCurrentGame().getPlayers().stream()
+		return gameStartingPlayingOrder.getPlayersInInitialOrder().stream()
 				.filter(player -> player.getConfig().isCardsEstimatorUsed() && player.getCardsEstimator().isTrainable() == trainable)
 				.findFirst()
-				.orElseThrow(() -> new IllegalStateException("No player has a trainable cards estimator."));
+				.orElseThrow(() -> new IllegalStateException("No player has a used and trainable cards estimator."));
 	}
 
 	public Player getFirstPlayerWithUsedScoreEstimator(boolean trainable) {
-		return getCurrentGame().getPlayers().stream()
+		return gameStartingPlayingOrder.getPlayersInInitialOrder().stream()
 				.filter(player -> player.getConfig().isScoreEstimatorUsed() && player.getScoreEstimator().isTrainable() == trainable)
 				.findFirst()
-				.orElseThrow(() -> new IllegalStateException("No player has a trainable score estimator."));
+				.orElseThrow(() -> new IllegalStateException("No player has a used and trainable score estimator."));
 	}
 
 	public Team getTeamOfPlayer(Player player) {
