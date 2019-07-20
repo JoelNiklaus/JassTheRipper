@@ -13,8 +13,7 @@ import to.joeli.jass.client.strategy.config.TrumpfSelectionMethod;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
 import to.joeli.jass.client.strategy.training.Arena;
-import to.joeli.jass.game.cards.Color;
-import to.joeli.jass.game.mode.Mode;
+import to.joeli.jass.client.strategy.training.ScoreEstimator;
 
 import java.util.Random;
 
@@ -122,14 +121,24 @@ public class MCTSBenchmarkTest {
 
 	@Test
 	public void testDifferentPlayouts() {
-		//final GameSession gameSession = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(0).createGameSession();
-		final GameSession gameSession = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession();
-		int n = 10;
-		System.out.println("MCTS: " + run(gameSession, n));
+		final GameSession gameSession = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(6).createGameSession();
+		//final GameSession gameSession = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession();
+		int n = 4;
+		final int mcts = run(gameSession, n);
+
 		gameSession.getPlayersInInitialPlayingOrder().forEach(player -> player.setConfig(new Config(false, true, true)));
-		System.out.println("ScoreEstimator: " + run(gameSession, n));
+		final int scoreEstimatorPlayed = run(gameSession, n);
+
+		final double scoreEstimatorPredicted = new ScoreEstimator(true).predictScore(gameSession.getCurrentGame());
+
 		gameSession.getPlayersInInitialPlayingOrder().forEach(player -> player.setJassStrategy(new RandomJassStrategy()));
-		System.out.println("Random: " + run(gameSession, n));
+		final int random = run(gameSession, n);
+
+
+		System.out.println("MCTS: " + mcts);
+		System.out.println("ScoreEstimatorPlayed: " + scoreEstimatorPlayed);
+		System.out.println("ScoreEstimatorPredicted: " + scoreEstimatorPredicted);
+		System.out.println("Random: " + random);
 	}
 
 	@After

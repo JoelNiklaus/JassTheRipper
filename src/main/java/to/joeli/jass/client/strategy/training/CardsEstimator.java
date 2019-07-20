@@ -31,12 +31,11 @@ public class CardsEstimator extends NeuralNetwork {
 	 * @return
 	 */
 	public Map<Card, Distribution> predictCardDistribution(Game game, Set<Card> availableCards) {
-		Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
+		Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);
 
 		final double[][] probabilities = ZeroMQClient.predictCards(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
 
 		final List<Player> players = game.getPlayersBySeatId();
-
 
 		cardKnowledge = new HashMap<>();
 		final Card[] cards = Card.values();

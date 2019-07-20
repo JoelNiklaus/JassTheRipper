@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -83,6 +84,18 @@ public class CardKnowledgeBaseTest {
 		assertFalse(player2.getCards().contains(Card.CLUB_QUEEN));
 		assertFalse(player2.getCards().contains(Card.CLUB_KING));
 		assertFalse(player2.getCards().contains(Card.CLUB_ACE));
+	}
+
+	@Test
+	public void testInitCardKnowledge() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+		final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, game.getCurrentPlayer().getCards());
+
+		final double delta = 0.001;
+		// The current player has the HEART_SIX
+		assertArrayEquals(new double[]{1.0, 0.0, 0.0, 0.0}, cardKnowledge.get(Card.HEART_SIX).getProbabilitiesInSeatIdOrder(), delta);
+		// The current player does not have the HEART_SEVEN
+		assertArrayEquals(new double[]{0.0, 0.33333, 0.33333, 0.33333}, cardKnowledge.get(Card.HEART_SEVEN).getProbabilitiesInSeatIdOrder(), delta);
 	}
 
 }

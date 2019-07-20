@@ -65,7 +65,7 @@ public class CardKnowledgeBase {
 
 		Map<Card, Distribution> cardKnowledge;
 		if (cardsEstimator == null) {
-			cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, availableCards);
+			cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);
 		} else {
 			// The cards estimator extends this with a belief distribution: we can assume that a player has/has not some cards based on the game.
 			// For example when a player did not take a very valuable stich he probably does not have any trumpfs or higher cards of the given suit.
@@ -116,8 +116,8 @@ public class CardKnowledgeBase {
 		return randomSubSet;
 	}
 
-	public static Map<Card, Distribution> initCardDistributionMap(Game game, Set<Card> availableCards) {
-		return initCardDistributionMap(game, availableCards, null);
+	public static Map<Card, Distribution> initCardKnowledge(Game game, Set<Card> availableCards) {
+		return initCardKnowledge(game, availableCards, null);
 	}
 
 	/**
@@ -128,7 +128,9 @@ public class CardKnowledgeBase {
 	 * @param availableCards
 	 * @return
 	 */
-	public static Map<Card, Distribution> initCardDistributionMap(Game game, Set<Card> availableCards, List<Color> colors) {
+	public static Map<Card, Distribution> initCardKnowledge(Game game, Set<Card> availableCards, List<Color> colors) {
+		assert !availableCards.isEmpty();
+
 		Map<Card, Distribution> cardKnowledge = new EnumMap<>(Card.class);
 
 		// Set simple distributions for the cards of the current player

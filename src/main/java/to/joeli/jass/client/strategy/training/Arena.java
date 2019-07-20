@@ -18,7 +18,7 @@ public class Arena {
 	// The bigger, the bigger the datasets are, and the longer the training takes
 	// If it is 4: each experience will be used 4 times.
 	// Should not be bigger than 32 because it might result in OutOfMemoryErrors
-	private static final int REPLAY_MEMORY_SIZE_FACTOR = 1; // Standard: 4, 8, 16
+	private static final int REPLAY_MEMORY_SIZE_FACTOR = 4; // Standard: 4, 8, 16
 
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
 	private static final boolean DATA_AUGMENTATION_ENABLED = true;
@@ -56,7 +56,7 @@ public class Arena {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Collecting a dataset of games played with random playouts\n");
-		arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 1);
+		arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 10);
 
 		logger.info("Pre-training the neural networks\n");
 		arena.preTrainNetworks();
@@ -280,7 +280,7 @@ public class Arena {
 				player.onMoveMade(move);
 
 				if (savingData) {
-					final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardDistributionMap(game, game.getCurrentPlayer().getCards());
+					final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, game.getCurrentPlayer().getCards());
 					if (DATA_AUGMENTATION_ENABLED) {
 						// INFO: Because the permutations are always in the same order we can just add the analogous features and targets. They
 						cardsFeatures.addAll(NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge));
