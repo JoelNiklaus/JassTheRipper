@@ -6,8 +6,9 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import to.joeli.jass.client.strategy.training.Arena;
+import to.joeli.jass.client.strategy.training.CardsDataSet;
 import to.joeli.jass.client.strategy.training.DataSet;
+import to.joeli.jass.client.strategy.training.ScoreDataSet;
 import to.joeli.jass.client.strategy.training.TrainMode;
 
 import java.io.File;
@@ -67,36 +68,27 @@ public class IOHelper {
 	 * Saves multiple files into the subdirectories "features" and "targets".
 	 * These files can then be loaded and concatenated again to form the big dataset.
 	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
-	 *
-	 * @param dataSet
 	 */
-	public static boolean saveData(DataSet dataSet, TrainMode trainMode, String name) {
-		String trainModePath = Arena.BASE_PATH + trainMode.getPath();
-		String cardsDir = trainModePath + "cards/";
-		String scoreDir = trainModePath + "score/";
-		String cardsFeaturesDir = cardsDir + "features/";
-		String scoreFeaturesDir = scoreDir + "features/";
-		String cardsTargetsDir = cardsDir + "targets/";
-		String scoreTargetsDir = scoreDir + "targets/";
-		if (createIfNotExists(new File(cardsFeaturesDir))
-				&& createIfNotExists(new File(scoreFeaturesDir))
-				&& createIfNotExists(new File(cardsTargetsDir))
-				&& createIfNotExists(new File(scoreTargetsDir))) {
-			try {
-				String fileName = name + ".cbor";
+	public static boolean saveData(CardsDataSet cardsDataSet, ScoreDataSet scoreDataSet, TrainMode trainMode, String name) {
+		return saveDataSet(cardsDataSet, trainMode, name) && saveDataSet(scoreDataSet, trainMode, name);
+	}
 
-				writeCBOR(dataSet.getCardsFeatures(), cardsFeaturesDir + fileName);
-				writeCBOR(dataSet.getScoreFeatures(), scoreFeaturesDir + fileName);
-				writeCBOR(dataSet.getCardsTargets(), cardsTargetsDir + fileName);
-				writeCBOR(dataSet.getScoreTargets(), scoreTargetsDir + fileName);
+	private static boolean saveDataSet(DataSet dataSet, TrainMode trainMode, String name) {
+		if (createIfNotExists(new File(dataSet.getFeaturesPath(trainMode)))
+				&& createIfNotExists(new File(dataSet.getTargetsPath(trainMode)))) {
+			String fileName = name + ".cbor";
+			try {
+				writeCBOR(dataSet.getFeatures(), dataSet.getFeaturesPath(trainMode) + fileName);
+				writeCBOR(dataSet.getTargets(), dataSet.getTargetsPath(trainMode) + fileName);
 			} catch (IOException e) {
 				e.printStackTrace();
+				logger.error("Failed to save datasets to {}", dataSet.getPath(trainMode));
+				return false;
 			}
-			logger.info("Saved datasets to {}", Arena.BASE_PATH);
+			logger.info("Saved datasets to {}", dataSet.getPath(trainMode));
 			return true;
-		} else {
-			logger.error("Failed to save datasets to {}", Arena.BASE_PATH);
-			return false;
 		}
+		logger.error("Failed to save datasets to {}", dataSet.getPath(trainMode));
+		return false;
 	}
 }

@@ -1,6 +1,5 @@
 package to.joeli.jass.client.strategy.training;
 
-import com.google.common.collect.EvictingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.*;
@@ -22,11 +21,6 @@ public class Arena {
 
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
 	private static final boolean DATA_AUGMENTATION_ENABLED = true;
-	public static final String BASE_PATH = "src/main/resources/";
-	public static final String DATASETS_BASE_PATH = BASE_PATH + "datasets/";
-	public static final String MODELS_BASE_PATH = BASE_PATH + "models/";
-	public static final String SCORE_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "score_estimator.hdf5";
-	public static final String CARDS_ESTIMATOR_KERAS_PATH = MODELS_BASE_PATH + "cards_estimator.hdf5";
 	private static final int NUM_EPISODES = 1; // TEST: 1
 	private static final int NUM_TRAINING_GAMES = 2; // Should be an even number, TEST: 2
 	private static final int NUM_TESTING_GAMES = 2; // Should be an even number, TEST: 2
@@ -42,13 +36,8 @@ public class Arena {
 
 	private GameSession gameSession;
 
-	// The input for the neural networks, a representation of the game
-	private Queue<double[][]> cardsFeatures;
-	private Queue<double[][]> scoreFeatures;
-	// The labels for the score estimator, the score at the end of the game
-	private Queue<Double> scoreTargets;
-	// The labels for the cards estimator, the actual cards the other players had
-	private Queue<int[][]> cardsTargets;
+	private CardsDataSet cardsDataSet;
+	private ScoreDataSet scoreDataSet;
 
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 
@@ -136,7 +125,7 @@ public class Arena {
 		logger.info("Running episode #{}\n", episodeNumber);
 
 		logger.info("Collecting training examples by self play with MCTS policy improvement\n");
-		runMCTSWithScoreEstimators(random, numTrainingGames);
+		runMCTSWithCardsEstimators(random, numTrainingGames);
 
 		logger.info("Training the networks with the collected examples\n");
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
@@ -177,6 +166,22 @@ public class Arena {
 		return performMatch(random, numGames, TrainMode.PRE_TRAIN, configs);
 	}
 
+	private double runMCTSWithEstimators(Random random, int numGames) {
+		Config[] configs = {
+				new Config(true, true, true, true, true),
+				new Config(true, true, false, true, false)
+		};
+		return performMatch(random, numGames, TrainMode.SELF_PLAY, configs);
+	}
+
+	private double runMCTSWithCardsEstimators(Random random, int numGames) {
+		Config[] configs = {
+				new Config(true, true, true, false, false),
+				new Config(true, true, false, false, false)
+		};
+		return performMatch(random, numGames, TrainMode.SELF_PLAY, configs);
+	}
+
 	private double runMCTSWithScoreEstimators(Random random, int numGames) {
 		Config[] configs = {
 				new Config(true, true, true),
@@ -215,6 +220,14 @@ public class Arena {
 		return playGames(random, numGames, trainMode);
 	}
 
+	/**
+	 * Simulates a number of games and returns the performance of Team A in comparison with Team B.
+	 *
+	 * @param random
+	 * @param numGames
+	 * @param trainMode
+	 * @return
+	 */
 	private double playGames(Random random, int numGames, TrainMode trainMode) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
@@ -238,7 +251,7 @@ public class Arena {
 
 			if (trainMode.isSavingData() && i % REPLAY_MEMORY_SIZE_FACTOR == 0) {
 				final String name = zeroPadded(i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + zeroPadded(i);
-				IOHelper.saveData(new DataSet(cardsFeatures, scoreFeatures, cardsTargets, scoreTargets), trainMode, name);
+				IOHelper.saveData(cardsDataSet, scoreDataSet, trainMode, name);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -257,6 +270,12 @@ public class Arena {
 		return String.format("%04d", number);
 	}
 
+	/**
+	 * Simulates a game being played. The gameSession can be configured in many different ways to allow different simulations.
+	 *
+	 * @param savingData
+	 * @return
+	 */
 	public Result playGame(boolean savingData) {
 		Game game = gameSession.getCurrentGame();
 
@@ -283,13 +302,13 @@ public class Arena {
 					final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, game.getCurrentPlayer().getCards());
 					if (DATA_AUGMENTATION_ENABLED) {
 						// INFO: Because the permutations are always in the same order we can just add the analogous features and targets. They
-						cardsFeatures.addAll(NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge));
-						cardsTargets.addAll(analogousCardsTargets);
+						cardsDataSet.addFeatures(NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge));
+						cardsDataSet.addTargets(analogousCardsTargets);
 
 						NeuralNetworkHelper.getAnalogousScoreFeatures(game).forEach(feature -> scoreFeaturesForPlayer.put(feature, player));
 					} else {
-						cardsFeatures.add(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
-						cardsTargets.add(cardsTarget);
+						cardsDataSet.addFeature(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
+						cardsDataSet.addTarget(cardsTarget);
 
 						scoreFeaturesForPlayer.put(NeuralNetworkHelper.getScoreFeatures(game), player);
 					}
@@ -301,8 +320,8 @@ public class Arena {
 		if (savingData) {
 			if (scoreFeaturesForPlayer.size() != 24 * 36) throw new AssertionError();
 			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
-				scoreFeatures.add(entry.getKey());
-				scoreTargets.add(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
+				scoreDataSet.addFeature(entry.getKey());
+				scoreDataSet.addTarget(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
 			}
 		}
 
@@ -337,6 +356,9 @@ public class Arena {
 	}
 
 
+	/**
+	 * Organizes the trumpf selection part of the simulation.
+	 */
 	private void performTrumpfSelection() {
 		boolean shifted = false;
 		Player currentPlayer = gameSession.getTrumpfSelectingPlayer();
@@ -358,10 +380,8 @@ public class Arena {
 		int size = 36 * REPLAY_MEMORY_SIZE_FACTOR;
 		if (DATA_AUGMENTATION_ENABLED)
 			size *= 24; // 24: Number of color permutations (data augmentation)
-		// When a new element is added and the queue is full, the head is removed.
-		cardsFeatures = EvictingQueue.create(size);
-		scoreFeatures = EvictingQueue.create(size);
-		cardsTargets = EvictingQueue.create(size);
-		scoreTargets = EvictingQueue.create(size);
+		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
+		cardsDataSet = new CardsDataSet(size);
+		scoreDataSet = new ScoreDataSet(size);
 	}
 }
