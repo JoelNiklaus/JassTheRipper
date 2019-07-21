@@ -267,7 +267,7 @@ public class Arena {
 			if (DATA_AUGMENTATION_ENABLED) {
 				analogousCardsTargets = NeuralNetworkHelper.getAnalogousCardsTargets(game);
 			} else {
-				cardsTarget = NeuralNetworkHelper.getCardsTargets(game);
+				cardsTarget = NeuralNetworkHelper.getCardsTarget(game);
 			}
 		}
 

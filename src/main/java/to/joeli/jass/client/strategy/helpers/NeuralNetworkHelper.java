@@ -22,8 +22,8 @@ public class NeuralNetworkHelper {
 	public static final Logger logger = LoggerFactory.getLogger(NeuralNetworkHelper.class);
 
 
-	public static int[][] getCardsTargets(Game game) {
-		return getCardsTargets(game, null);
+	public static int[][] getCardsTarget(Game game) {
+		return getCardsTarget(game, null);
 	}
 
 	/**
@@ -34,7 +34,7 @@ public class NeuralNetworkHelper {
 	 *
 	 * @param game
 	 */
-	public static int[][] getCardsTargets(Game game, List<Color> colors) {
+	public static int[][] getCardsTarget(Game game, List<Color> colors) {
 		int[][] targets = new int[36][4];
 		final Card[] cards = Card.values();
 		for (int i = 0; i < cards.length; i++) {
@@ -95,9 +95,9 @@ public class NeuralNetworkHelper {
 		List<int[][]> targets = new ArrayList<>();
 		if (game.getMode().isTrumpfMode()) {
 			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
-			permutations.forEach(colors -> targets.add(getCardsTargets(game, colors)));
+			permutations.forEach(colors -> targets.add(getCardsTarget(game, colors)));
 		} else
-			targets.add(getCardsTargets(game));
+			targets.add(getCardsTarget(game));
 		return targets;
 	}
 

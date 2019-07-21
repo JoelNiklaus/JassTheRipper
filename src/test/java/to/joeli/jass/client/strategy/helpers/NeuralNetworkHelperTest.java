@@ -3,6 +3,7 @@ package to.joeli.jass.client.strategy.helpers;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.Whitebox;
 import to.joeli.jass.client.game.Game;
+import to.joeli.jass.client.game.GameSession;
 import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.game.Trumpf;
@@ -99,7 +100,7 @@ public class NeuralNetworkHelperTest {
 	}
 
 	@Test
-	public void testObservationReconstruction() {
+	public void testFeatureReconstruction() {
 		Game clubsGame = GameSessionBuilder.startedClubsGame();
 		final Player player = clubsGame.getCurrentPlayer();
 		final Move move = new Move(player, Card.CLUB_QUEEN);
@@ -116,19 +117,31 @@ public class NeuralNetworkHelperTest {
 	}
 
 	@Test
-	public void testAnalogousObservationsForTrumpfHas24Items() {
-		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.CLUBS)).createGameSession().getCurrentGame();
+	public void testAnalogousScoreFeaturesForTrumpfHas24Items() {
+		final Game game = GameSessionBuilder.startedClubsGame();
 		assertEquals(24, NeuralNetworkHelper.getAnalogousScoreFeatures(game).size());
 	}
 
 	@Test
-	public void testAnalogousObservationsForNoTrumpfHas1Item() {
+	public void testAnalogousScoreFeaturesForNoTrumpfHas1Item() {
 		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.bottomUp()).createGameSession().getCurrentGame();
 		assertEquals(1, NeuralNetworkHelper.getAnalogousScoreFeatures(game).size());
 	}
 
 	@Test
-	public void testObservationIs1022Long() {
+	public void testAnalogousCardsFeatures() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+		final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, game.getCurrentPlayer().getCards());
+		final List<double[][]> analogousCardsFeatures = NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge);
+
+		assertEquals(24, analogousCardsFeatures.size());
+		assertArrayEquals(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge), analogousCardsFeatures.get(0));
+		assertNotEquals(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge), analogousCardsFeatures.get(1));
+
+	}
+
+	@Test
+	public void testScoreFeaturesDimension() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
 		assertEquals(73, observation.length);
@@ -136,7 +149,7 @@ public class NeuralNetworkHelperTest {
 	}
 
 	@Test
-	public void testObservationHasShiftedBit() {
+	public void testScoreFeaturesHasShiftedBit() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 		Whitebox.setInternalState(game, "shifted", true);
 		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
@@ -145,15 +158,31 @@ public class NeuralNetworkHelperTest {
 	}
 
 	@Test
-	public void testGetCardsTargets() {
+	public void testGetCardsTarget() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 
-		final int[][] cardsTargets = NeuralNetworkHelper.getCardsTargets(game);
+		final int[][] cardsTargets = NeuralNetworkHelper.getCardsTarget(game);
 		System.out.println(Arrays.deepToString(cardsTargets));
 
 		assertArrayEquals(new int[]{1, 0, 0, 0}, cardsTargets[0]); // First player has HEART_SIX
 		assertArrayEquals(new int[]{0, 0, 1, 0}, cardsTargets[1]); // Third player has HEART_SEVEN
 		assertArrayEquals(new int[]{0, 1, 0, 0}, cardsTargets[2]); // Second player has HEART_EIGHT
 	}
+
+	@Test
+	public void testGetScoreTarget() {
+		final GameSession gameSession = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(9).createGameSession();
+		final Game game = gameSession.getCurrentGame();
+
+		final Player playerTeam1 = gameSession.getTeams().get(0).getPlayers().get(0);
+		final Player playerTeam2 = gameSession.getTeams().get(1).getPlayers().get(0);
+
+		final double scoreTargetTeam1 = NeuralNetworkHelper.getScoreTarget(game, playerTeam1);
+		final double scoreTargetTeam2 = NeuralNetworkHelper.getScoreTarget(game, playerTeam2);
+
+		assertEquals(game.getResult().getTeamScore(playerTeam1), scoreTargetTeam1, DELTA);
+		assertEquals(game.getResult().getTeamScore(playerTeam2), scoreTargetTeam2, DELTA);
+	}
+
 
 }
