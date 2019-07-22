@@ -30,20 +30,12 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
     }
 
     @Synchronized
-    fun predict(features: Array<DoubleArray>): Any {
+    fun predict(features: Array<FloatArray>): Any {
         if (savedModelBundle == null)
             throw IllegalStateException("There is no neural network loaded! Cannot make any predictions!")
 
-        // TODO generate floats directly in NeuralNetworkHelper
-        val floats = Array(features.size) { FloatArray(features[0].size) }
-        for (i in features.indices) {
-            for (j in 0 until features[0].size) {
-                floats[i][j] = features[i][j].toFloat()
-            }
-        }
-
-        val input = Array(1) { Array(floats.size) { FloatArray(floats[0].size) } }
-        input[0] = floats
+        val input = Array(1) { Array(features.size) { FloatArray(features[0].size) } }
+        input[0] = features
 
         return savedModelBundle!!.session().runner()
                 .feed("input", Tensor.create(input))

@@ -8,8 +8,8 @@ import java.util.Queue;
 
 public class ScoreDataSet extends DataSet {
 
-	protected Queue<double[][]> features;
-	protected Queue<Double> targets;
+	protected Queue<float[][]> features;
+	protected Queue<Float> targets;
 
 
 	public ScoreDataSet(int size) {
@@ -17,20 +17,20 @@ public class ScoreDataSet extends DataSet {
 		targets = EvictingQueue.create(size);
 	}
 
-	public boolean addFeature(double[][] newFeature) {
+	public boolean addFeature(float[][] newFeature) {
 		return features.add(newFeature);
 	}
 
-	public boolean addFeatures(List<double[][]> newFeatures) {
+	public boolean addFeatures(List<float[][]> newFeatures) {
 		return features.addAll(newFeatures);
 	}
 
 
-	public boolean addTarget(Double newTarget) {
+	public boolean addTarget(Float newTarget) {
 		return targets.add(newTarget);
 	}
 
-	public boolean addTargets(List<Double> newTargets) {
+	public boolean addTargets(List<Float> newTargets) {
 		return targets.addAll(newTargets);
 	}
 

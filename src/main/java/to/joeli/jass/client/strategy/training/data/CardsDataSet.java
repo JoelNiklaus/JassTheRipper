@@ -8,7 +8,7 @@ import java.util.Queue;
 
 public class CardsDataSet extends DataSet {
 
-	protected Queue<double[][]> features;
+	protected Queue<float[][]> features;
 	protected Queue<int[][]> targets;
 
 	public CardsDataSet(int size) {
@@ -16,11 +16,11 @@ public class CardsDataSet extends DataSet {
 		targets = EvictingQueue.create(size);
 	}
 
-	public boolean addFeature(double[][] newFeature) {
+	public boolean addFeature(float[][] newFeature) {
 		return features.add(newFeature);
 	}
 
-	public boolean addFeatures(List<double[][]> newFeatures) {
+	public boolean addFeatures(List<float[][]> newFeatures) {
 		return features.addAll(newFeatures);
 	}
 

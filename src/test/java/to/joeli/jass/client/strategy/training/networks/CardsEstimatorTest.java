@@ -22,7 +22,7 @@ public class CardsEstimatorTest {
 	public void testCardsEstimatorPrediction() {
 		Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
-		final double[][] scoreFeatures = NeuralNetworkHelper.getScoreFeatures(diamondsGame);
+		final float[][] scoreFeatures = NeuralNetworkHelper.getScoreFeatures(diamondsGame);
 		for (int i = 0; i < 36; i++) {
 			System.out.println(Card.values()[i] + ": " + Arrays.toString(scoreFeatures[37 + i]));
 		}
@@ -32,7 +32,7 @@ public class CardsEstimatorTest {
 		diamondsGame.getPlayers().forEach(player -> player.setCards(EnumSet.noneOf(Card.class)));
 
 		final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(diamondsGame, availableCards);
-		final double[][] cardsFeatures = NeuralNetworkHelper.getCardsFeatures(diamondsGame, cardKnowledge);
+		final float[][] cardsFeatures = NeuralNetworkHelper.getCardsFeatures(diamondsGame, cardKnowledge);
 		for (int i = 0; i < 36; i++) {
 			System.out.println(Card.values()[i] + ": " + Arrays.toString(cardsFeatures[37 + i]));
 		}

@@ -85,7 +85,7 @@ public class CardKnowledgeBase {
 						cardDistributionEntry.getValue().setSampled(true);
 
 						// As soon as a player has enough cards, delete him from all remaining distributions
-						final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0; // rounds down the number
+						final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0;
 						if (player.getCards().size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
 							getStreamWithNotSampledDistributions(cardKnowledge)
 									.filter(entry -> entry.getValue().hasPlayer(player))
@@ -137,17 +137,17 @@ public class CardKnowledgeBase {
 		// Set simple distributions for the cards of the current player
 		availableCards.forEach(card -> {
 			final Card respectiveCard = DataAugmentationHelper.getRespectiveCard(card, colors);
-			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1d), false));
+			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1f), false));
 		});
 
 
 		// Init remaining unknown cards with equal probability for the other players
 		for (Card card : getRemainingCards(availableCards, game)) {
-			Map<Player, Double> probabilitiesMap = new HashMap<>();
+			Map<Player, Float> probabilitiesMap = new HashMap<>();
 			List<Player> players = new ArrayList<>(game.getPlayers());
 			players.remove(game.getCurrentPlayer());
 			for (Player player : players) {
-				probabilitiesMap.put(player, 1.0 / players.size());
+				probabilitiesMap.put(player, 1.0f / players.size());
 			}
 			cardKnowledge.put(DataAugmentationHelper.getRespectiveCard(card, colors), new Distribution(probabilitiesMap, false));
 		}
@@ -156,7 +156,7 @@ public class CardKnowledgeBase {
 
 		final List<Move> historyMoves = DataAugmentationHelper.getRespectiveMoves(game.getAlreadyPlayedMovesInOrder(), colors);
 		// Add already played moves to card knowledge
-		historyMoves.forEach(move -> cardKnowledge.put(move.getPlayedCard(), new Distribution(Collections.singletonMap(move.getPlayer(), 1d), true)));
+		historyMoves.forEach(move -> cardKnowledge.put(move.getPlayedCard(), new Distribution(Collections.singletonMap(move.getPlayer(), 1f), true)));
 
 		return cardKnowledge;
 	}

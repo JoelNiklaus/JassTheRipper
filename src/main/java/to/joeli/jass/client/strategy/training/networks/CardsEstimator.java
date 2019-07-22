@@ -35,16 +35,16 @@ public class CardsEstimator extends NeuralNetwork {
 		Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);
 
 		final Tensor result = (Tensor) predict(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
-		double[][][] res = new double[1][36][4];
+		float[][][] res = new float[1][36][4];
 		result.copyTo(res);
-		final double[][] probabilities = res[0];
+		final float[][] probabilities = res[0];
 
 		final List<Player> players = game.getPlayersBySeatId();
 
 		cardKnowledge = new HashMap<>();
 		final Card[] cards = Card.values();
 		for (int c = 0; c < cards.length; c++) {
-			HashMap<Player, Double> playerProbabilities = new HashMap<>();
+			HashMap<Player, Float> playerProbabilities = new HashMap<>();
 			for (int p = 0; p < players.size(); p++) {
 				playerProbabilities.put(players.get(p), probabilities[c][p]);
 			}

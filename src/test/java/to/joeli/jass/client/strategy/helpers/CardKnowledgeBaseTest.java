@@ -91,11 +91,11 @@ public class CardKnowledgeBaseTest {
 		final Game game = GameSessionBuilder.startedClubsGame();
 		final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, game.getCurrentPlayer().getCards());
 
-		final double delta = 0.001;
+		final float delta = 0.001f;
 		// The current player has the HEART_SIX
-		assertArrayEquals(new double[]{1.0, 0.0, 0.0, 0.0}, cardKnowledge.get(Card.HEART_SIX).getProbabilitiesInSeatIdOrder(), delta);
+		assertArrayEquals(new float[]{1.0f, 0.0f, 0.0f, 0.0f}, cardKnowledge.get(Card.HEART_SIX).getProbabilitiesInSeatIdOrder(), delta);
 		// The current player does not have the HEART_SEVEN
-		assertArrayEquals(new double[]{0.0, 0.33333, 0.33333, 0.33333}, cardKnowledge.get(Card.HEART_SEVEN).getProbabilitiesInSeatIdOrder(), delta);
+		assertArrayEquals(new float[]{0.0f, 0.33333f, 0.33333f, 0.33333f}, cardKnowledge.get(Card.HEART_SEVEN).getProbabilitiesInSeatIdOrder(), delta);
 	}
 
 }

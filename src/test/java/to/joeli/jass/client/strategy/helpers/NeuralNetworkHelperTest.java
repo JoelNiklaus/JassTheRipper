@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 public class NeuralNetworkHelperTest {
 
-	private static final double DELTA = 0.001;
+	private static final float DELTA = 0.001f;
 
 
 	@Test
@@ -48,40 +48,40 @@ public class NeuralNetworkHelperTest {
 
 	@Test
 	public void testFromCardToEncoding() {
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.CLUBS), 0), DELTA);
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.HEARTS), 1), DELTA);
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.SPADES), 2), DELTA);
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.DIAMONDS), 3), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.CLUBS), 0), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.HEARTS), 1), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.SPADES), 2), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.DIAMONDS), 3), DELTA);
 
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.shift(), 0), DELTA);
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.topDown(), 1), DELTA);
-		assertArrayEquals(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.bottomUp(), 2), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.shift(), 0), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.topDown(), 1), DELTA);
+		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.bottomUp(), 2), DELTA);
 	}
 
 	@Test
 	public void testFromEncodingToCard() {
-		assertEquals(Card.DIAMOND_JACK, NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
-		assertEquals(Card.CLUB_EIGHT, NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
+		assertEquals(Card.DIAMOND_JACK, NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
+		assertEquals(Card.CLUB_EIGHT, NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
 
-		assertNull(NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
-		assertNull(NeuralNetworkHelper.fromEncodingToCard(new double[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+		assertNull(NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
+		assertNull(NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 	}
 
 	@Test
 	public void testInfoRow() {
 		Game clubsGame = GameSessionBuilder.startedClubsGame();
-		final double[] infoRow = NeuralNetworkHelper.createInfoRow(clubsGame, clubsGame.getMode());
+		final float[] infoRow = NeuralNetworkHelper.createInfoRow(clubsGame, clubsGame.getMode());
 		System.out.println(Arrays.toString(infoRow));
-		assertArrayEquals(new double[]{1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0}, infoRow, DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0}, infoRow, DELTA);
 	}
 
 	@Test
 	public void testFeaturesAreEmptyForAlreadyPlayedCards() {
 		Game clubsGame = GameSessionBuilder.startedClubsGame();
-		final double[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
+		final float[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
 		System.out.println(Arrays.deepToString(features));
 		for (int i = 1; i < 37; i++) {
-			assertArrayEquals(new double[18], features[i], DELTA);
+			assertArrayEquals(new float[18], features[i], DELTA);
 		}
 		assertEquals(73, features.length);
 	}
@@ -93,9 +93,9 @@ public class NeuralNetworkHelperTest {
 		final Move move = new Move(player, Card.CLUB_QUEEN);
 		player.onMoveMade(move);
 		clubsGame.makeMove(move);
-		final double[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
+		final float[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
 		System.out.println(Arrays.deepToString(features));
-		assertArrayEquals(new double[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0}, features[1], DELTA);
+		assertArrayEquals(new float[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0}, features[1], DELTA);
 
 	}
 
@@ -132,7 +132,7 @@ public class NeuralNetworkHelperTest {
 	public void testAnalogousCardsFeatures() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 		final Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, game.getCurrentPlayer().getCards());
-		final List<double[][]> analogousCardsFeatures = NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge);
+		final List<float[][]> analogousCardsFeatures = NeuralNetworkHelper.getAnalogousCardsFeatures(game, cardKnowledge);
 
 		assertEquals(24, analogousCardsFeatures.size());
 		assertArrayEquals(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge), analogousCardsFeatures.get(0));
@@ -143,18 +143,18 @@ public class NeuralNetworkHelperTest {
 	@Test
 	public void testScoreFeaturesDimension() {
 		final Game game = GameSessionBuilder.startedClubsGame();
-		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
-		assertEquals(73, observation.length);
-		assertEquals(18, observation[0].length);
+		final float[][] scoreFeatures = NeuralNetworkHelper.getScoreFeatures(game);
+		assertEquals(73, scoreFeatures.length);
+		assertEquals(18, scoreFeatures[0].length);
 	}
 
 	@Test
 	public void testScoreFeaturesHasShiftedBit() {
 		final Game game = GameSessionBuilder.startedClubsGame();
 		Whitebox.setInternalState(game, "shifted", true);
-		final double[][] observation = NeuralNetworkHelper.getScoreFeatures(game);
-		assertEquals(0, observation[0][0], DELTA);
-		assertEquals(1, observation[0][1], DELTA);
+		final float[][] scoreFeatures = NeuralNetworkHelper.getScoreFeatures(game);
+		assertEquals(0, scoreFeatures[0][0], DELTA);
+		assertEquals(1, scoreFeatures[0][1], DELTA);
 	}
 
 	@Test
@@ -177,8 +177,8 @@ public class NeuralNetworkHelperTest {
 		final Player playerTeam1 = gameSession.getTeams().get(0).getPlayers().get(0);
 		final Player playerTeam2 = gameSession.getTeams().get(1).getPlayers().get(0);
 
-		final double scoreTargetTeam1 = NeuralNetworkHelper.getScoreTarget(game, playerTeam1);
-		final double scoreTargetTeam2 = NeuralNetworkHelper.getScoreTarget(game, playerTeam2);
+		final float scoreTargetTeam1 = NeuralNetworkHelper.getScoreTarget(game, playerTeam1);
+		final float scoreTargetTeam2 = NeuralNetworkHelper.getScoreTarget(game, playerTeam2);
 
 		assertEquals(game.getResult().getTeamScore(playerTeam1), scoreTargetTeam1, DELTA);
 		assertEquals(game.getResult().getTeamScore(playerTeam2), scoreTargetTeam2, DELTA);

@@ -56,7 +56,7 @@ public class NeuralNetworkHelper {
 	 * @param player
 	 * @return
 	 */
-	public static double getScoreTarget(Game game, Player player) {
+	public static float getScoreTarget(Game game, Player player) {
 		// NOTE: the scoreTarget is between 0 and 157 inside the network
 		return Math.min(game.getResult().getTeamScore(player), Arena.TOTAL_POINTS);
 	}
@@ -71,8 +71,8 @@ public class NeuralNetworkHelper {
 	 * @param game
 	 * @return
 	 */
-	public static List<double[][]> getAnalogousScoreFeatures(Game game) {
-		List<double[][]> features = new ArrayList<>();
+	public static List<float[][]> getAnalogousScoreFeatures(Game game) {
+		List<float[][]> features = new ArrayList<>();
 		if (game.getMode().isTrumpfMode()) {
 			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
 			permutations.forEach(colors -> features.add(getScoreFeatures(game, colors)));
@@ -81,8 +81,8 @@ public class NeuralNetworkHelper {
 		return features;
 	}
 
-	public static List<double[][]> getAnalogousCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge) {
-		List<double[][]> features = new ArrayList<>();
+	public static List<float[][]> getAnalogousCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge) {
+		List<float[][]> features = new ArrayList<>();
 		if (game.getMode().isTrumpfMode()) {
 			Collection<List<Color>> permutations = Collections2.permutations(asList(Color.values()));
 			permutations.forEach(colors -> features.add(getCardsFeatures(game, cardKnowledge, colors)));
@@ -101,19 +101,19 @@ public class NeuralNetworkHelper {
 		return targets;
 	}
 
-	public static double[][] getScoreFeatures(Game game) {
+	public static float[][] getScoreFeatures(Game game) {
 		return getScoreFeatures(game, null);
 	}
 
-	public static double[][] getScoreFeatures(Game game, List<Color> colors) {
+	public static float[][] getScoreFeatures(Game game, List<Color> colors) {
 		return getFeatures(game, null, colors);
 	}
 
-	public static double[][] getCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge) {
+	public static float[][] getCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge) {
 		return getCardsFeatures(game, cardKnowledge, null);
 	}
 
-	public static double[][] getCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge, List<Color> colors) {
+	public static float[][] getCardsFeatures(Game game, Map<Card, Distribution> cardKnowledge, List<Color> colors) {
 		return getFeatures(game, cardKnowledge, colors);
 	}
 
@@ -136,9 +136,9 @@ public class NeuralNetworkHelper {
 	 * card_out: the card estimation: 36 x 4 (where 4 is the player) as probabilities in cards order (all hearts, all diamonds, etc.)
 	 * score_out: integer [0:157]
 	 */
-	private static double[][] getFeatures(Game game, Map<Card, Distribution> cardKnowledge, List<Color> colors) {
+	private static float[][] getFeatures(Game game, Map<Card, Distribution> cardKnowledge, List<Color> colors) {
 		final Mode respectiveMode = DataAugmentationHelper.getRespectiveMode(game.getMode(), colors);
-		double[][] features = new double[73][18];
+		float[][] features = new float[73][18];
 
 		// INFO_ROW
 		features[0] = createInfoRow(game, respectiveMode);
@@ -146,7 +146,7 @@ public class NeuralNetworkHelper {
 		// CARDS_HISTORY
 		final List<Move> history = DataAugmentationHelper.getRespectiveMoves(game.getAlreadyPlayedMovesInOrder(), colors);
 		final List<ProbabilityMove> historyMoves = history.stream().map(move -> new ProbabilityMove(move.getPlayer(), move.getPlayedCard())).collect(Collectors.toList());
-		final List<double[]> historyEncodings = getListOfEncodings(historyMoves, respectiveMode);
+		final List<float[]> historyEncodings = getListOfEncodings(historyMoves, respectiveMode);
 		addListToArray(historyEncodings, features, 1);
 
 		// CARDS_DISTRIBUTION
@@ -167,7 +167,7 @@ public class NeuralNetworkHelper {
 		// Sort distributionMoves by card order
 		distributionMoves.sort(Comparator.comparing(ProbabilityMove::getCard));
 
-		final List<double[]> distributionEncodings = new ArrayList<>(getListOfEncodings(distributionMoves, respectiveMode));
+		final List<float[]> distributionEncodings = new ArrayList<>(getListOfEncodings(distributionMoves, respectiveMode));
 
 		if (distributionEncodings.size() != 36) throw new AssertionError();
 		addListToArray(distributionEncodings, features, 37);
@@ -176,14 +176,14 @@ public class NeuralNetworkHelper {
 	}
 
 
-	private static void addListToArray(List<double[]> list, double[][] array, int startIndex) {
+	private static void addListToArray(List<float[]> list, float[][] array, int startIndex) {
 		for (int i = 0; i < list.size(); i++) {
 			array[startIndex + i] = list.get(i);
 		}
 	}
 
-	static double[] createInfoRow(Game game, Mode respectiveMode) {
-		double[] infoRow = new double[18];
+	static float[] createInfoRow(Game game, Mode respectiveMode) {
+		float[] infoRow = new float[18];
 
 		// Knowing whether the game was shifted or not may be important for  the cards estimation network
 		final int shiftedIndex = game.isShifted() ? 1 : 0;
@@ -211,7 +211,7 @@ public class NeuralNetworkHelper {
 	 * @param mode
 	 * @return
 	 */
-	private static List<double[]> getListOfEncodings(List<ProbabilityMove> moves, Mode mode) {
+	private static List<float[]> getListOfEncodings(List<ProbabilityMove> moves, Mode mode) {
 		return moves.stream()
 				.map(move -> fromMoveToEncoding(move.getCard(), mode, move.getProbabilities()))
 				.collect(Collectors.toList());
@@ -228,11 +228,11 @@ public class NeuralNetworkHelper {
 	 * @param mode
 	 * @return
 	 */
-	public static double[] fromMoveToEncoding(Card card, Mode mode, int playerIndex) {
+	public static float[] fromMoveToEncoding(Card card, Mode mode, int playerIndex) {
 		if (playerIndex < 0 || playerIndex > 3)
 			throw new IllegalArgumentException("The playerIndex has to be between 0 and 3. Check what seatId the player has.");
 
-		double[] encoded = Arrays.copyOf(fromCardToEncoding(card, mode), 18);
+		float[] encoded = Arrays.copyOf(fromCardToEncoding(card, mode), 18);
 		encoded[14 + playerIndex] = 1; // set player
 
 		return encoded;
@@ -248,8 +248,8 @@ public class NeuralNetworkHelper {
 	 * @param mode
 	 * @return
 	 */
-	private static double[] fromMoveToEncoding(Card card, Mode mode, double[] probabilities) {
-		double[] encoded = Arrays.copyOf(fromCardToEncoding(card, mode), 18);
+	private static float[] fromMoveToEncoding(Card card, Mode mode, float[] probabilities) {
+		float[] encoded = Arrays.copyOf(fromCardToEncoding(card, mode), 18);
 		for (int i = 0; i < probabilities.length; i++) {
 			encoded[14 + i] = probabilities[i]; // copy probabilities
 		}
@@ -258,8 +258,8 @@ public class NeuralNetworkHelper {
 	}
 
 
-	private static double[] fromCardToEncoding(Card card, Mode mode) {
-		double[] encoded = new double[14]; // first 4 for suit, second 9 for value, third 1 for trumpf, last 4 for player seatid
+	private static float[] fromCardToEncoding(Card card, Mode mode) {
+		float[] encoded = new float[14]; // first 4 for suit, second 9 for value, third 1 for trumpf, last 4 for player seatid
 
 		encoded[card.getColor().getValue()] = 1; // set suit
 		encoded[3 + card.getValue().getRank()] = 1; // set value
@@ -268,7 +268,7 @@ public class NeuralNetworkHelper {
 		return encoded;
 	}
 
-	public static Card fromEncodingToCard(double[] threeHot) {
+	public static Card fromEncodingToCard(float[] threeHot) {
 		Color color = null;
 		for (int i = 0; i < 4; i++) {
 			if (threeHot[i] == 1)
@@ -326,7 +326,7 @@ public class NeuralNetworkHelper {
 	 * @param observation
 	 * @return
 	 */
-	public static Map<String, List<Card>> reconstructFeatures(double[][] observation) {
+	public static Map<String, List<Card>> reconstructFeatures(float[][] observation) {
 		Map<String, List<Card>> reconstruction = new HashMap<>();
 
 		List<Card> alreadyPlayedCards = new ArrayList<>();
@@ -356,15 +356,15 @@ public class NeuralNetworkHelper {
 	 */
 	static class ProbabilityMove {
 		private final Card card;
-		private final double[] probabilities;
+		private final float[] probabilities;
 
 		ProbabilityMove(Player player, Card card) {
 			this.card = card;
-			this.probabilities = new double[4];
+			this.probabilities = new float[4];
 			this.probabilities[player.getSeatId()] = 1;
 		}
 
-		ProbabilityMove(Card card, double[] probabilities) {
+		ProbabilityMove(Card card, float[] probabilities) {
 			this.card = card;
 			this.probabilities = probabilities;
 		}
@@ -373,7 +373,7 @@ public class NeuralNetworkHelper {
 			return card;
 		}
 
-		double[] getProbabilities() {
+		float[] getProbabilities() {
 			return probabilities;
 		}
 	}

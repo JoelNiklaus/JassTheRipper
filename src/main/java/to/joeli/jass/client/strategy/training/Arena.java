@@ -32,7 +32,7 @@ public class Arena {
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
 	public static final int SEED = 42;
-	public static final double TOTAL_POINTS = 157.0; // INFO: We disregard Matchbonus for simplicity here
+	public static final float TOTAL_POINTS = 157.0f; // INFO: We disregard Matchbonus for simplicity here
 
 	private static final boolean cardsEstimatorUsed = false;
 	private static final boolean scoreEstimatorUsed = true;
@@ -305,7 +305,7 @@ public class Arena {
 	public Result playGame(boolean savingData) {
 		Game game = gameSession.getCurrentGame();
 
-		HashMap<double[][], Player> scoreFeaturesForPlayer = new HashMap<>(); // The double[][] is the key because it is unique
+		HashMap<float[][], Player> scoreFeaturesForPlayer = new HashMap<>(); // The float[][] is the key because it is unique
 		int[][] cardsTarget = null;
 		List<int[][]> analogousCardsTargets = new ArrayList<>();
 		if (savingData) {
@@ -345,7 +345,7 @@ public class Arena {
 
 		if (savingData) {
 			if (scoreFeaturesForPlayer.size() != 24 * 36) throw new AssertionError();
-			for (Map.Entry<double[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
+			for (Map.Entry<float[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
 				scoreDataSet.addFeature(entry.getKey());
 				scoreDataSet.addTarget(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
 			}

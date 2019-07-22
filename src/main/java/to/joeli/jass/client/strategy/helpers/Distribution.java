@@ -10,15 +10,15 @@ import java.util.Random;
  * https://stackoverflow.com/questions/35701316/discrete-probability-distribution-in-java
  */
 public class Distribution {
-	private final Map<Player, Double> probabilities;
+	private final Map<Player, Float> probabilities;
 	private boolean sampled;
 	private Random random = new Random();
 
-	public Distribution(Map<Player, Double> probabilities) {
+	public Distribution(Map<Player, Float> probabilities) {
 		this(probabilities, false);
 	}
 
-	Distribution(Map<Player, Double> probabilities, boolean sampled) {
+	Distribution(Map<Player, Float> probabilities, boolean sampled) {
 		this.probabilities = new HashMap<>(probabilities);
 		this.sampled = sampled;
 		if (sumProbabilities() - 1.0 >= 0.000001) throw new AssertionError();
@@ -40,11 +40,11 @@ public class Distribution {
 		if (probabilities.size() == 1)
 			return false;
 
-		double deletedProbability = probabilities.remove(player);
+		float deletedProbability = probabilities.remove(player);
 
 		// Redistribute the remaining probability on the other players
-		double probabilityToAdd = deletedProbability / probabilities.size();
-		for (Map.Entry<Player, Double> entry : probabilities.entrySet()) {
+		float probabilityToAdd = deletedProbability / probabilities.size();
+		for (Map.Entry<Player, Float> entry : probabilities.entrySet()) {
 			probabilities.put(entry.getKey(), entry.getValue() + probabilityToAdd);
 		}
 
@@ -62,10 +62,10 @@ public class Distribution {
 	 */
 	public Player sample() {
 		// TODO take this random as a parameter so we can configure the seed
-		double threshold = random.nextDouble() * sumProbabilities();
+		float threshold = random.nextFloat() * sumProbabilities();
 
-		double probability = 0;
-		for (Map.Entry<Player, Double> entry : probabilities.entrySet()) {
+		float probability = 0;
+		for (Map.Entry<Player, Float> entry : probabilities.entrySet()) {
 			probability += entry.getValue();
 			if (probability >= threshold)
 				return entry.getKey();
@@ -81,8 +81,8 @@ public class Distribution {
 		return probabilities.keySet().contains(player);
 	}
 
-	private double sumProbabilities() {
-		return probabilities.values().stream().mapToDouble(i -> i).sum();
+	private float sumProbabilities() {
+		return (float) probabilities.values().stream().mapToDouble(i -> i).sum();
 	}
 
 	public boolean isSampled() {
@@ -94,12 +94,12 @@ public class Distribution {
 	}
 
 	/**
-	 * Retrieves a double array from the probabilities hashmap for use in the neural networks
+	 * Retrieves a float array from the probabilities hashmap for use in the neural networks
 	 *
 	 * @return
 	 */
-	public double[] getProbabilitiesInSeatIdOrder() {
-		double[] result = new double[4];
+	public float[] getProbabilitiesInSeatIdOrder() {
+		float[] result = new float[4];
 		probabilities.forEach((player, probability) -> result[player.getSeatId()] = probability);
 		return result;
 	}
