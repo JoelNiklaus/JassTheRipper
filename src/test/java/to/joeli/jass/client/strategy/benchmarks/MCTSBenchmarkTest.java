@@ -11,7 +11,7 @@ import to.joeli.jass.client.strategy.config.TrumpfSelectionMethod;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
-import to.joeli.jass.client.strategy.training.ScoreEstimator;
+import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 
 import java.util.Random;
 

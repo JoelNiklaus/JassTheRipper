@@ -1,4 +1,4 @@
-package to.joeli.jass.client.strategy.training;
+package to.joeli.jass.client.strategy.training.networks;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +8,7 @@ import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
 import to.joeli.jass.client.strategy.helpers.Distribution;
 import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
+import to.joeli.jass.client.strategy.training.NetworkType;
 import to.joeli.jass.game.cards.Card;
 
 import java.util.HashMap;

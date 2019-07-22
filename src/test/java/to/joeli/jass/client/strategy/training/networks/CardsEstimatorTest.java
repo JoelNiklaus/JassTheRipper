@@ -1,4 +1,4 @@
-package to.joeli.jass.client.strategy.training;
+package to.joeli.jass.client.strategy.training.networks;
 
 import org.junit.Test;
 import to.joeli.jass.client.game.Game;

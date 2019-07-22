@@ -6,14 +6,12 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import to.joeli.jass.client.strategy.training.CardsDataSet;
-import to.joeli.jass.client.strategy.training.DataSet;
-import to.joeli.jass.client.strategy.training.ScoreDataSet;
-import to.joeli.jass.client.strategy.training.TrainMode;
+import to.joeli.jass.client.strategy.training.data.CardsDataSet;
+import to.joeli.jass.client.strategy.training.data.DataSet;
+import to.joeli.jass.client.strategy.training.data.ScoreDataSet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class IOHelper {
 

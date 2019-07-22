@@ -1,4 +1,4 @@
-package to.joeli.jass.client.strategy.training;
+package to.joeli.jass.client.strategy.training.data;
 
 import com.google.common.collect.EvictingQueue;
 
@@ -6,12 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-public class CardsDataSet extends DataSet {
+public class ScoreDataSet extends DataSet {
 
 	protected Queue<double[][]> features;
-	protected Queue<int[][]> targets;
+	protected Queue<Double> targets;
 
-	public CardsDataSet(int size) {
+
+	public ScoreDataSet(int size) {
 		features = EvictingQueue.create(size);
 		targets = EvictingQueue.create(size);
 	}
@@ -24,11 +25,12 @@ public class CardsDataSet extends DataSet {
 		return features.addAll(newFeatures);
 	}
 
-	public boolean addTarget(int[][] newTarget) {
+
+	public boolean addTarget(Double newTarget) {
 		return targets.add(newTarget);
 	}
 
-	public boolean addTargets(List<int[][]> newTargets) {
+	public boolean addTargets(List<Double> newTargets) {
 		return targets.addAll(newTargets);
 	}
 
@@ -41,6 +43,6 @@ public class CardsDataSet extends DataSet {
 	}
 
 	protected String getNetworkTypePath() {
-		return "cards/";
+		return "score/";
 	}
 }

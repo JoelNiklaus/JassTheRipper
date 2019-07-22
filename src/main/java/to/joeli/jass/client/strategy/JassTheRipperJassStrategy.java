@@ -16,8 +16,8 @@ import to.joeli.jass.client.strategy.helpers.TrumpfSelectionHelper;
 import to.joeli.jass.client.strategy.mcts.CardMove;
 import to.joeli.jass.client.strategy.mcts.TrumpfMove;
 import to.joeli.jass.client.strategy.mcts.src.Move;
-import to.joeli.jass.client.strategy.training.CardsEstimator;
-import to.joeli.jass.client.strategy.training.ScoreEstimator;
+import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
+import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 

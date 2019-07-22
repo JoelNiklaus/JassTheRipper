@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.*;
 import to.joeli.jass.client.strategy.config.Config;
 import to.joeli.jass.client.strategy.helpers.*;
+import to.joeli.jass.client.strategy.training.data.CardsDataSet;
+import to.joeli.jass.client.strategy.training.data.DataSet;
+import to.joeli.jass.client.strategy.training.data.ScoreDataSet;
+import to.joeli.jass.client.strategy.training.networks.NeuralNetwork;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 

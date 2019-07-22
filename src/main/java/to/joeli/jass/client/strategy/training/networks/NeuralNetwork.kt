@@ -1,9 +1,11 @@
-package to.joeli.jass.client.strategy.training
+package to.joeli.jass.client.strategy.training.networks
 
 import org.slf4j.LoggerFactory
 import org.tensorflow.SavedModelBundle
 import org.tensorflow.Tensor
 import to.joeli.jass.client.strategy.helpers.ShellScriptRunner
+import to.joeli.jass.client.strategy.training.NetworkType
+import to.joeli.jass.client.strategy.training.data.DataSet
 
 
 /**

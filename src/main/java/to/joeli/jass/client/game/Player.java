@@ -7,8 +7,8 @@ import to.joeli.jass.client.strategy.JassStrategy;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.client.strategy.RandomJassStrategy;
 import to.joeli.jass.client.strategy.config.Config;
-import to.joeli.jass.client.strategy.training.CardsEstimator;
-import to.joeli.jass.client.strategy.training.ScoreEstimator;
+import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
+import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 

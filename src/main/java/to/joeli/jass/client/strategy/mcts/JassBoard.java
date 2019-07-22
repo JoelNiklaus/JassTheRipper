@@ -14,8 +14,8 @@ import to.joeli.jass.client.strategy.mcts.src.Board;
 import to.joeli.jass.client.strategy.mcts.src.CallLocation;
 import to.joeli.jass.client.strategy.mcts.src.Move;
 import to.joeli.jass.client.strategy.training.Arena;
-import to.joeli.jass.client.strategy.training.CardsEstimator;
-import to.joeli.jass.client.strategy.training.ScoreEstimator;
+import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
+import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 

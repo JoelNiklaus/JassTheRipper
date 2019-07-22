@@ -1,4 +1,4 @@
-package to.joeli.jass.client.strategy.training;
+package to.joeli.jass.client.strategy.training.data;
 
 import java.util.List;
 

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.*;
-import to.joeli.jass.client.strategy.training.CardsEstimator;
+import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.CardValue;
 import to.joeli.jass.game.cards.Color;
