@@ -24,8 +24,8 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
     var savedModelBundle: SavedModelBundle? = null
 
 
-    fun loadModel(episodeNumber: String) {
-        val path = "${DataSet.BASE_PATH}$episodeNumber/${networkType.path}models/export/"
+    fun loadModel(episodeNumber: Int) {
+        val path = "${DataSet.BASE_PATH}${zeroPadded(episodeNumber)}/${networkType.path}models/export/"
         savedModelBundle = SavedModelBundle.load(path, "tag")
     }
 
@@ -48,9 +48,13 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
          * Trains the network with a given train mode. The actual training is done in python with keras. This is why we invoke the shell script.
          */
         @JvmStatic
-        fun train(episodeNumber: String, networkType: NetworkType): Boolean {
-            return ShellScriptRunner.runShellProcess(ShellScriptRunner.getPythonDirectory(), "python3 train.py $episodeNumber ${networkType.path}")
+        fun train(episodeNumber: Int, networkType: NetworkType): Boolean {
+            return ShellScriptRunner.runShellProcess(ShellScriptRunner.getPythonDirectory(), "python3 train.py ${zeroPadded(episodeNumber)} ${networkType.path}")
 
+        }
+
+        private fun zeroPadded(number: Int): String {
+            return String.format("%04d", number)
         }
 
         val logger = LoggerFactory.getLogger(NeuralNetwork::class.java)

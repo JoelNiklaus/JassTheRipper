@@ -174,13 +174,13 @@ public class Arena {
 		if (cardsEstimatorUsed) {
 			gameSession.getPlayersInInitialPlayingOrder().forEach(player -> {
 				if (player.getConfig().isCardsEstimatorTrainable() == trainable)
-					player.getCardsEstimator().loadModel(zeroPadded(episodeNumber));
+					player.getCardsEstimator().loadModel(episodeNumber);
 			});
 		}
 		if (scoreEstimatorUsed) {
 			gameSession.getPlayersInInitialPlayingOrder().forEach(player -> {
 				if (player.getConfig().isScoreEstimatorTrainable() == trainable)
-					player.getScoreEstimator().loadModel(zeroPadded(episodeNumber));
+					player.getScoreEstimator().loadModel(episodeNumber);
 			});
 		}
 	}
@@ -191,9 +191,9 @@ public class Arena {
 	private void trainNetworks(int episodeNumber) {
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
 		if (cardsEstimatorUsed)
-			NeuralNetwork.train(zeroPadded(episodeNumber), NetworkType.CARDS);
+			NeuralNetwork.train(episodeNumber, NetworkType.CARDS);
 		if (scoreEstimatorUsed)
-			NeuralNetwork.train(zeroPadded(episodeNumber), NetworkType.SCORE);
+			NeuralNetwork.train(episodeNumber, NetworkType.SCORE);
 	}
 
 

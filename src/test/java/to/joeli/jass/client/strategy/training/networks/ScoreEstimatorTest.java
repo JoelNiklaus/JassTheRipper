@@ -21,6 +21,7 @@ public class ScoreEstimatorTest {
 		Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
 
 		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) < 120);
@@ -31,6 +32,7 @@ public class ScoreEstimatorTest {
 		Game diamondsGame = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
 
 		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) > 120);
@@ -45,8 +47,8 @@ public class ScoreEstimatorTest {
 		player.onMoveMade(move);
 		diamondsGame.makeMove(move);
 
-
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
 
 		System.out.println(network.predictScore(diamondsGame));
 		assertTrue(network.predictScore(diamondsGame) < 100);
@@ -55,6 +57,8 @@ public class ScoreEstimatorTest {
 	@Test
 	public void testFirstForwardPassSpeed() {
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
+
 		long startTime = System.currentTimeMillis();
 		network.predictScore(diamondsGame);
 		System.out.println("The execution of one forward pass took " + (System.currentTimeMillis() - startTime) + "ms");
@@ -63,6 +67,8 @@ public class ScoreEstimatorTest {
 	@Test
 	public void testFirstTenForwardPassSpeeds() {
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
+
 		for (int i = 0; i < 10; i++) {
 			long startTime = System.currentTimeMillis();
 			network.predictScore(diamondsGame);
@@ -73,6 +79,8 @@ public class ScoreEstimatorTest {
 	@Test
 	public void testFirstHundredForwardPassSpeeds() {
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
+
 		for (int i = 0; i < 100; i++) {
 			long startTime = System.nanoTime() / 1000;
 			network.predictScore(diamondsGame);
@@ -83,6 +91,8 @@ public class ScoreEstimatorTest {
 	@Test
 	public void testAverageForwardPassSpeed() {
 		ScoreEstimator network = new ScoreEstimator(true);
+		network.loadModel(0);
+
 		long startTime = System.nanoTime() / 1000;
 		double n = 100;
 		for (int i = 0; i < n; i++)

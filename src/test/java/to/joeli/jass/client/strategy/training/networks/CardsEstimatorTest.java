@@ -39,6 +39,8 @@ public class CardsEstimatorTest {
 
 
 		CardsEstimator network = new CardsEstimator(true);
+		network.loadModel(0);
+
 		final Map<Card, Distribution> cardDistributionMap = network.predictCardDistribution(diamondsGame, availableCards);
 		cardDistributionMap.forEach((card, distribution) -> System.out.println(card + ": " + Arrays.toString(distribution.getProbabilitiesInSeatIdOrder())));
 	}
