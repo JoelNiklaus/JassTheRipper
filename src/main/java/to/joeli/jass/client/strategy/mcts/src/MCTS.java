@@ -145,7 +145,7 @@ public class MCTS {
 			return vote(moves);
 
 		} catch (InterruptedException | ExecutionException e) {
-			logger.debug("{}", e);
+			logger.error("{}", e);
 			throw (new MCTSException("There was a problem in the MCTS. Enable debug logging for more information."));
 		} finally {
 			futures.clear();

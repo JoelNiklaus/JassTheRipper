@@ -1,10 +1,11 @@
 package to.joeli.jass.client.strategy.training;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import to.joeli.jass.client.game.Game;
-import to.joeli.jass.client.strategy.helpers.*;
+import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
+import to.joeli.jass.client.strategy.helpers.Distribution;
+import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
+import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
@@ -16,10 +17,6 @@ import java.util.Set;
 
 public class CardsEstimatorTest {
 
-	@Before
-	public void setUp() {
-		ZeroMQClient.startServer();
-	}
 
 	@Test
 	public void testCardsEstimatorPrediction() {
@@ -45,10 +42,4 @@ public class CardsEstimatorTest {
 		final Map<Card, Distribution> cardDistributionMap = network.predictCardDistribution(diamondsGame, availableCards);
 		cardDistributionMap.forEach((card, distribution) -> System.out.println(card + ": " + Arrays.toString(distribution.getProbabilitiesInSeatIdOrder())));
 	}
-
-	@After
-	public void tearDown() {
-		ZeroMQClient.stopServer();
-	}
-
 }

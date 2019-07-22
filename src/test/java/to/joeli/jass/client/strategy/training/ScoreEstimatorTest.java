@@ -1,13 +1,10 @@
 package to.joeli.jass.client.strategy.training;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
-import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
@@ -18,10 +15,6 @@ public class ScoreEstimatorTest {
 
 	private Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();
 
-	@Before
-	public void setUp() {
-		ZeroMQClient.startServer();
-	}
 
 	@Test
 	public void testPreTrainedScoreEstimatorPredictionsIsMediocreForShiftCards() {
@@ -97,9 +90,5 @@ public class ScoreEstimatorTest {
 		System.out.println("The execution of " + n + " forward passes took " + (System.nanoTime() / 1000 - startTime) / (1000.0 * n) + "ms on average");
 	}
 
-	@After
-	public void tearDown() {
-		ZeroMQClient.stopServer();
-	}
 
 }

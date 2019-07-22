@@ -12,6 +12,10 @@ import to.joeli.jass.client.strategy.helpers.ShellScriptRunner
  * - Training is a pain in DL4J: No Tensorboard support, own visualization tool does not work, very hard to get metrics
  * - Documentation is horrible
  * --> Conclusion: Use Keras and ZeroMQ for fast communication between java and python
+ *
+ * New Decision:
+ * Because ZeroMQ had problem "Too many open files"
+ * Ditched ZeroMQ in favor of direct model import via tensorflow java api
  */
 open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: Boolean) {
 
@@ -43,15 +47,6 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
                 .feed("input", Tensor.create(input))
                 .fetch(networkType.output)
                 .run()[0]
-    }
-
-    /**
-     * Sends a message to the neural network server (ZeroMQServer) to load the weights of the saved trainable network into memory for prediction
-     * IMPORTANT: The ZeroMQServer must be started.
-     */
-    fun loadWeightsOfTrainableNetwork() {
-        //loadModel(TrainMode.SELF_PLAY)
-        //return ZeroMQClient.loadWeights(networkType)
     }
 
     companion object {

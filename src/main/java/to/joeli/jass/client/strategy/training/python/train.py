@@ -64,5 +64,4 @@ def train(episode_number, network_type):
 
 
 if __name__ == '__main__':
-    # train("pre_train/", "score/")
     train(sys.argv[1], sys.argv[2])

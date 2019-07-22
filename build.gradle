@@ -30,9 +30,6 @@ dependencies {
     compile 'org.eclipse.jetty.websocket:websocket-client:9.3.4.RC0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.0'
 
-    // ZeroMQ
-    compile group: 'org.zeromq', name: 'jeromq', version: '0.5.1'
-
     // Logging
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'ch.qos.logback:logback-classic:1.1.3'

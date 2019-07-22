@@ -1,7 +1,5 @@
 package to.joeli.jass.client.strategy.benchmarks;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import to.joeli.jass.client.game.GameSession;
 import to.joeli.jass.client.game.Result;
@@ -11,7 +9,6 @@ import to.joeli.jass.client.strategy.config.MCTSConfig;
 import to.joeli.jass.client.strategy.config.StrengthLevel;
 import to.joeli.jass.client.strategy.config.TrumpfSelectionMethod;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
-import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.ScoreEstimator;
@@ -29,11 +26,6 @@ public class MCTSBenchmarkTest {
 	private static final int NUM_GAMES = 10;
 
 	private Arena arena = new Arena(2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
-
-	@Before
-	public void setUp() {
-		ZeroMQClient.startServer();
-	}
 
 	/**
 	 * Tests if it is worthwhile to use the MCTS trumpf selection method
@@ -249,10 +241,6 @@ public class MCTSBenchmarkTest {
 		System.out.println("Random: " + random);
 	}
 
-	@After
-	public void tearDown() {
-		ZeroMQClient.stopServer();
-	}
 
 	private int run(GameSession gameSession, int n) {
 		int sum = 0;

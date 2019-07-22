@@ -65,7 +65,6 @@ public class ScoreEstimator extends NeuralNetwork {
 		float[][] res = new float[1][1];
 		result.copyTo(res);
 		return (double) res[0][0];
-		//return ZeroMQClient.predictScore(NeuralNetworkHelper.getScoreFeatures(game));
 	}
 
 }

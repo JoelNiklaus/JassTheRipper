@@ -66,37 +66,6 @@ public class GameSession {
 		getPlayersOfTeam(1).forEach(player -> player.setConfig(configs[1]));
 	}
 
-
-	public Player getFirstPlayerWithUsedCardsEstimator(boolean trainable) {
-		return gameStartingPlayingOrder.getPlayersInInitialOrder().stream()
-				.filter(player -> player.getConfig().isCardsEstimatorUsed() && player.getCardsEstimator().isTrainable() == trainable)
-				.findFirst()
-				.orElseThrow(() -> new IllegalStateException("No player has a used and trainable cards estimator."));
-	}
-
-	public Player getFirstPlayerWithUsedScoreEstimator(boolean trainable) {
-		return gameStartingPlayingOrder.getPlayersInInitialOrder().stream()
-				.filter(player -> player.getConfig().isScoreEstimatorUsed() && player.getScoreEstimator().isTrainable() == trainable)
-				.findFirst()
-				.orElseThrow(() -> new IllegalStateException("No player has a used and trainable score estimator."));
-	}
-
-	public Team getTeamOfPlayer(Player player) {
-		for (Team team : teams) {
-			if (team.getPlayers().contains(player))
-				return team;
-		}
-		return null;
-	}
-
-	public Team getOpponentTeamOfPlayer(Player player) {
-		for (Team team : teams) {
-			if (!team.getPlayers().contains(player))
-				return team;
-		}
-		return null;
-	}
-
 	public Player getPartnerOfPlayer(Player player) {
 		return gameStartingPlayingOrder.getPartnerOfPlayer(player);
 	}
