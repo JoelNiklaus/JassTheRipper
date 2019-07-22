@@ -111,12 +111,13 @@ TODO Make new experiments with the improvements so far:
 	// TODO add tests!
 	// TODO select function mcts anschauen, wie wird leaf node bestimmt?
 
-	private CardsEstimator cardsEstimator;
-	private ScoreEstimator scoreEstimator;
-
-	private Config config;
+	private Config config = new Config();
 
 	private MCTSHelper mctsHelper;
+
+	private CardsEstimator cardsEstimator = new CardsEstimator(config.isCardsEstimatorTrainable());
+	private ScoreEstimator scoreEstimator = new ScoreEstimator(config.isScoreEstimatorTrainable());
+
 
 	public static final Logger logger = LoggerFactory.getLogger(JassTheRipperJassStrategy.class);
 
@@ -226,16 +227,30 @@ TODO Make new experiments with the improvements so far:
 		logger.info("Hi there! I am JassTheRipper and these are my cards: {} ", availableCards);
 	}
 
+	/**
+	 * Only return the estimator if it is actually used. Return null otherwise.
+	 *
+	 * @return
+	 */
 	public CardsEstimator getCardsEstimator() {
-		return cardsEstimator;
+		if (config.isCardsEstimatorUsed())
+			return cardsEstimator;
+		return null;
 	}
 
 	public void setCardsEstimator(CardsEstimator cardsEstimator) {
 		this.cardsEstimator = cardsEstimator;
 	}
 
+	/**
+	 * Only return the estimator if it is actually used. Return null otherwise.
+	 *
+	 * @return
+	 */
 	public ScoreEstimator getScoreEstimator() {
-		return scoreEstimator;
+		if (config.isScoreEstimatorUsed())
+			return scoreEstimator;
+		return null;
 	}
 
 	public void setScoreEstimator(ScoreEstimator scoreEstimator) {
@@ -250,9 +265,9 @@ TODO Make new experiments with the improvements so far:
 			this.mctsHelper.shutDown();
 		this.mctsHelper = new MCTSHelper(config.getMctsConfig());
 		if (config.isCardsEstimatorUsed())
-			cardsEstimator = new CardsEstimator(config.isCardsEstimatorTrainable());
+			cardsEstimator.setTrainable(config.isCardsEstimatorTrainable());
 		if (config.isScoreEstimatorUsed())
-			scoreEstimator = new ScoreEstimator(config.isScoreEstimatorTrainable());
+			scoreEstimator.setTrainable(config.isScoreEstimatorTrainable());
 	}
 
 	public Config getConfig() {

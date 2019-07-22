@@ -2,11 +2,11 @@ package to.joeli.jass.client.strategy.training;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tensorflow.Tensor;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.strategy.helpers.CardSelectionHelper;
 import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
-import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
 import to.joeli.jass.client.strategy.mcts.CardMove;
 import to.joeli.jass.game.cards.Card;
 
@@ -21,8 +21,10 @@ public class ScoreEstimator extends NeuralNetwork {
 		super(NetworkType.SCORE, trainable);
 	}
 
+
 	/**
 	 * Predicts a move based on the neural network predictions for states after a possible card is played
+	 *
 	 * @param game
 	 * @return
 	 */
@@ -59,7 +61,11 @@ public class ScoreEstimator extends NeuralNetwork {
 	 * @return
 	 */
 	public double predictScore(Game game) {
-		return ZeroMQClient.predictScore(NeuralNetworkHelper.getScoreFeatures(game));
+		final Tensor result = (Tensor) predict(NeuralNetworkHelper.getScoreFeatures(game));
+		float[][] res = new float[1][1];
+		result.copyTo(res);
+		return (double) res[0][0];
+		//return ZeroMQClient.predictScore(NeuralNetworkHelper.getScoreFeatures(game));
 	}
 
 }

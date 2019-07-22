@@ -1,4 +1,3 @@
-import json
 import os
 from os.path import isfile, join
 from pathlib import Path
@@ -8,13 +7,10 @@ import numpy as np
 
 
 def create_if_not_exists(path):
+    # INFO: This somehow causes problems on the server!
     if not os.path.exists(path):
         os.makedirs(path)
-
-
-def load_json(path):
-    with open(path, 'r') as file:
-        return np.array(json.loads(file.read()))
+    return path
 
 
 def load_cbor(path):
@@ -24,27 +20,11 @@ def load_cbor(path):
 
 def read_cbor(string):
     string = cbor.loads(string)
-    print(string)
     return np.array(string)
-
-
-def load_npy(path):
-    return np.load(path)
 
 
 def get_file_names(path, extension):
     return [f for f in os.listdir(path) if isfile(join(path, f)) and os.path.splitext(f)[1] == extension]
-
-
-def load_all_npy_files(path):
-    combined_array = None
-    for filename in get_file_names(path, '.npy'):
-        array = load_npy(path + filename)
-        if combined_array is None:
-            combined_array = array
-        else:
-            combined_array = np.concatenate((combined_array, array))
-    return combined_array
 
 
 def load_all_cbor_files(path):
@@ -58,27 +38,57 @@ def load_all_cbor_files(path):
     return combined_array
 
 
-root_path = Path(os.path.realpath(__file__)).parent.parent.parent.parent.parent.parent.parent.parent.parent
+"""
+Folder structure:
+    ####/                   --> episode number: 0 -> pre_train, 1..n -> self_play
+        cards/                      --> network_type
+            features/
+            targets/
+            models/
+                export/
+                keras/
+                    model.hdf5
+                    weights.hdf5
+        score/                      --> network_type
+            features/
+            targets/
+            models/
+                export/
+                keras/
+                    model.hdf5
+                    weights.hdf5
+"""
 
-base_path = str(root_path) + "/resources/"
 
-#dataset_path = base_path + "datasets/"
-# create_if_not_exists(dataset_path)
+def path(episode_number, network_type):
+    root_path = Path(os.path.realpath(__file__)).parent.parent.parent.parent.parent.parent.parent.parent.parent
+    base_path = str(root_path) + "/resources/"
+    return base_path + episode_number + "/" + network_type
 
-#score_features_path = dataset_path + "score_features/"
-#cards_features_path = dataset_path + "cards_features/"
-#score_labels_path = dataset_path + "score_labels/"
-#cards_labels_path = dataset_path + "cards_labels/"
 
-#models_path = base_path + "models/"
-#estimator_model_path = models_path + "estimator_model.hdf5"
-#estimator_weights_path = models_path + "estimator_weights.hdf5"
+def features_path(episode_number, network_type):
+    return create_if_not_exists(path(episode_number, network_type) + "features/")
 
-#cards_estimator_model_path = models_path + 'cards_estimator_model.hdf5'
-#cards_estimator_weights_path = models_path + 'cards_estimator_weights.hdf5'
-#score_estimator_model_path = models_path + 'score_estimator_model.hdf5'
-#score_estimator_weights_path = models_path + 'score_estimator_weights.hdf5'
-# create_if_not_exists(models_path)
 
-# labels = load_json(dataset_path + "labels.json")
-# features = load_json(dataset_path + "features.json")
+def targets_path(episode_number, network_type):
+    return create_if_not_exists(path(episode_number, network_type) + "targets/")
+
+
+def models_path(episode_number, network_type):
+    return create_if_not_exists(path(episode_number, network_type) + "models/")
+
+
+def export_path(episode_number, network_type):
+    return create_if_not_exists(models_path(episode_number, network_type) + "export/")
+
+
+def keras_path(episode_number, network_type):
+    return create_if_not_exists(models_path(episode_number, network_type) + "keras/")
+
+
+def model_path(episode_number, network_type):
+    return keras_path(episode_number, network_type) + "model.hdf5"
+
+
+def weights_path(episode_number, network_type):
+    return keras_path(episode_number, network_type) + "weights.hdf5"

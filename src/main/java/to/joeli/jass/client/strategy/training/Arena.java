@@ -8,6 +8,7 @@ import to.joeli.jass.client.strategy.helpers.*;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 
+import java.io.File;
 import java.util.*;
 
 
@@ -22,12 +23,15 @@ public class Arena {
 	private static final boolean SUPERVISED_PRETRAINING_ENABLED = true;
 	private static final boolean DATA_AUGMENTATION_ENABLED = true;
 	private static final int NUM_EPISODES = 1; // TEST: 1
-	private static final int NUM_TRAINING_GAMES = 2; // Should be an even number, TEST: 2
-	private static final int NUM_TESTING_GAMES = 2; // Should be an even number, TEST: 2
+	private static final int NUM_TRAINING_GAMES = 1; // Should be an even number and a multiple of REOLAY_MEMORY_SIZE_FACTOR, TEST: 2
+	private static final int NUM_TESTING_GAMES = 1;  // Should be an even number and a multiple of REOLAY_MEMORY_SIZE_FACTOR, TEST: 2
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
 	public static final int SEED = 42;
 	public static final double TOTAL_POINTS = 157.0; // INFO: We disregard Matchbonus for simplicity here
+
+	private static final boolean cardsEstimatorUsed = false;
+	private static final boolean scoreEstimatorUsed = true;
 
 	private final int numTrainingGames;
 	private final int numTestingGames;
@@ -44,24 +48,20 @@ public class Arena {
 	public static void main(String[] args) {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
-		logger.info("Collecting a dataset of games played with random playouts\n");
-		arena.collectDataSetRandomPlayouts(REPLAY_MEMORY_SIZE_FACTOR * 10);
-
-		logger.info("Pre-training the neural networks\n");
-		arena.preTrainNetworks();
-
-		//logger.info("Training the networks with self-play\n");
-		//arena.trainForNumEpisodes(1000);
+		logger.info("Training the networks with self-play\n");
+		arena.trainForNumEpisodes(1000);
 	}
 
 
 	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
 		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
 
-		this.numTrainingGames = numTrainingGames;
-		this.numTestingGames = numTestingGames;
+		this.numTrainingGames = REPLAY_MEMORY_SIZE_FACTOR * numTrainingGames;
+		this.numTestingGames = REPLAY_MEMORY_SIZE_FACTOR * numTestingGames;
 		this.improvementThresholdPercentage = improvementThresholdPercentage;
 		random = new Random(seed);
+
+		setUp();
 	}
 
 
@@ -70,45 +70,58 @@ public class Arena {
 		this.gameSession = gameSession;
 	}
 
-	private void preTrainNetworks() {
-		setUp();
+	private void setUp() {
+		logger.info("Setting up the training process\n");
+		gameSession = GameSessionBuilder.newSession().createGameSession();
 
+		// 36: Number of Cards in a game
+		int size = 36 * REPLAY_MEMORY_SIZE_FACTOR;
+		if (DATA_AUGMENTATION_ENABLED)
+			size *= 24; // 24: Number of color permutations (data augmentation)
+		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
+		cardsDataSet = new CardsDataSet(size);
+		scoreDataSet = new ScoreDataSet(size);
+
+		String path = DataSet.BASE_PATH + zeroPadded(0);
+		if (!new File(path).exists()) {
+			logger.info("Collecting a dataset of games played with random playouts\n");
+			runMCTSWithRandomPlayout(random, REPLAY_MEMORY_SIZE_FACTOR * 10);
+		}
+
+		logger.info("Pre-training the neural networks\n");
+		trainNetworks(0);
+
+		logger.info("Loading the pre_trained networks into memory\n");
 		Config[] configs = {
-				new Config(true, true, true, true, true),
-				new Config(true, false, false)
+				new Config(true, cardsEstimatorUsed, true, scoreEstimatorUsed, true),
+				new Config(true, cardsEstimatorUsed, false, scoreEstimatorUsed, false)
 		};
 		gameSession.setConfigs(configs);
-
-		final Player cardsEstimatorPlayer = gameSession.getFirstPlayerWithUsedCardsEstimator(true);
-		cardsEstimatorPlayer.getCardsEstimator().train(TrainMode.PRE_TRAIN);
-		final Player scoreEstimatorPlayer = gameSession.getFirstPlayerWithUsedScoreEstimator(true);
-		scoreEstimatorPlayer.getScoreEstimator().train(TrainMode.PRE_TRAIN);
+		loadNetworks(0, true);
+		loadNetworks(0, false);
 	}
 
-	public void trainForNumEpisodes(int numEpisodes) {
-		setUp();
+	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
+		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
+	}
 
+
+	public void trainForNumEpisodes(int numEpisodes) {
 		List<Double> history = new ArrayList<>();
-		for (int i = 0; i < numEpisodes; i++) {
+		history.add(0.0); // no performance for pretraining
+		for (int i = 1; i < numEpisodes; i++) {
 			history.add(i, runEpisode(i));
 		}
 		logger.info("Performance over the episodes:\n{}", history);
 	}
 
 	public void trainUntilBetterThanRandomPlayouts() {
-		setUp();
-
 		List<Double> history = new ArrayList<>(Collections.singletonList(0.0));
-		for (int i = 0; history.get(i) < 100; i++) {
+		history.add(0.0); // no performance for pretraining
+		for (int i = 1; history.get(i) < 100; i++) {
 			history.add(i, runEpisode(i));
 		}
 		logger.info("Performance over the episodes:\n{}", history);
-	}
-
-	public void collectDataSetRandomPlayouts(int numGames) {
-		setUp();
-
-		runMCTSWithRandomPlayout(random, numGames);
 	}
 
 	/**
@@ -124,86 +137,98 @@ public class Arena {
 	private double runEpisode(int episodeNumber) {
 		logger.info("Running episode #{}\n", episodeNumber);
 
-		logger.info("Collecting training examples by self play with MCTS policy improvement\n");
-		runMCTSWithCardsEstimators(random, numTrainingGames);
+		logger.info("Collecting training examples by self play with estimator enhanced MCTS\n");
+		runMCTSWithEstimators(random, numTrainingGames, episodeNumber);
 
-		logger.info("Training the networks with the collected examples\n");
-		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
-		Player cardsEstimatorPlayer = gameSession.getFirstPlayerWithUsedCardsEstimator(true);
-		Player scoreEstimatorPlayer = gameSession.getFirstPlayerWithUsedScoreEstimator(true);
-		cardsEstimatorPlayer.getCardsEstimator().train(TrainMode.SELF_PLAY);
-		scoreEstimatorPlayer.getScoreEstimator().train(TrainMode.SELF_PLAY);
+		logger.info("Training the trainable networks with the collected examples\n");
+		trainNetworks(episodeNumber);
+
+		logger.info("Loading the newly trained trainable networks into memory\n");
+		loadNetworks(episodeNumber, true);
 
 		logger.info("Pitting the 'naked' networks against each other to see " +
 				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
 		final double improvement = runOnlyNetworks(random, numTestingGames);
 		if (improvement > improvementThresholdPercentage) { // if the learning network is significantly better
-			cardsEstimatorPlayer = gameSession.getFirstPlayerWithUsedCardsEstimator(false);
-			scoreEstimatorPlayer = gameSession.getFirstPlayerWithUsedScoreEstimator(false);
-			cardsEstimatorPlayer.getCardsEstimator().loadWeightsOfTrainableNetwork();
-			scoreEstimatorPlayer.getScoreEstimator().loadWeightsOfTrainableNetwork();
-			logger.info("The learning network outperformed the frozen network. Updated the frozen network\n");
+			logger.info("The learning network outperformed the frozen network. Updating the frozen network\n");
+			loadNetworks(episodeNumber, false);
+		} else {
+			logger.info("The learning network failed to outperform the frozen network. Training for another episode\n");
 		}
 
-		logger.info("Testing MCTS with a score estimator against MCTS with random playouts\n");
-		final double performance = runMCTSWithScoreEstimatorAgainstMCTSWithRandomPlayout(random, numTestingGames);
+		logger.info("Testing MCTS with estimators against MCTS without\n");
+		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random, numTestingGames, episodeNumber);
 
-		logger.info("After episode #{}, score estimation MCTS scored {}% of the points of random playout MCTS", episodeNumber, performance);
+		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episodeNumber, performance);
 		return performance;
 	}
 
-	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
-		setUp();
-		final double performance = performMatch(random, numGames, TrainMode.EVALUATION, configs);
-		return performance;
+	/**
+	 * Updates the networks: loads the exported models into memory.
+	 */
+	private void loadNetworks(int episodeNumber, boolean trainable) {
+		if (cardsEstimatorUsed) {
+			gameSession.getPlayersInInitialPlayingOrder().forEach(player -> {
+				if (player.getConfig().isCardsEstimatorTrainable() == trainable)
+					player.getCardsEstimator().loadModel(zeroPadded(episodeNumber));
+			});
+		}
+		if (scoreEstimatorUsed) {
+			gameSession.getPlayersInInitialPlayingOrder().forEach(player -> {
+				if (player.getConfig().isScoreEstimatorTrainable() == trainable)
+					player.getScoreEstimator().loadModel(zeroPadded(episodeNumber));
+			});
+		}
 	}
+
+	/**
+	 * Trains the networks
+	 */
+	private void trainNetworks(int episodeNumber) {
+		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
+		if (cardsEstimatorUsed)
+			NeuralNetwork.train(zeroPadded(episodeNumber), NetworkType.CARDS);
+		if (scoreEstimatorUsed)
+			NeuralNetwork.train(zeroPadded(episodeNumber), NetworkType.SCORE);
+	}
+
 
 	private double runMCTSWithRandomPlayout(Random random, int numGames) {
 		Config[] configs = {
-				new Config(true, false, false),
-				new Config(true, false, false)
+				new Config(true, cardsEstimatorUsed, false, scoreEstimatorUsed, false),
+				new Config(true, cardsEstimatorUsed, false, scoreEstimatorUsed, false)
 		};
-		return performMatch(random, numGames, TrainMode.PRE_TRAIN, configs);
+		return performMatch(random, numGames, TrainMode.PRE_TRAIN, 0, configs);
 	}
 
-	private double runMCTSWithEstimators(Random random, int numGames) {
+	private double runMCTSWithEstimators(Random random, int numGames, int episodeNumber) {
 		Config[] configs = {
-				new Config(true, true, true, true, true),
-				new Config(true, true, false, true, false)
+				new Config(true, cardsEstimatorUsed, true, scoreEstimatorUsed, true),
+				new Config(true, cardsEstimatorUsed, false, scoreEstimatorUsed, false)
 		};
-		return performMatch(random, numGames, TrainMode.SELF_PLAY, configs);
-	}
-
-	private double runMCTSWithCardsEstimators(Random random, int numGames) {
-		Config[] configs = {
-				new Config(true, true, true, false, false),
-				new Config(true, true, false, false, false)
-		};
-		return performMatch(random, numGames, TrainMode.SELF_PLAY, configs);
-	}
-
-	private double runMCTSWithScoreEstimators(Random random, int numGames) {
-		Config[] configs = {
-				new Config(true, true, true),
-				new Config(true, true, false)
-		};
-		return performMatch(random, numGames, TrainMode.SELF_PLAY, configs);
+		return performMatch(random, numGames, TrainMode.SELF_PLAY, episodeNumber, configs);
 	}
 
 	private double runOnlyNetworks(Random random, int numGames) {
+		// TODO How can cards estimators be pitted against each other so that we can measure which one is better (trainable or frozen)
+		//  without (or minimal) outside influence like the MCTS
 		Config[] configs = {
-				new Config(false, true, true),
-				new Config(false, true, false)
+				new Config(false, cardsEstimatorUsed, true, scoreEstimatorUsed, true),
+				new Config(false, cardsEstimatorUsed, false, scoreEstimatorUsed, false)
 		};
-		return performMatch(random, numGames, TrainMode.NONE, configs);
+		return performMatch(random, numGames, TrainMode.NONE, -1, configs);
 	}
 
-	private double runMCTSWithScoreEstimatorAgainstMCTSWithRandomPlayout(Random random, int numGames) {
+	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(Random random, int numGames, int episodeNumber) {
 		Config[] configs = {
-				new Config(true, true, true),
-				new Config(true, false, false)
+				new Config(true, cardsEstimatorUsed, true, scoreEstimatorUsed, true),
+				new Config(true, false, false, false, false)
 		};
-		return performMatch(random, numGames, TrainMode.SELF_PLAY, configs);
+		return performMatch(random, numGames, TrainMode.SELF_PLAY, episodeNumber, configs);
+	}
+
+	private static String zeroPadded(int number) {
+		return String.format("%04d", number);
 	}
 
 	/**
@@ -214,10 +239,10 @@ public class Arena {
 	 * @param configs
 	 * @return
 	 */
-	private double performMatch(Random random, int numGames, TrainMode trainMode, Config[] configs) {
+	private double performMatch(Random random, int numGames, TrainMode trainMode, int episodeNumber, Config[] configs) {
 		gameSession.setConfigs(configs);
 
-		return playGames(random, numGames, trainMode);
+		return playGames(random, numGames, trainMode, episodeNumber);
 	}
 
 	/**
@@ -228,7 +253,7 @@ public class Arena {
 	 * @param trainMode
 	 * @return
 	 */
-	private double playGames(Random random, int numGames, TrainMode trainMode) {
+	private double playGames(Random random, int numGames, TrainMode trainMode, int episodeNumber) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
@@ -251,7 +276,7 @@ public class Arena {
 
 			if (trainMode.isSavingData() && i % REPLAY_MEMORY_SIZE_FACTOR == 0) {
 				final String name = zeroPadded(i - REPLAY_MEMORY_SIZE_FACTOR) + "-" + zeroPadded(i);
-				IOHelper.saveData(cardsDataSet, scoreDataSet, trainMode, name);
+				IOHelper.saveData(cardsDataSet, scoreDataSet, zeroPadded(episodeNumber), name);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -266,9 +291,6 @@ public class Arena {
 		return improvement;
 	}
 
-	private static String zeroPadded(int number) {
-		return String.format("%04d", number);
-	}
 
 	/**
 	 * Simulates a game being played. The gameSession can be configured in many different ways to allow different simulations.
@@ -370,18 +392,5 @@ public class Arena {
 			mode = partner.chooseTrumpf(gameSession, true);
 		}
 		gameSession.startNewGame(mode, shifted);
-	}
-
-	private void setUp() {
-		logger.info("Setting up the training process\n");
-		gameSession = GameSessionBuilder.newSession().createGameSession();
-
-		// 36: Number of Cards in a game
-		int size = 36 * REPLAY_MEMORY_SIZE_FACTOR;
-		if (DATA_AUGMENTATION_ENABLED)
-			size *= 24; // 24: Number of color permutations (data augmentation)
-		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
-		cardsDataSet = new CardsDataSet(size);
-		scoreDataSet = new ScoreDataSet(size);
 	}
 }

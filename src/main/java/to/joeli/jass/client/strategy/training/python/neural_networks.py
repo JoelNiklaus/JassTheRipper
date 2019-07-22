@@ -1,11 +1,6 @@
 from keras import Input, Model
 from keras.layers import Dense, Reshape, Softmax, Dropout
 
-num_cards = 36
-num_player_cards = 9
-num_players = 4
-three_hot_length = 14
-
 num_neurons = 128  # TODO Try 64, 128, 256, 512, 1024
 
 
@@ -43,6 +38,9 @@ def define_separate_model(network_type):
 
 
 def define_combined_model():
+    # INFO: Set loss_weights accordingly during training
+    # model.compile(loss=['mse', 'mse'], loss_weights=[0, 1], optimizer='adam', metrics=['mae'])
+
     inp = input()
     hid = hidden(inp)
 
@@ -81,4 +79,4 @@ def hidden(inp):
 
 
 def input():
-    return Input((73, 18,))
+    return Input((73, 18,), name='input')

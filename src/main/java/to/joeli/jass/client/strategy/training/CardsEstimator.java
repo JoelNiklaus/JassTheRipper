@@ -2,12 +2,12 @@ package to.joeli.jass.client.strategy.training;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tensorflow.Tensor;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
 import to.joeli.jass.client.strategy.helpers.Distribution;
 import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
-import to.joeli.jass.client.strategy.helpers.ZeroMQClient;
 import to.joeli.jass.game.cards.Card;
 
 import java.util.HashMap;
@@ -33,7 +33,11 @@ public class CardsEstimator extends NeuralNetwork {
 	public Map<Card, Distribution> predictCardDistribution(Game game, Set<Card> availableCards) {
 		Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);
 
-		final double[][] probabilities = ZeroMQClient.predictCards(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
+		//final double[][] probabilities = ZeroMQClient.predictCards(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
+		final Tensor result = (Tensor) predict(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
+		double[][][] res = new double[1][36][4];
+		result.copyTo(res);
+		final double[][] probabilities = res[0];
 
 		final List<Player> players = game.getPlayersBySeatId();
 

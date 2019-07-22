@@ -4,5 +4,4 @@ build
 *.log
 *.iml
 out
-src/main/resources/pre_train
-src/main/resources/self_play
+src/main/resources/0*

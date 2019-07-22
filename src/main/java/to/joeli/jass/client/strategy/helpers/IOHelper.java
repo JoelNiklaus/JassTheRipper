@@ -19,16 +19,24 @@ public class IOHelper {
 
 	public static final Logger logger = LoggerFactory.getLogger(IOHelper.class);
 
-
 	/**
-	 * Writes a given object to a file at the given path in CBOR format
+	 * Writes a given object to a file at the given path in CBOR and JSON format
 	 *
 	 * @param array
 	 * @param path
 	 * @throws IOException
 	 */
+	public static void write(Object array, String path) throws IOException {
+		writeCBOR(array, path);
+		writeJSON(array, path);
+	}
+
+
 	public static void writeCBOR(Object array, String path) throws IOException {
-		FileUtils.writeByteArrayToFile(new File(path), convertToCBOR(array));
+		FileUtils.writeByteArrayToFile(new File(path + ".cbor"), convertToCBOR(array));
+	}
+
+	private static void writeJSON(Object array, String path) throws IOException {
 		new ObjectMapper().writeValue(new File(path + ".json"), array);
 	}
 
@@ -43,14 +51,17 @@ public class IOHelper {
 		return new ObjectMapper(new CBORFactory()).writeValueAsBytes(array);
 	}
 
-	public static void readCBOR(Object array, String path) throws IOException {
+	/*
+	public static List readCBOR(Object array, String path) throws IOException {
 		List features = convertFromCBOR(FileUtils.readFileToByteArray(new File(path)));
 		System.out.println(features);
+		return features;
 	}
 
 	public static List convertFromCBOR(byte[] bytes) throws IOException {
 		return new ObjectMapper(new CBORFactory()).readValue(bytes, List.class);
 	}
+	*/
 
 	/**
 	 * Creates the directory and all necessary subdirectories if they do not yet exist.
@@ -69,26 +80,25 @@ public class IOHelper {
 	 * These files can then be loaded and concatenated again to form the big dataset.
 	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
 	 */
-	public static boolean saveData(CardsDataSet cardsDataSet, ScoreDataSet scoreDataSet, TrainMode trainMode, String name) {
-		return saveDataSet(cardsDataSet, trainMode, name) && saveDataSet(scoreDataSet, trainMode, name);
+	public static boolean saveData(CardsDataSet cardsDataSet, ScoreDataSet scoreDataSet, String episodeNumber, String name) {
+		return saveDataSet(cardsDataSet, episodeNumber, name) && saveDataSet(scoreDataSet, episodeNumber, name);
 	}
 
-	private static boolean saveDataSet(DataSet dataSet, TrainMode trainMode, String name) {
-		if (createIfNotExists(new File(dataSet.getFeaturesPath(trainMode)))
-				&& createIfNotExists(new File(dataSet.getTargetsPath(trainMode)))) {
-			String fileName = name + ".cbor";
+	private static boolean saveDataSet(DataSet dataSet, String episodeNumber, String name) {
+		if (createIfNotExists(new File(dataSet.getFeaturesPath(episodeNumber)))
+				&& createIfNotExists(new File(dataSet.getTargetsPath(episodeNumber)))) {
 			try {
-				writeCBOR(dataSet.getFeatures(), dataSet.getFeaturesPath(trainMode) + fileName);
-				writeCBOR(dataSet.getTargets(), dataSet.getTargetsPath(trainMode) + fileName);
+				write(dataSet.getFeatures(), dataSet.getFeaturesPath(episodeNumber) + name);
+				write(dataSet.getTargets(), dataSet.getTargetsPath(episodeNumber) + name);
 			} catch (IOException e) {
 				e.printStackTrace();
-				logger.error("Failed to save datasets to {}", dataSet.getPath(trainMode));
+				logger.error("Failed to save datasets to {}", dataSet.getPath(episodeNumber));
 				return false;
 			}
-			logger.info("Saved datasets to {}", dataSet.getPath(trainMode));
+			logger.info("Saved datasets to {}", dataSet.getPath(episodeNumber));
 			return true;
 		}
-		logger.error("Failed to save datasets to {}", dataSet.getPath(trainMode));
+		logger.error("Failed to save datasets to {}", dataSet.getPath(episodeNumber));
 		return false;
 	}
 }

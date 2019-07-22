@@ -37,6 +37,9 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'ch.qos.logback:logback-classic:1.1.3'
 
+    // Tensorflow
+    compile "org.tensorflow:tensorflow:1.13.1" // 1.14.0 does somehow not work!
+
     // CBOR
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.4'
 
