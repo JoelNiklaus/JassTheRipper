@@ -59,9 +59,6 @@ public class CardKnowledgeBase {
 	 */
 	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards, CardsEstimator cardsEstimator) {
 		// INFO: This method should only be used when new cards are distributed (at the beginning of a move).
-		for (Player player : game.getPlayers()) {
-			if (!player.getCards().isEmpty()) throw new AssertionError();
-		}
 
 		Map<Card, Distribution> cardKnowledge;
 		if (cardsEstimator == null) {
