@@ -189,7 +189,7 @@ TODO Make new experiments with the improvements so far:
 						card = ((CardMove) move).getPlayedCard();
 						logger.info("Chose Card based on MCTS, Hurra!");
 					} catch (MCTSException e) {
-						logger.debug("{}", e);
+						logger.error("{}", e);
 						logger.error("Something went wrong. Had to choose random card, damn it!");
 					}
 				} else { // Choose the network's prediction directly, without the mcts policy enhancement
@@ -207,7 +207,7 @@ TODO Make new experiments with the improvements so far:
 			logger.info("Chose card {} out of possible cards {} out of available cards {}", card, possibleCards, availableCards);
 			return card;
 		} catch (Exception e) {
-			logger.debug("{}", e);
+			logger.error("{}", e);
 			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random card now.");
 			return CardSelectionHelper.getRandomCard(availableCards, game);
 		}

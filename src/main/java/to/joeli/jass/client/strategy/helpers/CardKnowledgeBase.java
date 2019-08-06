@@ -77,7 +77,6 @@ public class CardKnowledgeBase {
 						Card card = cardDistributionEntry.getKey();
 						Player player = cardDistributionEntry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
 						player.addCard(card);
-						if (player.getCards().size() > 9) throw new AssertionError();
 						// Set distribution of already distributed card to sampled so it is not selected anymore in future runs
 						cardDistributionEntry.getValue().setSampled(true);
 
@@ -89,10 +88,6 @@ public class CardKnowledgeBase {
 									.forEach(entry -> entry.getValue().deleteEventAndReBalance(player));
 						}
 					});
-		}
-
-		for (Player player : game.getPlayers()) {
-			if (player.getCards().isEmpty()) throw new AssertionError();
 		}
 	}
 
@@ -134,7 +129,10 @@ public class CardKnowledgeBase {
 		// Set simple distributions for the cards of the current player
 		availableCards.forEach(card -> {
 			final Card respectiveCard = DataAugmentationHelper.getRespectiveCard(card, colors);
-			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1f), false));
+			boolean sampled = false;
+			if (game.getCurrentPlayer().getCards().contains(respectiveCard))
+				sampled = true;
+			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1f), sampled));
 		});
 
 

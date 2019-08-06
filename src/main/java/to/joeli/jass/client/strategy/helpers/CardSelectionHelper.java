@@ -423,7 +423,7 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	public static Set<Card> getCardsPossibleToPlay(Set<Card> availableCards, Game game) {
-		if (availableCards.isEmpty()) throw new AssertionError();
+		// if (availableCards.isEmpty()) throw new AssertionError(); // NOTE: Might be a problem inside MCTS
 		Round round = game.getCurrentRound();
 		Mode mode = round.getMode();
 		// If you have a card

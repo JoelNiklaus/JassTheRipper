@@ -95,7 +95,7 @@ public class MCTS {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < runs; i++)
 			select(startingBoard, rootNode);
-		logger.debug("Ran {} runs in {}ms.", runs, System.currentTimeMillis() - startTime);
+		logger.info("Ran {} runs in {}ms.", runs, System.currentTimeMillis() - startTime);
 		return finalMoveSelection(rootNode);
 	}
 

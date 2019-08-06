@@ -156,7 +156,7 @@ public class JassBoard implements Board {
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 
-			if (possibleCards.isEmpty()) throw new AssertionError();
+			// if (possibleCards.isEmpty()) throw new AssertionError(); // NOTE: Might be a problem inside MCTS
 
 			// INFO: This would be pruning for cards. At the moment we do not want to do this.
 			// It could be a possibility later on if we see that the bot still plays badly in the first 1-3 moves of a game.
