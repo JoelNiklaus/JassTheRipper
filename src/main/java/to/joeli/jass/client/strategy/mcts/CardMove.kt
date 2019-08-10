@@ -10,9 +10,9 @@ import to.joeli.jass.game.cards.Card
  */
 class CardMove(player: Player, playedCard: Card) : to.joeli.jass.client.game.Move(player, playedCard), Move {
 
-    override fun compareTo(o: Move): Int {
-        val other = o as CardMove
-        return playedCard.compareTo(other.playedCard)
+    override fun compareTo(other: Move): Int {
+        val o = other as CardMove
+        return playedCard.compareTo(o.playedCard)
     }
 
     override fun toString(): String {
