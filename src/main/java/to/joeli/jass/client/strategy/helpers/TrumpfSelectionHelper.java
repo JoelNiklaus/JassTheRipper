@@ -16,11 +16,9 @@ public class TrumpfSelectionHelper {
 
 	public static final Logger logger = LoggerFactory.getLogger(TrumpfSelectionHelper.class);
 
-
-	// TODO: Maybe this is too high or too low? => Write tests.
 	// INFO: If the rating of the highest trumpf is lower than this constant, the rule-based algorithm will decide to shift
-	// --> The higher this value, the more likely shifting is.
-	public static final int MAX_SHIFT_RATING_VAL = 100;
+	// --> The higher this value, the more likely shifting is. 150 --> too high, 100 --> too low
+	public static final int MAX_SHIFT_RATING_VAL = 125;
 	public static final int TOP_TRUMPF_THRESHOLD = MAX_SHIFT_RATING_VAL; // NOTE: Set to a lower value when confidence in MCTS Trumpf Selection increases
 
 	private TrumpfSelectionHelper() {
