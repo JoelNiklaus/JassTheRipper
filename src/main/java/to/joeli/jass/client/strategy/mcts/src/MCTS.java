@@ -31,6 +31,8 @@ public class MCTS {
 	private ExecutorService threadPool;
 	private ArrayList<FutureTask<Move>> futures;
 
+	private int numRuns;
+
 	public static final Logger logger = LoggerFactory.getLogger(MCTS.class);
 
 
@@ -48,6 +50,10 @@ public class MCTS {
 		} else {
 			logger.info("Running {} determinizations :)", numDeterminizations);
 			submitTimeTasks(startingBoard, numDeterminizations, endingTime);
+			logger.info("On average the MCTS searched {} nodes in {} determinizations", numRuns / numDeterminizations, numDeterminizations);
+			synchronized (this) {
+				numRuns = 0;
+			}
 			return collectResultsAndGetFinalSelectedMove();
 		}
 	}
@@ -95,7 +101,7 @@ public class MCTS {
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < runs; i++)
 			select(startingBoard, rootNode);
-		logger.info("Ran {} runs in {}ms.", runs, System.currentTimeMillis() - startTime);
+		logger.debug("Ran {} runs in {}ms.", runs, System.currentTimeMillis() - startTime);
 		return finalMoveSelection(rootNode);
 	}
 
@@ -117,6 +123,9 @@ public class MCTS {
 		}
 		if (runCounter == 0) {
 			rootNode.invalidate();
+		}
+		synchronized (this) {
+			numRuns += runCounter;
 		}
 		logger.debug("Ran {} runs in {}ms.", runCounter, System.currentTimeMillis() - startTime);
 		return finalMoveSelection(rootNode);
