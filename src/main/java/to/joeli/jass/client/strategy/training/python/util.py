@@ -5,6 +5,11 @@ from pathlib import Path
 import cbor
 import numpy as np
 
+# Determines how many episodes back the training data will be used
+# Example: If it is 4: each experience (episode data) will be used 4 times.
+# The bigger, the bigger the datasets are, and the longer the training takes
+REPLAY_MEMORY_SIZE_FACTOR = 4  # 1, 2, 4, 8
+
 
 def create_if_not_exists(path):
     # INFO: This somehow causes problems on the server!
@@ -27,15 +32,31 @@ def get_file_names(path, extension):
     return [f for f in os.listdir(path) if isfile(join(path, f)) and os.path.splitext(f)[1] == extension]
 
 
+def concat(combined_array, array):
+    if combined_array is None:
+        combined_array = array
+    else:
+        combined_array = np.concatenate((combined_array, array))
+    return combined_array
+
+
+def zero_pad(episode_number):
+    return f'{episode_number:04}'
+
+
 def load_all_cbor_files(path):
-    combined_array = None
+    combined = None
     for filename in get_file_names(path, '.cbor'):
         array = load_cbor(path + filename)
-        if combined_array is None:
-            combined_array = array
-        else:
-            combined_array = np.concatenate((combined_array, array))
-    return combined_array
+        combined = concat(combined, array)
+    return combined
+
+
+def load_dataset(episode_number, network_type, path):
+    dataset = None
+    for episode in range(max(episode_number - REPLAY_MEMORY_SIZE_FACTOR + 1, 0), episode_number + 1, 1):
+        dataset = concat(dataset, load_all_cbor_files(path(zero_pad(episode), network_type)))
+    return dataset
 
 
 """
