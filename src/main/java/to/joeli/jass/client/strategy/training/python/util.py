@@ -83,10 +83,13 @@ Folder structure:
 """
 
 
-def path(episode_number, network_type):
+def base_path():
     root_path = Path(os.path.realpath(__file__)).parent.parent.parent.parent.parent.parent.parent.parent.parent
-    base_path = str(root_path) + "/resources/"
-    return base_path + episode_number + "/" + network_type
+    return str(root_path) + "/resources/"
+
+
+def path(episode_number, network_type):
+    return base_path() + episode_number + "/" + network_type
 
 
 def features_path(episode_number, network_type):

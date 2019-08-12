@@ -13,6 +13,9 @@ import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 
@@ -35,13 +38,15 @@ public class Arena {
 	public static final int SEED = 42;
 	public static final float TOTAL_POINTS = 157.0f; // INFO: We disregard Matchbonus for simplicity here
 
-	private static final boolean CARDS_ESTIMATOR_USED = false;
-	private static final boolean SCORE_ESTIMATOR_USED = true;
+	private static final boolean CARDS_ESTIMATOR_USED = true;
+	private static final boolean SCORE_ESTIMATOR_USED = false;
 
 	private final int numTrainingGames;
 	private final int numTestingGames;
 	private final double improvementThresholdPercentage;
 	private final Random random;
+
+	private double minValLossOld = Double.MAX_VALUE;
 
 	private GameSession gameSession;
 
@@ -80,7 +85,7 @@ public class Arena {
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
 		// 36: Number of Cards in a game
-		int size = 36;
+		int size = 36 * SAVING_FREQUENCY;
 		if (DATA_AUGMENTATION_ENABLED)
 			size *= 24; // 24: Number of color permutations (data augmentation)
 		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
@@ -89,7 +94,7 @@ public class Arena {
 
 		String path = DataSet.BASE_PATH + zeroPadded(0);
 		if (!new File(path).exists()) {
-			logger.info("No dataset found. Collecting a dataset of games played with random playouts\n");
+			logger.info("No dataset found. Collecting a dataset of games played using MCTS with random playouts\n");
 			runMCTSWithRandomPlayout(random, NUM_PRE_TRAINING_GAMES);
 		}
 
@@ -151,25 +156,60 @@ public class Arena {
 		logger.info("Loading the newly trained trainable networks into memory\n");
 		loadNetworks(episodeNumber, true);
 
-		logger.info("Pitting the 'naked' networks against each other to see " +
-				"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
-		final double improvement = runOnlyNetworks(random, numTestingGames);
-		if (improvement > improvementThresholdPercentage) { // if the learning network is significantly better
-			logger.info("The learning network outperformed the frozen network. Updating the frozen network\n");
-			loadNetworks(episodeNumber, false);
-		} else {
-			logger.info("The learning network failed to outperform the frozen network. Training for another episode\n");
+		if (SCORE_ESTIMATOR_USED) {
+			logger.info("Pitting the 'naked' score estimators against each other to see " +
+					"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
+			final boolean wasImproved = runOnlyNetworks(random, numTestingGames) > improvementThresholdPercentage;
+			updateNetworks(episodeNumber, wasImproved);
+		}
+		if (CARDS_ESTIMATOR_USED) {
+			try {
+				logger.info("Checking if the minimum validation loss of the current cards estimator is less than the old one\n");
+				double minValLoss = Double.parseDouble(new String(Files.readAllBytes(Paths.get(DataSet.BASE_PATH + "min_val_loss.txt"))));
+				updateNetworks(episodeNumber, minValLoss < minValLossOld);
+				minValLossOld = minValLoss;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
-		logger.info("Testing MCTS with estimators against MCTS with random playout\n");
+		// TODO save important statistics during episode to log file
+
+		// TODO compare against random cards estimator
+
+		// TODO what is the loss of random guessing?
+
+		/**
+		 *  32/7776 [..............................] - ETA: 36s - loss: 0.3750 - mean_squared_error: 0.1879
+		 *  928/7776 [==>...........................] - ETA: 1s - loss: 0.3645 - mean_squared_error: 0.2280
+		 * 1920/7776 [======>.......................] - ETA: 0s - loss: 0.3554 - mean_squared_error: 0.2770
+		 * 2944/7776 [==========>...................] - ETA: 0s - loss: 0.3494 - mean_squared_error: 0.2961
+		 * 3968/7776 [==============>...............] - ETA: 0s - loss: 0.3470 - mean_squared_error: 0.3070
+		 * 4896/7776 [=================>............] - ETA: 0s - loss: 0.3456 - mean_squared_error: 0.3131
+		 * 5824/7776 [=====================>........] - ETA: 0s - loss: 0.3448 - mean_squared_error: 0.3174
+		 * 6848/7776 [=========================>....] - ETA: 0s - loss: 0.3440 - mean_squared_error: 0.3207
+		 *
+		 * TODO How is it possible that mse increases while mae decreases?
+		 */
+
+		logger.info("Testing MCTS with estimators against basic MCTS with random playout\n");
 		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random, numTestingGames, episodeNumber);
 
 		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episodeNumber, performance);
 		return performance;
 	}
 
+	private void updateNetworks(int episodeNumber, boolean wasImproved) {
+		if (wasImproved) { // if the learning network is significantly better
+			logger.info("The learning network outperformed the frozen network. Updating the frozen network\n");
+			loadNetworks(episodeNumber, false);
+		} else {
+			logger.info("The learning network failed to outperform the frozen network. Training for another episode\n");
+		}
+	}
+
 	/**
-	 * Updates the networks: loads the exported models into memory.
+	 * Loads the exported models into memory.
 	 */
 	private void loadNetworks(int episodeNumber, boolean trainable) {
 		if (CARDS_ESTIMATOR_USED) {
@@ -215,8 +255,6 @@ public class Arena {
 	}
 
 	private double runOnlyNetworks(Random random, int numGames) {
-		// TODO How can cards estimators be pitted against each other so that we can measure which one is better (trainable or frozen)
-		//  without (or minimal) outside influence like the MCTS
 		Config[] configs = {
 				new Config(false, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(false, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)

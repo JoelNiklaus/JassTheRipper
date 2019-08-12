@@ -1,12 +1,12 @@
 import os
 import sys
 
-from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
+from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, History
 from keras.engine.saving import load_model
 
 from export_model_checkpoint import ExportModelCheckpoint
 from neural_networks import define_separate_model
-from util import model_path, features_path, targets_path, weights_path, export_path, load_dataset, zero_pad
+from util import model_path, features_path, targets_path, weights_path, export_path, load_dataset, zero_pad, base_path
 
 
 def train(episode_padded, network_type):
@@ -53,6 +53,7 @@ def train(episode_padded, network_type):
     features = load_dataset(episode_number, network_type, features_path)
     targets = load_dataset(episode_number, network_type, targets_path)
 
+    h = History()
     tb = TensorBoard(log_dir='./Graph', write_images=True)
     es = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     mc = ModelCheckpoint(model_path(episode_padded, network_type), save_best_only=True, save_weights_only=False,
@@ -61,7 +62,11 @@ def train(episode_padded, network_type):
                          verbose=1)
     emc = ExportModelCheckpoint(export_path(episode_padded, network_type), save_best_only=True, verbose=1)
 
-    model.fit(features, targets, epochs=99, batch_size=32, validation_split=0.1, callbacks=[tb, es, mc, wc, emc])
+    history = model.fit(features, targets, epochs=99, batch_size=32, validation_split=0.1,
+                        callbacks=[h, tb, es, mc, wc, emc])
+
+    min_val_loss = min(history.history['val_loss'])
+    print(min_val_loss, file=open(base_path() + "min_val_loss.txt", "w"))  # This file is then read in the Java code
 
 
 if __name__ == '__main__':

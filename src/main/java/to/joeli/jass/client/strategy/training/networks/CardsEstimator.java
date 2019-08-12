@@ -50,6 +50,7 @@ public class CardsEstimator extends NeuralNetwork {
 			}
 			cardKnowledge.put(cards[c], new Distribution(playerProbabilities));
 		}
+		// TODO only take cards where we do not have security from rules yet.
 
 		return cardKnowledge;
 	}
