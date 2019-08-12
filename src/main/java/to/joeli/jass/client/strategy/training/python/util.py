@@ -56,6 +56,8 @@ def load_dataset(episode_number, network_type, path):
     dataset = None
     for episode in range(max(episode_number - REPLAY_MEMORY_SIZE_FACTOR + 1, 0), episode_number + 1, 1):
         dataset = concat(dataset, load_all_cbor_files(path(zero_pad(episode), network_type)))
+    np.random.shuffle(
+        dataset)  # shuffle so that the validation data is better selected (chosen from the end of the dataset)
     return dataset
 
 
