@@ -11,10 +11,7 @@ import to.joeli.jass.client.strategy.helpers.NeuralNetworkHelper;
 import to.joeli.jass.client.strategy.training.NetworkType;
 import to.joeli.jass.game.cards.Card;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CardsEstimator extends NeuralNetwork {
 
@@ -45,12 +42,18 @@ public class CardsEstimator extends NeuralNetwork {
 		final Card[] cards = Card.values();
 		for (int c = 0; c < cards.length; c++) {
 			HashMap<Player, Float> playerProbabilities = new HashMap<>();
+			List<Player> playersWithZeroProbabilities = new ArrayList<>();
 			for (int p = 0; p < players.size(); p++) {
-				playerProbabilities.put(players.get(p), probabilities[c][p]);
+				final Player player = players.get(p);
+				if (!cardKnowledge.get(cards[c]).hasPlayer(player))
+					playersWithZeroProbabilities.add(player);
+				playerProbabilities.put(player, probabilities[c][p]);
 			}
-			cardKnowledge.put(cards[c], new Distribution(playerProbabilities));
+			final Distribution distribution = new Distribution(playerProbabilities);
+			// When we know already for sure that one player cannot have a card we redistribute this probability to the remaining players
+			playersWithZeroProbabilities.forEach(distribution::deleteEventAndReBalance);
+			cardKnowledge.put(cards[c], distribution);
 		}
-		// TODO only take cards where we do not have security from rules yet.
 
 		return cardKnowledge;
 	}
