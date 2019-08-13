@@ -54,6 +54,8 @@ public class Arena {
 	private ScoreDataSet scoreDataSet;
 
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
+	public static final Logger experimentLogger = LoggerFactory.getLogger("Experiment");
+
 
 	public static void main(String[] args) {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
@@ -146,6 +148,7 @@ public class Arena {
 	 */
 	private double runEpisode(int episodeNumber) {
 		logger.info("Running episode #{}\n", episodeNumber);
+		experimentLogger.info("\n===========================\nEpisode #{}\n===========================", episodeNumber);
 
 		logger.info("Collecting training examples by self play with estimator enhanced MCTS\n");
 		runMCTSWithEstimators(random, numTrainingGames, episodeNumber);
@@ -166,6 +169,7 @@ public class Arena {
 			try {
 				logger.info("Checking if the minimum validation loss of the current cards estimator is less than the old one\n");
 				double minValLoss = Double.parseDouble(new String(Files.readAllBytes(Paths.get(DataSet.BASE_PATH + "min_val_loss.txt"))));
+				experimentLogger.info("\nMinimum Validation Loss after training network: {}", minValLoss);
 				updateNetworks(episodeNumber, minValLoss < minValLossOld);
 				minValLossOld = minValLoss;
 			} catch (IOException e) {
@@ -173,27 +177,9 @@ public class Arena {
 			}
 		}
 
-		// TODO save important statistics during episode to log file
-
-		// TODO compare against random cards estimator
-
-		// TODO what is the loss of random guessing?
-
-		/**
-		 *  32/7776 [..............................] - ETA: 36s - loss: 0.3750 - mean_squared_error: 0.1879
-		 *  928/7776 [==>...........................] - ETA: 1s - loss: 0.3645 - mean_squared_error: 0.2280
-		 * 1920/7776 [======>.......................] - ETA: 0s - loss: 0.3554 - mean_squared_error: 0.2770
-		 * 2944/7776 [==========>...................] - ETA: 0s - loss: 0.3494 - mean_squared_error: 0.2961
-		 * 3968/7776 [==============>...............] - ETA: 0s - loss: 0.3470 - mean_squared_error: 0.3070
-		 * 4896/7776 [=================>............] - ETA: 0s - loss: 0.3456 - mean_squared_error: 0.3131
-		 * 5824/7776 [=====================>........] - ETA: 0s - loss: 0.3448 - mean_squared_error: 0.3174
-		 * 6848/7776 [=========================>....] - ETA: 0s - loss: 0.3440 - mean_squared_error: 0.3207
-		 *
-		 * TODO How is it possible that mse increases while mae decreases?
-		 */
-
 		logger.info("Testing MCTS with estimators against basic MCTS with random playout\n");
 		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random, numTestingGames, episodeNumber);
+		experimentLogger.info("\nEstimator enhanced MCTS scored {}% of the points of regular MCTS", performance);
 
 		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episodeNumber, performance);
 		return performance;
