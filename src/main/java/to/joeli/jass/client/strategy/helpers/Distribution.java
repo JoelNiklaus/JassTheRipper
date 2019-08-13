@@ -10,9 +10,13 @@ import java.util.Random;
  * https://stackoverflow.com/questions/35701316/discrete-probability-distribution-in-java
  */
 public class Distribution {
+	final int SEED = 42;
+	final double DELTA = 0.000001;
+
 	private final Map<Player, Float> probabilities;
 	private boolean sampled;
-	private Random random = new Random();
+	private Random random = new Random(SEED);
+
 
 	public Distribution(Map<Player, Float> probabilities) {
 		this(probabilities, false);
@@ -49,8 +53,8 @@ public class Distribution {
 		}
 
 		if (probabilities.keySet().isEmpty()) throw new AssertionError();
-		if (sumProbabilities() - 1.0 >= 0.000001) throw new AssertionError();
-		if (sumProbabilities() - 1.0 <= -0.000001) throw new AssertionError();
+		if (sumProbabilities() - 1.0 >= DELTA) throw new AssertionError();
+		if (sumProbabilities() - 1.0 <= -DELTA) throw new AssertionError();
 
 		return true;
 	}
