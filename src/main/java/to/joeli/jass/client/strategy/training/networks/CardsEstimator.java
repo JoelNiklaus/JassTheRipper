@@ -32,29 +32,44 @@ public class CardsEstimator extends NeuralNetwork {
 		Map<Card, Distribution> cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);
 
 		final Tensor result = (Tensor) predict(NeuralNetworkHelper.getCardsFeatures(game, cardKnowledge));
+		final float[][] probabilities = tensorToFloats(result);
+
+		return addNetworkPredictionToCardKnowledge(game, cardKnowledge, probabilities);
+	}
+
+	private float[][] tensorToFloats(Tensor result) {
 		float[][][] res = new float[1][36][4];
 		result.copyTo(res);
-		final float[][] probabilities = res[0];
+		return res[0];
+	}
 
+	/**
+	 * Here we take the information from the card knowledge we know for sure
+	 * and replace the variable, guessed part with the estimation of the neural network
+	 *
+	 * @param game
+	 * @param cardKnowledge
+	 * @param probabilities
+	 * @return
+	 */
+	private Map<Card, Distribution> addNetworkPredictionToCardKnowledge(Game game, Map<Card, Distribution> cardKnowledge, float[][] probabilities) {
 		final List<Player> players = game.getPlayersBySeatId();
-
-		cardKnowledge = new HashMap<>();
 		final Card[] cards = Card.values();
 		for (int c = 0; c < cards.length; c++) {
 			HashMap<Player, Float> playerProbabilities = new HashMap<>();
 			List<Player> playersWithZeroProbabilities = new ArrayList<>();
+			final Distribution oldDistribution = cardKnowledge.get(cards[c]);
 			for (int p = 0; p < players.size(); p++) {
 				final Player player = players.get(p);
-				if (!cardKnowledge.get(cards[c]).hasPlayer(player))
+				if (!oldDistribution.hasPlayer(player))
 					playersWithZeroProbabilities.add(player);
 				playerProbabilities.put(player, probabilities[c][p]);
 			}
-			final Distribution distribution = new Distribution(playerProbabilities);
+			final Distribution distribution = new Distribution(playerProbabilities, oldDistribution.isSampled());
 			// When we know already for sure that one player cannot have a card we redistribute this probability to the remaining players
 			playersWithZeroProbabilities.forEach(distribution::deleteEventAndReBalance);
 			cardKnowledge.put(cards[c], distribution);
 		}
-
 		return cardKnowledge;
 	}
 }

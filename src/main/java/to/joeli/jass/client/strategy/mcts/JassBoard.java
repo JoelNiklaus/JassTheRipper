@@ -98,7 +98,6 @@ public class JassBoard implements Board {
 	 * This method should only be called when we want to distribute new cards to the players
 	 */
 	void sampleCardDeterminizationToPlayersInCardPlay() {
-		if (cardsAreNotDistributedYet())
 			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards, cardsEstimator);
 	}
 
@@ -107,6 +106,7 @@ public class JassBoard implements Board {
 	 * If they do, we are in a Trumpf selection tree, where the cards are already distributed.
 	 * If they don't, we are in a card selection tree where we the player do not have cards yet.
 	 *
+	 * @deprecated Now this is solved with the isChoosingTrumpf method
 	 * @return
 	 */
 	private boolean cardsAreNotDistributedYet() {

@@ -70,24 +70,38 @@ public class CardKnowledgeBase {
 			cardKnowledge = cardsEstimator.predictCardDistribution(game, availableCards);
 		}
 
+		// Delete all the cards of the players so we can distribute the determinization
+		game.getPlayers().forEach(player -> player.setCards(EnumSet.noneOf(Card.class)));
+
 		while (cardsNeedToBeDistributed(cardKnowledge)) {
 			getStreamWithNotSampledDistributions(cardKnowledge)
-					.min(Comparator.comparingInt(o -> o.getValue().getNumEvents())) // Select the card with the least possible players
-					.ifPresent(cardDistributionEntry -> {
-						Card card = cardDistributionEntry.getKey();
-						Player player = cardDistributionEntry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
-						player.addCard(card);
+					.min(Comparator.comparingInt(entry -> entry.getValue().size())) // Select the card with the least possible players
+					.ifPresent(entry -> {
+						Card card = entry.getKey();
+						Player player = entry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
+						boolean result = player.addCard(card);
 						// Set distribution of already distributed card to sampled so it is not selected anymore in future runs
-						cardDistributionEntry.getValue().setSampled(true);
+						entry.getValue().setSampled(true);
 
-						// As soon as a player has enough cards, delete him from all remaining distributions
-						final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0;
-						if (player.getCards().size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
-							getStreamWithNotSampledDistributions(cardKnowledge)
-									.filter(entry -> entry.getValue().hasPlayer(player))
-									.forEach(entry -> entry.getValue().deleteEventAndReBalance(player));
-						}
+						deletePlayerFromRemainingDistributions(game, availableCards, cardKnowledge, player);
 					});
+		}
+	}
+
+	/**
+	 * As soon as a player has enough cards, delete him from all remaining distributions
+	 *
+	 * @param game
+	 * @param availableCards
+	 * @param cardKnowledge
+	 * @param player
+	 */
+	private static void deletePlayerFromRemainingDistributions(Game game, Set<Card> availableCards, Map<Card, Distribution> cardKnowledge, Player player) {
+		final double numberOfCards = getRemainingCards(availableCards, game).size() / 3.0;
+		if (player.getCards().size() == getNumberOfCardsToAdd(game, numberOfCards, player)) {
+			getStreamWithNotSampledDistributions(cardKnowledge)
+					.filter(entry -> entry.getValue().hasPlayer(player))
+					.forEach(entry -> entry.getValue().deleteEventAndReBalance(player));
 		}
 	}
 
@@ -129,10 +143,7 @@ public class CardKnowledgeBase {
 		// Set simple distributions for the cards of the current player
 		availableCards.forEach(card -> {
 			final Card respectiveCard = DataAugmentationHelper.getRespectiveCard(card, colors);
-			boolean sampled = false;
-			if (game.getCurrentPlayer().getCards().contains(respectiveCard))
-				sampled = true;
-			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1f), sampled));
+			cardKnowledge.put(respectiveCard, new Distribution(ImmutableMap.of(game.getCurrentPlayer(), 1f), false));
 		});
 
 

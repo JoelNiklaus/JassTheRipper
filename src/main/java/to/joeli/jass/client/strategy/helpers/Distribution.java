@@ -10,7 +10,6 @@ import java.util.Random;
  * https://stackoverflow.com/questions/35701316/discrete-probability-distribution-in-java
  */
 public class Distribution {
-	final int SEED = 42;
 	final double DELTA = 0.000001;
 
 	private final Map<Player, Float> probabilities;
@@ -22,7 +21,7 @@ public class Distribution {
 		this(probabilities, false);
 	}
 
-	Distribution(Map<Player, Float> probabilities, boolean sampled) {
+	public Distribution(Map<Player, Float> probabilities, boolean sampled) {
 		this.probabilities = new HashMap<>(probabilities);
 		this.sampled = sampled;
 		if (sumProbabilities() - 1.0 >= 0.000001) throw new AssertionError();
@@ -79,8 +78,8 @@ public class Distribution {
 		throw new IllegalStateException("The probability sum (" + probability + ") is not greater than the random number chosen (" + threshold + ")");
 	}
 
-	public int getNumEvents() {
-		return probabilities.keySet().size();
+	public int size() {
+		return probabilities.size();
 	}
 
 	public boolean hasPlayer(Player player) {
