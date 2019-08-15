@@ -1,123 +1,119 @@
-package to.joeli.jass.client.strategy.helpers;
+package to.joeli.jass.client.strategy.helpers
 
-import to.joeli.jass.client.game.GameSession;
-import to.joeli.jass.client.strategy.config.MCTSConfig;
-import to.joeli.jass.client.strategy.config.RunMode;
-import to.joeli.jass.client.strategy.config.StrengthLevel;
-import to.joeli.jass.client.strategy.exceptions.MCTSException;
-import to.joeli.jass.client.strategy.mcts.JassBoard;
-import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
-import to.joeli.jass.client.strategy.mcts.src.Board;
-import to.joeli.jass.client.strategy.mcts.src.MCTS;
-import to.joeli.jass.client.strategy.mcts.src.Move;
-import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
-import to.joeli.jass.game.cards.Card;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Set;
+import to.joeli.jass.client.game.GameSession
+import to.joeli.jass.client.strategy.config.MCTSConfig
+import to.joeli.jass.client.strategy.config.RunMode
+import to.joeli.jass.client.strategy.config.StrengthLevel
+import to.joeli.jass.client.strategy.exceptions.MCTSException
+import to.joeli.jass.client.strategy.mcts.JassBoard
+import to.joeli.jass.client.strategy.training.networks.CardsEstimator
+import to.joeli.jass.client.strategy.mcts.src.Board
+import to.joeli.jass.client.strategy.mcts.src.MCTS
+import to.joeli.jass.client.strategy.mcts.src.Move
+import to.joeli.jass.client.strategy.training.networks.ScoreEstimator
+import to.joeli.jass.game.cards.Card
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by joelniklaus on 05.05.17.
  */
-public class MCTSHelper {
+class MCTSHelper(private val mctsConfig: MCTSConfig) {
 
-	private final MCTSConfig mctsConfig;
+    private val mcts = MCTS()
 
-	private static final int BUFFER_TIME_MILLIS = 10; // INFO Makes sure, that the bot really finishes before the thinking time is up.
-	private static final int ROUND_MULTIPLIER = 10;
+    /**
+     * Checks whether the thread pool in the mcts object has been shut down.
+     *
+     * @return
+     */
+    val isShutDown: Boolean
+        get() = mcts.isShutDown
 
-	private final MCTS mcts = new MCTS();
+    init {
 
-	public static final Logger logger = LoggerFactory.getLogger(MCTSHelper.class);
+        mcts.setRandom(mctsConfig.seed)
+        mcts.setScoreBoundsUsed(mctsConfig.scoreBoundsUsed)
+        mcts.setExplorationConstant(mctsConfig.explorationConstant)
+        mcts.setOptimisticBias(mctsConfig.optimisticBias)
+        mcts.setPessimisticBias(mctsConfig.pessimisticBias)
+        mcts.setNumPlayouts(mctsConfig.numPlayouts)
+        mcts.setFinalSelectionPolicy(mctsConfig.finalSelectionPolicy)
+        mcts.setHeuristicFunction(mctsConfig.heuristicFunction)
+        mcts.setPlayoutSelection(mctsConfig.playoutPolicy)
 
-	public MCTSHelper(MCTSConfig mctsConfig) {
-		this.mctsConfig = mctsConfig;
+        // if we run by runs we want the threadPool to only have as many threads as there are cores available for maximal efficiency (no unnecessary scheduling overhead)
+        if (mctsConfig.runMode === RunMode.RUNS)
+            mcts.enableRootParallelisation(Runtime.getRuntime().availableProcessors())
+        // if we run by time we want the threadPool to have enough threads to have all determinizations running at the same time
+        if (mctsConfig.runMode === RunMode.TIME)
+            mcts.enableRootParallelisation(ROUND_MULTIPLIER * mctsConfig.trumpfStrengthLevel.numDeterminizationsFactor) // NOTE: It creates A LOT of threads here now!
+    }
 
-		mcts.setRandom(mctsConfig.getSeed());
-		mcts.setScoreBoundsUsed(mctsConfig.getScoreBoundsUsed());
-		mcts.setExplorationConstant(mctsConfig.getExplorationConstant());
-		mcts.setOptimisticBias(mctsConfig.getOptimisticBias());
-		mcts.setPessimisticBias(mctsConfig.getPessimisticBias());
-		mcts.setNumPlayouts(mctsConfig.getNumPlayouts());
-		mcts.setFinalSelectionPolicy(mctsConfig.getFinalSelectionPolicy());
-		mcts.setHeuristicFunction(mctsConfig.getHeuristicFunction());
-		mcts.setPlayoutSelection(mctsConfig.getPlayoutPolicy());
-
-		// if we run by runs we want the threadPool to only have as many threads as there are cores available for maximal efficiency (no unnecessary scheduling overhead)
-		if (mctsConfig.getRunMode() == RunMode.RUNS)
-			mcts.enableRootParallelisation(Runtime.getRuntime().availableProcessors());
-		// if we run by time we want the threadPool to have enough threads to have all determinizations running at the same time
-		if (mctsConfig.getRunMode() == RunMode.TIME)
-			mcts.enableRootParallelisation(ROUND_MULTIPLIER * mctsConfig.getTrumpfStrengthLevel().getNumDeterminizationsFactor()); // NOTE: It creates A LOT of threads here now!
-	}
-
-	/**
-	 * Shuts down the thread pool in the mcts object. Has to be called as soon as it is not used anymore!
-	 */
-	public void shutDown() {
-		mcts.shutDown();
-	}
-
-	/**
-	 * Checks whether the thread pool in the mcts object has been shut down.
-	 *
-	 * @return
-	 */
-	public boolean isShutDown() {
-		return mcts.isShutDown();
-	}
+    /**
+     * Shuts down the thread pool in the mcts object. Has to be called as soon as it is not used anymore!
+     */
+    fun shutDown() {
+        mcts.shutDown()
+    }
 
 
-	/**
-	 * Chooses a card by running the MCTS method.
-	 *
-	 * @param availableCards
-	 * @param gameSession
-	 * @return
-	 */
-	public Move predictMove(Set<Card> availableCards, GameSession gameSession, boolean isChoosingTrumpf, boolean shifted) throws MCTSException {
-		Board jassBoard;
-		ScoreEstimator scoreEstimator;
-		CardsEstimator cardsEstimator;
-		StrengthLevel strengthLevel;
-		if (isChoosingTrumpf) {
-			strengthLevel = mctsConfig.getTrumpfStrengthLevel();
-			scoreEstimator = gameSession.getTrumpfSelectingPlayer().getScoreEstimator();
-			cardsEstimator = gameSession.getTrumpfSelectingPlayer().getCardsEstimator();
-			jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator, cardsEstimator);
-		} else {
-			strengthLevel = mctsConfig.getCardStrengthLevel();
-			scoreEstimator = gameSession.getCurrentGame().getCurrentPlayer().getScoreEstimator();
-			cardsEstimator = gameSession.getCurrentGame().getCurrentPlayer().getCardsEstimator();
-			jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.getCurrentGame(), scoreEstimator, cardsEstimator);
-		}
+    /**
+     * Chooses a card by running the MCTS method.
+     *
+     * @param availableCards
+     * @param gameSession
+     * @return
+     */
+    @Throws(MCTSException::class)
+    fun predictMove(availableCards: Set<Card>, gameSession: GameSession, isChoosingTrumpf: Boolean, shifted: Boolean): Move? {
+        val jassBoard: Board
+        val scoreEstimator: ScoreEstimator?
+        val cardsEstimator: CardsEstimator
+        val strengthLevel: StrengthLevel
+        if (isChoosingTrumpf) {
+            strengthLevel = mctsConfig.trumpfStrengthLevel
+            scoreEstimator = gameSession.trumpfSelectingPlayer.scoreEstimator
+            cardsEstimator = gameSession.trumpfSelectingPlayer.cardsEstimator
+            jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator, cardsEstimator)
+        } else {
+            strengthLevel = mctsConfig.cardStrengthLevel
+            scoreEstimator = gameSession.currentGame.currentPlayer.scoreEstimator
+            cardsEstimator = gameSession.currentGame.currentPlayer.cardsEstimator
+            jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.currentGame, scoreEstimator, cardsEstimator)
+        }
 
-		int numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.getNumDeterminizationsFactor());
+        var numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.numDeterminizationsFactor)
 
-		long numRuns = strengthLevel.getNumRuns();
-		if (scoreEstimator != null) {
-			logger.info("Using a score estimator network to determine the score");
-			if (mctsConfig.getRunMode() == RunMode.RUNS) {
-				numRuns /= 10; // NOTE: Less runs when using network because it should be superior to random playout
-				logger.info("Running only {} runs per determinization", numRuns);
-			} else if (mctsConfig.getRunMode() == RunMode.TIME) {
-				numDeterminizations *= 2; // NOTE: Can do more determinizations in the same time because it should be faster than random playout
-				logger.info("Running even {} determinizations", numDeterminizations);
-			}
-		} else
-			logger.info("Using a random playout to determine the score");
+        var numRuns = strengthLevel.numRuns
+        if (scoreEstimator != null) {
+            logger.info("Using a score estimator network to determine the score")
+            if (mctsConfig.runMode === RunMode.RUNS) {
+                numRuns /= 10 // NOTE: Less runs when using network because it should be superior to random playout
+                logger.info("Running only {} runs per determinization", numRuns)
+            } else if (mctsConfig.runMode === RunMode.TIME) {
+                numDeterminizations *= 2 // NOTE: Can do more determinizations in the same time because it should be faster than random playout
+                logger.info("Running even {} determinizations", numDeterminizations)
+            }
+        } else
+            logger.info("Using a random playout to determine the score")
 
-		if (mctsConfig.getRunMode() == RunMode.RUNS)
-			return mcts.runForRuns(jassBoard, numDeterminizations, numRuns);
-		else if (mctsConfig.getRunMode() == RunMode.TIME)
-			return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.getMaxThinkingTime() - BUFFER_TIME_MILLIS);
-		return null;
-	}
+        if (mctsConfig.runMode === RunMode.RUNS)
+            return mcts.runForRuns(jassBoard, numDeterminizations, numRuns)
+        else if (mctsConfig.runMode === RunMode.TIME)
+            return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.maxThinkingTime - BUFFER_TIME_MILLIS)
+        return null
+    }
 
-	private int computeNumDeterminizations(GameSession gameSession, boolean isChoosingTrumpf, int numDeterminizationsFactor) {
-		if (!isChoosingTrumpf)
-			return (9 - gameSession.getCurrentRound().getRoundNumber()) * numDeterminizationsFactor;
-		return ROUND_MULTIPLIER * numDeterminizationsFactor;
-	}
+    private fun computeNumDeterminizations(gameSession: GameSession, isChoosingTrumpf: Boolean, numDeterminizationsFactor: Int): Int {
+        return if (!isChoosingTrumpf) (9 - gameSession.currentRound!!.roundNumber) * numDeterminizationsFactor else ROUND_MULTIPLIER * numDeterminizationsFactor
+    }
+
+    companion object {
+
+        private val BUFFER_TIME_MILLIS = 10 // INFO Makes sure, that the bot really finishes before the thinking time is up.
+        private val ROUND_MULTIPLIER = 10
+
+        val logger = LoggerFactory.getLogger(MCTSHelper::class.java)
+    }
 }
