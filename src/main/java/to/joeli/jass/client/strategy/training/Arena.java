@@ -120,7 +120,7 @@ public class Arena {
 
 	public void trainForNumEpisodes(int numEpisodes) {
 		List<Double> history = new ArrayList<>();
-		history.add(0.0); // no performance for pretraining
+		history.add(0.0); // no performance for pre-training
 		for (int i = 1; i < numEpisodes; i++) {
 			history.add(i, runEpisode(i));
 		}

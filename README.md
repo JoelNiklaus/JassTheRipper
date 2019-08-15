@@ -37,6 +37,11 @@ Run experiment
 ./gradlew runExperiment
 ```
 
+Run experiment as a background process
+```bash
+nohup ./gradlew runExperiment > nohup.out &
+```
+
 
 This client allows you to easily develop a bot for the Jass challenge.
 

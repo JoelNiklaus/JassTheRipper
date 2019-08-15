@@ -77,7 +77,7 @@ public class JassBoard implements Board {
 	 * @return
 	 */
 	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
-		return new JassBoard(EnumSet.copyOf(availableCards), null, false, new Game(game), scoreEstimator, cardsEstimator);
+		return new JassBoard(EnumSet.copyOf(availableCards), null, game.isShifted(), new Game(game), scoreEstimator, cardsEstimator);
 	}
 
 	/**
@@ -94,6 +94,9 @@ public class JassBoard implements Board {
 		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.gameSession, this.availableCards);
 	}
 
+	/**
+	 * This method should only be called when we want to distribute new cards to the players
+	 */
 	void sampleCardDeterminizationToPlayersInCardPlay() {
 		if (cardsAreNotDistributedYet())
 			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards, cardsEstimator);

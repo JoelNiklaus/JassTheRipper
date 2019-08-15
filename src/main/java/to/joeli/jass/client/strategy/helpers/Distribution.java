@@ -38,7 +38,7 @@ public class Distribution {
 	 * false when there is only one player in the list
 	 */
 	public boolean deleteEventAndReBalance(Player player) {
-		if (!probabilities.keySet().contains(player))
+		if (!probabilities.containsKey(player))
 			return true;
 
 		if (probabilities.size() == 1)
@@ -82,7 +82,7 @@ public class Distribution {
 	}
 
 	public boolean hasPlayer(Player player) {
-		return probabilities.keySet().contains(player);
+		return probabilities.containsKey(player);
 	}
 
 	private float sumProbabilities() {

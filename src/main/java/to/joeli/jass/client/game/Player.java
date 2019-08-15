@@ -209,11 +209,10 @@ public class Player implements Comparable<Player> {
 
 	@Override
 	public String toString() {
-		return "Player{" +
-				"name='" + name + "'" +
-				", id=" + id +
-				", seatId=" + seatId +
-				", cards=" + cards +
+		return name + "{" +
+				//", id=" + id +
+				//", seatId=" + seatId +
+				//", cards=" + cards +
 				//", jassStrategy=" + jassStrategy +
 				'}';
 	}
