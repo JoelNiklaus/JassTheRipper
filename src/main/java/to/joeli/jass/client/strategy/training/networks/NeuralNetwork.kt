@@ -49,7 +49,7 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
          */
         @JvmStatic
         fun train(episodeNumber: Int, networkType: NetworkType): Boolean {
-            return ShellScriptRunner.runShellProcess(ShellScriptRunner.getPythonDirectory(), "python3 train.py ${zeroPadded(episodeNumber)} ${networkType.path}")
+            return ShellScriptRunner.runShellProcess(ShellScriptRunner.pythonDirectory, "python3 train.py ${zeroPadded(episodeNumber)} ${networkType.path}")
 
         }
 

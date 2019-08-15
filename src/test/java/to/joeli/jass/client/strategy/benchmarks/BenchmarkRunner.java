@@ -104,7 +104,7 @@ public class BenchmarkRunner {
 					+ " MAX_POINTS=" + maxPoints
 					+ " DECK_SHUFFLE_SEED=" + seed
 					+ " npm run start:tournament";
-			ShellScriptRunner.startShellProcessInThread(processes, "../jass-server", command);
+			ShellScriptRunner.INSTANCE.startShellProcessInThread(processes, "../jass-server", command);
 
 			// INFO: if the bots fail to connect, it may be because the server has not yet started. Increase the time sleeping
 			waitForStartup("Wait for jass server to start...", 7500);
@@ -133,14 +133,14 @@ public class BenchmarkRunner {
 			System.out.println("JassTheRipper bots successfully terminated.");
 
 			try {
-				ShellScriptRunner.killProcess(processes.get(0), 15);
+				ShellScriptRunner.INSTANCE.killProcess(processes.get(0), 15);
 				System.out.println("Jass Server successfully terminated.");
 
 				// Challenge bots will terminate automatically when the Jass Server is shutdown
 				// But if they do not:
 				if (!processes.isEmpty()) {
 					// Try to kill them
-					ShellScriptRunner.killProcess(processes.get(1), 9);
+					ShellScriptRunner.INSTANCE.killProcess(processes.get(1), 9);
 					System.out.println("Challenge Bots successfully terminated.");
 				}
 			} catch (InterruptedException | IllegalStateException | IOException e) {
@@ -160,7 +160,7 @@ public class BenchmarkRunner {
 	 * @param processes
 	 */
 	private static void startChallengeBots(ArrayList<Process> processes) {
-		ShellScriptRunner.startShellProcessInThread(processes, "../bachelor-thesis-project/src/remote_play", "sudo python3 play_as_challenge_bot.py");
+		ShellScriptRunner.INSTANCE.startShellProcessInThread(processes, "../bachelor-thesis-project/src/remote_play", "sudo python3 play_as_challenge_bot.py");
 		waitForStartup("Wait for the Challenge bots to start...", 1000);
 	}
 

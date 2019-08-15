@@ -1,127 +1,127 @@
-package to.joeli.jass.client.strategy.helpers;
+package to.joeli.jass.client.strategy.helpers
 
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
+import java.io.File
+import java.io.IOException
+import java.lang.reflect.Field
 
-public class ShellScriptRunner {
+object ShellScriptRunner {
 
-	public static final Logger logger = LoggerFactory.getLogger(ShellScriptRunner.class);
+    val logger: Logger = LoggerFactory.getLogger(ShellScriptRunner::class.java)
+
+    /**
+     * Gets the directory where the deep learning with keras is done
+     *
+     * @return
+     */
+    val pythonDirectory: String
+        get() = System.getProperty("user.dir") + "/src/main/java/to/joeli/jass/client/strategy/training/python"
 
 
-	/**
-	 * This can be used to start independent services we want to use. The started process is saved into the passed list.
-	 * This list can then be used to access running processes and kill them if needed.
-	 *
-	 * @param processes
-	 * @param directory
-	 * @param command
-	 */
-	public static void startShellProcessInThread(List<Process> processes, String directory, String command) {
-		Thread thread = new Thread(() -> {
-			ProcessBuilder builder = buildShellCommand(directory, command);
-			try {
-				processes.add(builder.start());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-		thread.start();
-	}
+    /**
+     * This can be used to start independent services we want to use. The started process is saved into the passed list.
+     * This list can then be used to access running processes and kill them if needed.
+     *
+     * @param processes
+     * @param directory
+     * @param command
+     */
+    fun startShellProcessInThread(processes: MutableList<Process>, directory: String, command: String) {
+        val thread = Thread {
+            val builder = buildShellCommand(directory, command)
+            try {
+                processes.add(builder.start())
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        thread.start()
+    }
 
-	/**
-	 * Runs a shell process in the calling thread and blocks until it is finished.
-	 *
-	 * @param directory
-	 * @param command
-	 * @return
-	 */
-	public static boolean runShellProcess(String directory, String command) {
-		ProcessBuilder builder = ShellScriptRunner.buildShellCommand(directory, command);
+    /**
+     * Runs a shell process in the calling thread and blocks until it is finished.
+     *
+     * @param directory
+     * @param command
+     * @return
+     */
+    fun runShellProcess(directory: String, command: String): Boolean {
+        val builder = buildShellCommand(directory, command)
 
-		try {
-			Process process = builder.start();
+        try {
+            val process = builder.start()
 
-			int exitCode = process.waitFor();
-			System.out.println("\nShell process '" + command + "' finished with exit code: " + exitCode);
-			return exitCode == 0;
+            val exitCode = process.waitFor()
+            println("\nShell process '$command' finished with exit code: $exitCode")
+            return exitCode == 0
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
 
-	/**
-	 * Uses the ProcessBuilder to assemble a shell command out of the directory and command strings
-	 *
-	 * @param directory
-	 * @param command
-	 * @return
-	 */
-	private static ProcessBuilder buildShellCommand(String directory, String command) {
-		ProcessBuilder builder = new ProcessBuilder();
-		builder.inheritIO();
-		builder.directory(new File(directory));
-		builder.command(command.split(" "));
-		return builder;
-	}
+        return false
+    }
 
-	/**
-	 * Can be used to shutdown a process which cannot be stopped gracefully
-	 *
-	 * @param process
-	 * @param signal
-	 * @throws InterruptedException
-	 * @throws IOException
-	 * @throws IllegalStateException
-	 */
-	public static void killProcess(Process process, int signal) throws InterruptedException, IOException, IllegalStateException {
-		ProcessBuilder builder = buildShellCommand("/", "kill " + signal + " " + getPidOfProcess(process));
-		int exitCode = builder.start().waitFor();
-		if (exitCode != 0) {
-			throw new IllegalStateException("<kill " + signal + "> failed, exit code: " + exitCode);
-		}
-	}
+    /**
+     * Uses the ProcessBuilder to assemble a shell command out of the directory and command strings
+     *
+     * @param directory
+     * @param command
+     * @return
+     */
+    private fun buildShellCommand(directory: String, command: String): ProcessBuilder {
+        val builder = ProcessBuilder()
+        builder.inheritIO()
+        builder.directory(File(directory))
+        builder.command(*command.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        return builder
+    }
 
-	/**
-	 * Retrieves the pid of a running process with reflection.
-	 *
-	 * @param process
-	 * @return
-	 */
-	private static synchronized long getPidOfProcess(Process process) {
-		long pid = -1;
+    /**
+     * Can be used to shutdown a process which cannot be stopped gracefully
+     *
+     * @param process
+     * @param signal
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws IllegalStateException
+     */
+    @Throws(InterruptedException::class, IOException::class, IllegalStateException::class)
+    fun killProcess(process: Process, signal: Int) {
+        val builder = buildShellCommand("/", "kill " + signal + " " + getPidOfProcess(process))
+        val exitCode = builder.start().waitFor()
+        if (exitCode != 0) {
+            throw IllegalStateException("<kill $signal> failed, exit code: $exitCode")
+        }
+    }
 
-		try {
-			if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
-				Field f = process.getClass().getDeclaredField("pid");
-				f.setAccessible(true);
-				pid = f.getLong(process);
-				f.setAccessible(false);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			pid = -1;
-		}
-		System.out.println("PID of " + process + " is " + pid);
-		return pid;
-	}
+    /**
+     * Retrieves the pid of a running process with reflection.
+     *
+     * @param process
+     * @return
+     */
+    @Synchronized
+    private fun getPidOfProcess(process: Process): Long {
+        var pid: Long = -1
 
-	/**
-	 * Gets the directory where the deep learning with keras is done
-	 *
-	 * @return
-	 */
-	@NotNull
-	public static String getPythonDirectory() {
-		return System.getProperty("user.dir") + "/src/main/java/to/joeli/jass/client/strategy/training/python";
-	}
+        try {
+            if (process.javaClass.name == "java.lang.UNIXProcess") {
+                val f = process.javaClass.getDeclaredField("pid")
+                f.isAccessible = true
+                pid = f.getLong(process)
+                f.isAccessible = false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            pid = -1
+        }
+
+        println("PID of $process is $pid")
+        return pid
+    }
 }

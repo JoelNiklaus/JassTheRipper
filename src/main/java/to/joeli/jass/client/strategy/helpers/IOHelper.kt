@@ -1,102 +1,91 @@
-package to.joeli.jass.client.strategy.helpers;
+package to.joeli.jass.client.strategy.helpers
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import to.joeli.jass.client.strategy.training.data.CardsDataSet;
-import to.joeli.jass.client.strategy.training.data.DataSet;
-import to.joeli.jass.client.strategy.training.data.ScoreDataSet;
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.cbor.CBORFactory
+import org.apache.commons.io.FileUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import to.joeli.jass.client.strategy.training.data.CardsDataSet
+import to.joeli.jass.client.strategy.training.data.DataSet
+import to.joeli.jass.client.strategy.training.data.ScoreDataSet
+import java.io.File
+import java.io.IOException
 
-import java.io.File;
-import java.io.IOException;
+object IOHelper {
 
-public class IOHelper {
+    val logger: Logger = LoggerFactory.getLogger(IOHelper::class.java)
 
-	public static final Logger logger = LoggerFactory.getLogger(IOHelper.class);
-
-	/**
-	 * Writes a given object to a file at the given path in CBOR and JSON format
-	 *
-	 * @param array
-	 * @param path
-	 * @throws IOException
-	 */
-	public static void write(Object array, String path) throws IOException {
-		writeCBOR(array, path);
-		writeJSON(array, path);
-	}
+    /**
+     * Writes a given object to a file at the given path in CBOR and JSON format
+     *
+     * @param array
+     * @param path
+     * @throws IOException
+     */
+    @Throws(IOException::class)
+    fun write(array: Any, path: String) {
+        writeCBOR(array, path)
+        writeJSON(array, path)
+    }
 
 
-	public static void writeCBOR(Object array, String path) throws IOException {
-		FileUtils.writeByteArrayToFile(new File(path + ".cbor"), convertToCBOR(array));
-	}
+    @Throws(IOException::class)
+    fun writeCBOR(array: Any, path: String) {
+        FileUtils.writeByteArrayToFile(File("$path.cbor"), convertToCBOR(array))
+    }
 
-	private static void writeJSON(Object array, String path) throws IOException {
-		new ObjectMapper().writeValue(new File(path + ".json"), array);
-	}
+    @Throws(IOException::class)
+    private fun writeJSON(array: Any, path: String) {
+        ObjectMapper().writeValue(File("$path.json"), array)
+    }
 
-	/**
-	 * Converts an object to CBOR (https://cbor.io/)
-	 *
-	 * @param array
-	 * @return
-	 * @throws JsonProcessingException
-	 */
-	public static byte[] convertToCBOR(Object array) throws JsonProcessingException {
-		return new ObjectMapper(new CBORFactory()).writeValueAsBytes(array);
-	}
+    /**
+     * Converts an object to CBOR (https://cbor.io/)
+     *
+     * @param array
+     * @return
+     * @throws JsonProcessingException
+     */
+    @Throws(JsonProcessingException::class)
+    fun convertToCBOR(array: Any): ByteArray {
+        return ObjectMapper(CBORFactory()).writeValueAsBytes(array)
+    }
 
-	/*
-	public static List readCBOR(Object array, String path) throws IOException {
-		List features = convertFromCBOR(FileUtils.readFileToByteArray(new File(path)));
-		System.out.println(features);
-		return features;
-	}
+    /**
+     * Creates the directory and all necessary subdirectories if they do not yet exist.
+     *
+     * @param directory
+     * @return
+     */
+    private fun createIfNotExists(directory: File): Boolean {
+        return if (directory.isDirectory) true else directory.mkdirs()
+    }
 
-	public static List convertFromCBOR(byte[] bytes) throws IOException {
-		return new ObjectMapper(new CBORFactory()).readValue(bytes, List.class);
-	}
-	*/
+    /**
+     * Saves multiple files into the subdirectories "features" and "targets".
+     * These files can then be loaded and concatenated again to form the big dataset.
+     * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
+     */
+    fun saveData(cardsDataSet: CardsDataSet, scoreDataSet: ScoreDataSet, episodeNumber: String, name: String): Boolean {
+        return saveDataSet(cardsDataSet, episodeNumber, name) && saveDataSet(scoreDataSet, episodeNumber, name)
+    }
 
-	/**
-	 * Creates the directory and all necessary subdirectories if they do not yet exist.
-	 *
-	 * @param directory
-	 * @return
-	 */
-	private static boolean createIfNotExists(File directory) {
-		if (directory.isDirectory())
-			return true;
-		return directory.mkdirs();
-	}
+    private fun saveDataSet(dataSet: DataSet, episodeNumber: String, name: String): Boolean {
+        if (createIfNotExists(File(dataSet.getFeaturesPath(episodeNumber))) && createIfNotExists(File(dataSet.getTargetsPath(episodeNumber)))) {
+            try {
+                write(dataSet.features, dataSet.getFeaturesPath(episodeNumber) + name)
+                write(dataSet.targets, dataSet.getTargetsPath(episodeNumber) + name)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                logger.error("Failed to save datasets to {}", dataSet.getPath(episodeNumber))
+                return false
+            }
 
-	/**
-	 * Saves multiple files into the subdirectories "features" and "targets".
-	 * These files can then be loaded and concatenated again to form the big dataset.
-	 * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
-	 */
-	public static boolean saveData(CardsDataSet cardsDataSet, ScoreDataSet scoreDataSet, String episodeNumber, String name) {
-		return saveDataSet(cardsDataSet, episodeNumber, name) && saveDataSet(scoreDataSet, episodeNumber, name);
-	}
-
-	private static boolean saveDataSet(DataSet dataSet, String episodeNumber, String name) {
-		if (createIfNotExists(new File(dataSet.getFeaturesPath(episodeNumber)))
-				&& createIfNotExists(new File(dataSet.getTargetsPath(episodeNumber)))) {
-			try {
-				write(dataSet.getFeatures(), dataSet.getFeaturesPath(episodeNumber) + name);
-				write(dataSet.getTargets(), dataSet.getTargetsPath(episodeNumber) + name);
-			} catch (IOException e) {
-				e.printStackTrace();
-				logger.error("Failed to save datasets to {}", dataSet.getPath(episodeNumber));
-				return false;
-			}
-			logger.info("Saved datasets to {}", dataSet.getPath(episodeNumber));
-			return true;
-		}
-		logger.error("Failed to save datasets to {}", dataSet.getPath(episodeNumber));
-		return false;
-	}
+            logger.info("Saved datasets to {}", dataSet.getPath(episodeNumber))
+            return true
+        }
+        logger.error("Failed to save datasets to {}", dataSet.getPath(episodeNumber))
+        return false
+    }
 }

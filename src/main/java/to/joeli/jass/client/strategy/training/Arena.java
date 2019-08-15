@@ -305,7 +305,7 @@ public class Arena {
 
 			if (trainMode.isSavingData() && i % SAVING_FREQUENCY == 0) {
 				final String name = zeroPadded(i - SAVING_FREQUENCY) + "-" + zeroPadded(i);
-				IOHelper.saveData(cardsDataSet, scoreDataSet, zeroPadded(episodeNumber), name);
+				IOHelper.INSTANCE.saveData(cardsDataSet, scoreDataSet, zeroPadded(episodeNumber), name);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
