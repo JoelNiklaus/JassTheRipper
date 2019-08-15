@@ -15,7 +15,7 @@ public class Distribution {
 
 	private final Map<Player, Float> probabilities;
 	private boolean sampled;
-	private Random random = new Random(SEED);
+	private Random random = new Random(); // Be very careful with seeding here! Best do not do it!
 
 
 	public Distribution(Map<Player, Float> probabilities) {
@@ -65,7 +65,9 @@ public class Distribution {
 	 * @return
 	 */
 	public Player sample() {
-		// TODO take this random as a parameter so we can configure the seed
+		if (probabilities.size() == 1)
+			return probabilities.entrySet().iterator().next().getKey();
+
 		float threshold = random.nextFloat() * sumProbabilities();
 
 		float probability = 0;
