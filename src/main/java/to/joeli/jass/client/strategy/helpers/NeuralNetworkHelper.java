@@ -21,6 +21,8 @@ public class NeuralNetworkHelper {
 
 	public static final Logger logger = LoggerFactory.getLogger(NeuralNetworkHelper.class);
 
+	// INFO: Experiment with order of played cards
+	private static final boolean ORIGINAL_PLAYED_CARDS_ORDER = true;
 
 	public static int[][] getCardsTarget(Game game) {
 		return getCardsTarget(game, null);
@@ -147,6 +149,8 @@ public class NeuralNetworkHelper {
 		final List<Move> history = DataAugmentationHelper.getRespectiveMoves(game.getAlreadyPlayedMovesInOrder(), colors);
 		final List<ProbabilityMove> historyMoves = history.stream().map(move -> new ProbabilityMove(move.getPlayer(), move.getPlayedCard())).collect(Collectors.toList());
 		final List<float[]> historyEncodings = getListOfEncodings(historyMoves, respectiveMode);
+		if (!ORIGINAL_PLAYED_CARDS_ORDER)
+			Collections.reverse(historyEncodings);
 		addListToArray(historyEncodings, features, 1);
 
 		// CARDS_DISTRIBUTION

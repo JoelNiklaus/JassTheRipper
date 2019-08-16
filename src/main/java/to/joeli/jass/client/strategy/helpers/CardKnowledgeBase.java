@@ -79,7 +79,7 @@ public class CardKnowledgeBase {
 					.ifPresent(entry -> {
 						Card card = entry.getKey();
 						Player player = entry.getValue().sample(); // Select a player at random based on the probabilities of the distribution
-						boolean result = player.addCard(card);
+						player.addCard(card);
 						// Set distribution of already distributed card to sampled so it is not selected anymore in future runs
 						entry.getValue().setSampled(true);
 

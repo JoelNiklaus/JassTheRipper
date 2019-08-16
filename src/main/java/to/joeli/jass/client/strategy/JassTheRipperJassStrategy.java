@@ -150,7 +150,7 @@ TODO Make new experiments with the improvements so far:
 					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe);
 					mode = ((TrumpfMove) move).getChosenTrumpf();
 				} catch (MCTSException e) {
-					logger.debug("{}", e);
+					logger.error("{}", e);
 					logger.error("Something went wrong. Had to choose random trumpf, damn it!");
 				}
 
@@ -158,7 +158,7 @@ TODO Make new experiments with the improvements so far:
 			logger.info("Chose Trumpf {}", mode);
 			return mode;
 		} catch (Exception e) {
-			logger.debug("{}", e);
+			logger.error("{}", e);
 			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random trumpf now.");
 			return TrumpfSelectionHelper.getRandomMode(isGschobe);
 		}

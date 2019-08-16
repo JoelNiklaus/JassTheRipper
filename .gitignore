@@ -4,4 +4,6 @@ build
 *.log
 *.iml
 out
-src/main/resources/0*
+nohup.out
+/src/main/resources/episodes/
+/src/main/resources/min_val_loss.txt

@@ -18,8 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static to.joeli.jass.client.strategy.training.data.DataSet.zeroPadded;
 
-// TODO refactor this! it is way too big: Maybe take out helper method or divide into two classes with different responsibilities: data collection and experiments
+
 public class Arena {
 
 	// Determines how often the dataset is saved to the filesystem
@@ -29,9 +30,9 @@ public class Arena {
 
 	// Should not be bigger than 32 because it might result in OutOfMemoryErrors
 	// TEST: 2, Needs to be an even number because of fairTournamentMode!
-	private static final int NUM_TRAINING_GAMES = 10;
-	private static final int NUM_TESTING_GAMES = 2;
-	private static final int NUM_PRE_TRAINING_GAMES = 10;
+	private static final int NUM_TRAINING_GAMES = 20;
+	private static final int NUM_TESTING_GAMES = 10;
+	private static final int NUM_PRE_TRAINING_GAMES = 50;
 
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
@@ -86,15 +87,12 @@ public class Arena {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
-		// 36: Number of Cards in a game
-		int size = 36 * SAVING_FREQUENCY;
-		if (DATA_AUGMENTATION_ENABLED)
-			size *= 24; // 24: Number of color permutations (data augmentation)
+		int size = SAVING_FREQUENCY * computeSize();
 		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
 		cardsDataSet = new CardsDataSet(size);
 		scoreDataSet = new ScoreDataSet(size);
 
-		String path = DataSet.BASE_PATH + zeroPadded(0);
+		String path = DataSet.getEpisodePath(0);
 		if (!new File(path).exists()) {
 			logger.info("No dataset found. Collecting a dataset of games played using MCTS with random playouts\n");
 			runMCTSWithRandomPlayout(random, NUM_PRE_TRAINING_GAMES);
@@ -256,10 +254,6 @@ public class Arena {
 		return performMatch(random, numGames, TrainMode.EVALUATION, episodeNumber, configs);
 	}
 
-	private static String zeroPadded(int number) {
-		return String.format("%04d", number);
-	}
-
 	/**
 	 * Performs a match which can be parametrized along multiple dimensions to test the things we want
 	 *
@@ -282,7 +276,7 @@ public class Arena {
 	 * @param trainMode
 	 * @return
 	 */
-	private double playGames(Random random, int numGames, TrainMode trainMode, int episodeNumber) {
+	private double playGames(Random random, int numGames, TrainMode trainMode, int episode) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
@@ -305,7 +299,7 @@ public class Arena {
 
 			if (trainMode.isSavingData() && i % SAVING_FREQUENCY == 0) {
 				final String name = zeroPadded(i - SAVING_FREQUENCY) + "-" + zeroPadded(i);
-				IOHelper.INSTANCE.saveData(cardsDataSet, scoreDataSet, zeroPadded(episodeNumber), name);
+				IOHelper.INSTANCE.saveData(cardsDataSet, scoreDataSet, episode, name);
 			}
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
@@ -369,7 +363,7 @@ public class Arena {
 		}
 
 		if (savingData) {
-			if (scoreFeaturesForPlayer.size() != 24 * 36) throw new AssertionError();
+			if (scoreFeaturesForPlayer.size() != computeSize()) throw new AssertionError();
 			for (Map.Entry<float[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
 				scoreDataSet.addFeature(entry.getKey());
 				scoreDataSet.addTarget(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
@@ -377,6 +371,14 @@ public class Arena {
 		}
 
 		return game.getResult();
+	}
+
+	private int computeSize() {
+		// 36: Number of Cards in a game
+		int size = 36;
+		if (DATA_AUGMENTATION_ENABLED)
+			size *= 24; // 24: Number of color permutations
+		return size;
 	}
 
 	/**

@@ -155,7 +155,7 @@ public class MCTS {
 
 		} catch (InterruptedException | ExecutionException e) {
 			logger.error("{}", e);
-			throw (new MCTSException("There was a problem in the MCTS. Enable debug logging for more information."));
+			throw (new MCTSException("There was a problem in the MCTS."));
 		} finally {
 			futures.clear();
 		}

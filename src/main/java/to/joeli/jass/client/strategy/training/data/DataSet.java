@@ -1,5 +1,7 @@
 package to.joeli.jass.client.strategy.training.data;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 public abstract class DataSet {
@@ -11,15 +13,24 @@ public abstract class DataSet {
 
 	protected abstract String getNetworkTypePath();
 
-	public String getPath(String episodeNumber) {
-		return BASE_PATH + episodeNumber + "/" + getNetworkTypePath();
+	public String getPath(int episode) {
+		return getEpisodePath(episode) + getNetworkTypePath();
 	}
 
-	public String getFeaturesPath(String episodeNumber) {
-		return getPath(episodeNumber) + "features/";
+	@NotNull
+	public static String getEpisodePath(int episode) {
+		return BASE_PATH + "episodes/" + zeroPadded(episode) + "/";
 	}
 
-	public String getTargetsPath(String episodeNumber) {
-		return getPath(episodeNumber) + "targets/";
+	public static String zeroPadded(int number) {
+		return String.format("%04d", number);
+	}
+
+	public String getFeaturesPath(int episode) {
+		return getPath(episode) + "features/";
+	}
+
+	public String getTargetsPath(int episode) {
+		return getPath(episode) + "targets/";
 	}
 }

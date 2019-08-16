@@ -24,8 +24,8 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
     var savedModelBundle: SavedModelBundle? = null
 
 
-    fun loadModel(episodeNumber: Int) {
-        val path = "${DataSet.BASE_PATH}${zeroPadded(episodeNumber)}/${networkType.path}models/export/"
+    fun loadModel(episode: Int) {
+        val path =  "${DataSet.getEpisodePath(episode)}${networkType.path}models/export/"
         savedModelBundle = SavedModelBundle.load(path, "tag")
     }
 

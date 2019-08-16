@@ -102,7 +102,7 @@ def base_path():
 
 
 def path(episode_number, network_type):
-    return base_path() + episode_number + "/" + network_type
+    return base_path() + "episodes/" + episode_number + "/" + network_type
 
 
 def features_path(episode_number, network_type):

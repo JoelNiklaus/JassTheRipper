@@ -1,19 +1,19 @@
 package to.joeli.jass.client.strategy.helpers
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import to.joeli.jass.client.game.GameSession
 import to.joeli.jass.client.strategy.config.MCTSConfig
 import to.joeli.jass.client.strategy.config.RunMode
 import to.joeli.jass.client.strategy.config.StrengthLevel
 import to.joeli.jass.client.strategy.exceptions.MCTSException
 import to.joeli.jass.client.strategy.mcts.JassBoard
-import to.joeli.jass.client.strategy.training.networks.CardsEstimator
 import to.joeli.jass.client.strategy.mcts.src.Board
 import to.joeli.jass.client.strategy.mcts.src.MCTS
 import to.joeli.jass.client.strategy.mcts.src.Move
+import to.joeli.jass.client.strategy.training.networks.CardsEstimator
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator
 import to.joeli.jass.game.cards.Card
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Created by joelniklaus on 05.05.17.
@@ -69,7 +69,7 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
     fun predictMove(availableCards: Set<Card>, gameSession: GameSession, isChoosingTrumpf: Boolean, shifted: Boolean): Move? {
         val jassBoard: Board
         val scoreEstimator: ScoreEstimator?
-        val cardsEstimator: CardsEstimator
+        val cardsEstimator: CardsEstimator?
         val strengthLevel: StrengthLevel
         if (isChoosingTrumpf) {
             strengthLevel = mctsConfig.trumpfStrengthLevel
@@ -114,6 +114,6 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
         private val BUFFER_TIME_MILLIS = 10 // INFO Makes sure, that the bot really finishes before the thinking time is up.
         private val ROUND_MULTIPLIER = 10
 
-        val logger = LoggerFactory.getLogger(MCTSHelper::class.java)
+        val logger: Logger = LoggerFactory.getLogger(MCTSHelper::class.java)
     }
 }

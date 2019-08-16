@@ -195,7 +195,6 @@ public class JassBoard implements Board {
 		if (isChoosingTrumpf()) {
 			if (!(move instanceof TrumpfMove)) throw new AssertionError();
 			final TrumpfMove trumpfMove = (TrumpfMove) move;
-			if (trumpfMove == null) throw new AssertionError();
 
 			Mode mode = trumpfMove.getChosenTrumpf();
 			if (mode.equals(Mode.shift())) {
