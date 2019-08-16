@@ -6,7 +6,8 @@ from keras.engine.saving import load_model
 
 from export_model_checkpoint import ExportModelCheckpoint
 from neural_networks import define_separate_model
-from util import model_path, features_path, targets_path, weights_path, export_path, load_dataset, zero_pad, base_path
+from util import model_path, features_path, targets_path, weights_path, export_path, load_dataset, zero_pad, base_path, \
+    shuffle_in_unison
 
 
 def train(episode_padded, network_type):
@@ -52,6 +53,7 @@ def train(episode_padded, network_type):
 
     features = load_dataset(episode_number, network_type, features_path)
     targets = load_dataset(episode_number, network_type, targets_path)
+    shuffle_in_unison(features, targets)
 
     h = History()
     tb = TensorBoard(log_dir='./Graph', write_images=True)

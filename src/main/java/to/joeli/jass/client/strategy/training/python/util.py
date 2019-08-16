@@ -56,9 +56,22 @@ def load_dataset(episode_number, network_type, path):
     dataset = None
     for episode in range(max(episode_number - REPLAY_MEMORY_SIZE_FACTOR + 1, 0), episode_number + 1, 1):
         dataset = concat(dataset, load_all_cbor_files(path(zero_pad(episode), network_type)))
-    np.random.shuffle(
-        dataset)  # shuffle so that the validation data is better selected (chosen from the end of the dataset)
     return dataset
+
+
+def shuffle_in_unison(a, b):
+    """
+    Shuffle so that the validation data is better selected (chosen from the end of the dataset)
+    Be careful with future numpy version! This could maybe stop working!
+    See https://stackoverflow.com/questions/4601373/better-way-to-shuffle-two-numpy-arrays-in-unison
+    :param a:
+    :param b:
+    :return:
+    """
+    rng_state = np.random.get_state()
+    np.random.shuffle(a)
+    np.random.set_state(rng_state)
+    np.random.shuffle(b)
 
 
 """
