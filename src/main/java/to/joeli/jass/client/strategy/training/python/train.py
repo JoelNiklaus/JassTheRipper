@@ -1,8 +1,10 @@
 import os
 import sys
 
+import numpy
 from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, History
 from keras.engine.saving import load_model
+from tensorflow.contrib.learn.python.learn.estimators._sklearn import train_test_split
 
 from export_model_checkpoint import ExportModelCheckpoint
 from neural_networks import define_separate_model
@@ -36,7 +38,8 @@ def train(episode_padded, network_type):
         else:
             model = define_separate_model(network_type)
             # Try also: 'mape', 'kullback_leibler_divergence', 'categorical_crossentropy', 'acc'
-            model.compile(loss='mae', optimizer='adam', metrics=['mse'])
+            model.compile(loss='mse', optimizer='adam',
+                          metrics=['mae'])  # Reason for mse: big errors should be punished!
             print("\nCompiled new model")
     else:  # self_play setting: loading existing model of the previous episode and saving to current episode
         saved_model_path = model_path(zero_pad(episode_number - 1), network_type)
@@ -51,24 +54,34 @@ def train(episode_padded, network_type):
         #    model = model.load_weights(weights_path(episode_number, network_type))
         #    print("\nLoaded existing weights from " + weights_path(episode_number, network_type))
 
-    features = load_dataset(episode_number, network_type, features_path)
-    targets = load_dataset(episode_number, network_type, targets_path)
-    shuffle_in_unison(features, targets)
+    x_train = load_dataset(episode_number, network_type, features_path)
+    y_train = load_dataset(episode_number, network_type, targets_path)
+    shuffle_in_unison(x_train, y_train)
 
     h = History()
     tb = TensorBoard(log_dir='./Graph', write_images=True)
-    es = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
     mc = ModelCheckpoint(model_path(episode_padded, network_type), save_best_only=True, save_weights_only=False,
                          verbose=1)
     wc = ModelCheckpoint(weights_path(episode_padded, network_type), save_best_only=True, save_weights_only=True,
                          verbose=1)
     emc = ExportModelCheckpoint(export_path(episode_padded, network_type), save_best_only=True, verbose=1)
 
-    history = model.fit(features, targets, epochs=99, batch_size=32, validation_split=0.1,
+    history = model.fit(x_train, y_train, epochs=99, batch_size=16, validation_split=0.1,
                         callbacks=[h, tb, es, mc, wc, emc])
 
     min_val_loss = min(history.history['val_loss'])
     print(min_val_loss, file=open(base_path() + "min_val_loss.txt", "w"))  # This file is then read in the Java code
+
+    x_test = load_dataset("test", network_type, features_path)
+    y_test = load_dataset("test", network_type, targets_path)
+    print("Test performance:")
+    print(model.metrics_names)
+    print(model.evaluate(x_test, y_test))
+
+    numpy.set_printoptions(threshold=sys.maxsize)  # so that the print output is not truncated
+    print(model.predict(numpy.expand_dims(x_test[0], axis=0)))
+    print(y_test[0])
 
 
 if __name__ == '__main__':

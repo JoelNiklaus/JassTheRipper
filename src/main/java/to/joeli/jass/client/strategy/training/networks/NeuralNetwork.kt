@@ -48,8 +48,8 @@ open class NeuralNetwork(private val networkType: NetworkType, var isTrainable: 
          * Trains the network with a given train mode. The actual training is done in python with keras. This is why we invoke the shell script.
          */
         @JvmStatic
-        fun train(episodeNumber: Int, networkType: NetworkType): Boolean {
-            return ShellScriptRunner.runShellProcess(ShellScriptRunner.pythonDirectory, "python3 train.py ${zeroPadded(episodeNumber)} ${networkType.path}")
+        fun train(episode: Int, networkType: NetworkType): Boolean {
+            return ShellScriptRunner.runShellProcess(ShellScriptRunner.pythonDirectory, "python3 train.py ${zeroPadded(episode)} ${networkType.path}")
 
         }
 

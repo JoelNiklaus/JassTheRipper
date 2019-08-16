@@ -26,7 +26,8 @@ object IOHelper {
     @Throws(IOException::class)
     fun write(array: Any, path: String) {
         writeCBOR(array, path)
-        writeJSON(array, path)
+        // INFO: Only write to JSON when we want to debug. Otherwise it is a waste of resources
+        // writeJSON(array, path)
     }
 
 

@@ -32,7 +32,7 @@ public class Arena {
 	// TEST: 2, Needs to be an even number because of fairTournamentMode!
 	private static final int NUM_TRAINING_GAMES = 20;
 	private static final int NUM_TESTING_GAMES = 10;
-	private static final int NUM_PRE_TRAINING_GAMES = 50;
+	private static final int NUM_PRE_TRAINING_GAMES = 100;
 
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
@@ -144,31 +144,31 @@ public class Arena {
 	 *
 	 * @return the performance of mcts with score estimation against mcts with random playouts
 	 */
-	private double runEpisode(int episodeNumber) {
-		logger.info("Running episode #{}\n", episodeNumber);
-		experimentLogger.info("\n===========================\nEpisode #{}\n===========================", episodeNumber);
+	private double runEpisode(int episode) {
+		logger.info("Running episode #{}\n", episode);
+		experimentLogger.info("\n===========================\nEpisode #{}\n===========================", episode);
 
 		logger.info("Collecting training examples by self play with estimator enhanced MCTS\n");
-		runMCTSWithEstimators(random, numTrainingGames, episodeNumber);
+		runMCTSWithEstimators(random, numTrainingGames, episode);
 
 		logger.info("Training the trainable networks with the collected examples\n");
-		trainNetworks(episodeNumber);
+		trainNetworks(episode);
 
 		logger.info("Loading the newly trained trainable networks into memory\n");
-		loadNetworks(episodeNumber, true);
+		loadNetworks(episode, true);
 
 		if (SCORE_ESTIMATOR_USED) {
 			logger.info("Pitting the 'naked' score estimators against each other to see " +
 					"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
 			final boolean wasImproved = runOnlyNetworks(random, numTestingGames) > improvementThresholdPercentage;
-			updateNetworks(episodeNumber, wasImproved);
+			updateNetworks(episode, wasImproved);
 		}
 		if (CARDS_ESTIMATOR_USED) {
 			try {
 				logger.info("Checking if the minimum validation loss of the current cards estimator is less than the old one\n");
 				double minValLoss = Double.parseDouble(new String(Files.readAllBytes(Paths.get(DataSet.BASE_PATH + "min_val_loss.txt"))));
 				experimentLogger.info("\nMinimum Validation Loss after training network: {}", minValLoss);
-				updateNetworks(episodeNumber, minValLoss < minValLossOld);
+				updateNetworks(episode, minValLoss < minValLossOld);
 				minValLossOld = minValLoss;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -176,10 +176,10 @@ public class Arena {
 		}
 
 		logger.info("Testing MCTS with estimators against basic MCTS with random playout\n");
-		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random, numTestingGames, episodeNumber);
+		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random, numTestingGames, episode);
 		experimentLogger.info("\nEstimator enhanced MCTS scored {}% of the points of regular MCTS", performance);
 
-		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episodeNumber, performance);
+		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episode, performance);
 		return performance;
 	}
 
@@ -213,12 +213,12 @@ public class Arena {
 	/**
 	 * Trains the networks
 	 */
-	private void trainNetworks(int episodeNumber) {
+	private void trainNetworks(int episode) {
 		// NOTE: The networks of team 0 are trainable. Both players of the same team normally have the same network references
 		if (CARDS_ESTIMATOR_USED)
-			NeuralNetwork.train(episodeNumber, NetworkType.CARDS);
+			NeuralNetwork.train(episode, NetworkType.CARDS);
 		if (SCORE_ESTIMATOR_USED)
-			NeuralNetwork.train(episodeNumber, NetworkType.SCORE);
+			NeuralNetwork.train(episode, NetworkType.SCORE);
 	}
 
 
@@ -230,12 +230,12 @@ public class Arena {
 		return performMatch(random, numGames, TrainMode.PRE_TRAIN, 0, configs);
 	}
 
-	private double runMCTSWithEstimators(Random random, int numGames, int episodeNumber) {
+	private double runMCTSWithEstimators(Random random, int numGames, int episode) {
 		Config[] configs = {
 				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(true, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)
 		};
-		return performMatch(random, numGames, TrainMode.SELF_PLAY, episodeNumber, configs);
+		return performMatch(random, numGames, TrainMode.SELF_PLAY, episode, configs);
 	}
 
 	private double runOnlyNetworks(Random random, int numGames) {
@@ -246,12 +246,12 @@ public class Arena {
 		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
 	}
 
-	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(Random random, int numGames, int episodeNumber) {
+	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(Random random, int numGames, int episode) {
 		Config[] configs = {
 				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(true, false, false, false, false)
 		};
-		return performMatch(random, numGames, TrainMode.EVALUATION, episodeNumber, configs);
+		return performMatch(random, numGames, TrainMode.EVALUATION, episode, configs);
 	}
 
 	/**
@@ -262,10 +262,10 @@ public class Arena {
 	 * @param configs
 	 * @return
 	 */
-	private double performMatch(Random random, int numGames, TrainMode trainMode, int episodeNumber, Config[] configs) {
+	private double performMatch(Random random, int numGames, TrainMode trainMode, int episode, Config[] configs) {
 		gameSession.setConfigs(configs);
 
-		return playGames(random, numGames, trainMode, episodeNumber);
+		return playGames(random, numGames, trainMode, episode);
 	}
 
 	/**
