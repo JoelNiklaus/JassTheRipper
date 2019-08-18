@@ -7,3 +7,4 @@ out
 nohup.out
 /src/main/resources/episodes/
 /src/main/resources/min_val_loss.txt
+/src/main/resources/test_loss.txt

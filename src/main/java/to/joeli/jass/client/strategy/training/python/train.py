@@ -54,30 +54,39 @@ def train(episode_padded, network_type):
         #    model = model.load_weights(weights_path(episode_number, network_type))
         #    print("\nLoaded existing weights from " + weights_path(episode_number, network_type))
 
+    print("Loading data...")
+
     x_train = load_dataset(episode_number, network_type, features_path)
     y_train = load_dataset(episode_number, network_type, targets_path)
+    # First two games of the dataset are used as test set.
+    # Can only be used in pre-training, in self-play the data has already been seen in previous epochs during training!
+    size = 36 * 24 * 2  # cards x data augmentation multiplier * fair tournament mode multiplier
+    x_test = x_train[:size - 1]
+    y_test = y_train[:size - 1]
+    x_train = x_train[size:]
+    y_train = y_train[size:]
     shuffle_in_unison(x_train, y_train)
+    shuffle_in_unison(x_test, y_test)
+
+    print("Training...")
 
     h = History()
     tb = TensorBoard(log_dir='./Graph', write_images=True)
-    es = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     mc = ModelCheckpoint(model_path(episode_padded, network_type), save_best_only=True, save_weights_only=False,
                          verbose=1)
     wc = ModelCheckpoint(weights_path(episode_padded, network_type), save_best_only=True, save_weights_only=True,
                          verbose=1)
     emc = ExportModelCheckpoint(export_path(episode_padded, network_type), save_best_only=True, verbose=1)
 
-    history = model.fit(x_train, y_train, epochs=99, batch_size=16, validation_split=0.1,
+    history = model.fit(x_train, y_train, epochs=999, batch_size=64, validation_split=0.1,
                         callbacks=[h, tb, es, mc, wc, emc])
 
     min_val_loss = min(history.history['val_loss'])
     print(min_val_loss, file=open(base_path() + "min_val_loss.txt", "w"))  # This file is then read in the Java code
 
-    x_test = load_dataset("test", network_type, features_path)
-    y_test = load_dataset("test", network_type, targets_path)
-    print("Test performance:")
-    print(model.metrics_names)
-    print(model.evaluate(x_test, y_test))
+    test_loss = model.evaluate(x_test, y_test)[0]
+    print(test_loss, file=open(base_path() + "test_loss.txt", "w"))  # This file is then read in the Java code
 
     numpy.set_printoptions(threshold=sys.maxsize)  # so that the print output is not truncated
     print(model.predict(numpy.expand_dims(x_test[0], axis=0)))

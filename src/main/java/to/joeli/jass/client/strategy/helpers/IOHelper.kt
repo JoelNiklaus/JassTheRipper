@@ -11,10 +11,22 @@ import to.joeli.jass.client.strategy.training.data.DataSet
 import to.joeli.jass.client.strategy.training.data.ScoreDataSet
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
 
 object IOHelper {
 
     val logger: Logger = LoggerFactory.getLogger(IOHelper::class.java)
+
+    fun getQuantifierFromFile(filename: String): Double {
+        try {
+            return java.lang.Double.parseDouble(String(Files.readAllBytes(Paths.get(DataSet.BASE_PATH + filename))))
+        } catch (e: IOException) {
+            logger.error("{}", e)
+        }
+
+        return java.lang.Double.MAX_VALUE
+    }
 
     /**
      * Writes a given object to a file at the given path in CBOR and JSON format

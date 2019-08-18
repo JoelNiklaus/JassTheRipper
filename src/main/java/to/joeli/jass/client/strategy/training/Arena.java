@@ -13,9 +13,6 @@ import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static to.joeli.jass.client.strategy.training.data.DataSet.zeroPadded;
@@ -30,6 +27,7 @@ public class Arena {
 
 	// Should not be bigger than 32 because it might result in OutOfMemoryErrors
 	// TEST: 2, Needs to be an even number because of fairTournamentMode!
+	// Needs to be >= 4 because first 2 games are used as test set
 	private static final int NUM_TRAINING_GAMES = 20;
 	private static final int NUM_TESTING_GAMES = 10;
 	private static final int NUM_PRE_TRAINING_GAMES = 100;
@@ -48,6 +46,7 @@ public class Arena {
 	private final Random random;
 
 	private double minValLossOld = Double.MAX_VALUE;
+	private double testLossOld = Double.MAX_VALUE;
 
 	private GameSession gameSession;
 
@@ -57,14 +56,12 @@ public class Arena {
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 	public static final Logger experimentLogger = LoggerFactory.getLogger("Experiment");
 
-
 	public static void main(String[] args) {
 		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Training the networks with self-play\n");
 		arena.trainForNumEpisodes(NUM_EPISODES);
 	}
-
 
 	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
 		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
@@ -76,7 +73,6 @@ public class Arena {
 
 		setUp();
 	}
-
 
 	public Arena(GameSession gameSession) {
 		this(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
@@ -114,7 +110,6 @@ public class Arena {
 	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
 		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
 	}
-
 
 	public void trainForNumEpisodes(int numEpisodes) {
 		List<Double> history = new ArrayList<>();
@@ -164,15 +159,14 @@ public class Arena {
 			updateNetworks(episode, wasImproved);
 		}
 		if (CARDS_ESTIMATOR_USED) {
-			try {
-				logger.info("Checking if the minimum validation loss of the current cards estimator is less than the old one\n");
-				double minValLoss = Double.parseDouble(new String(Files.readAllBytes(Paths.get(DataSet.BASE_PATH + "min_val_loss.txt"))));
-				experimentLogger.info("\nMinimum Validation Loss after training network: {}", minValLoss);
-				updateNetworks(episode, minValLoss < minValLossOld);
-				minValLossOld = minValLoss;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			logger.info("Checking if the minimum validation loss of the current cards estimator is less than the old one\n");
+			double minValLoss = IOHelper.INSTANCE.getQuantifierFromFile("min_val_loss.txt");
+			experimentLogger.info("\nMinimum Validation Loss after training network: {}", minValLoss);
+			minValLossOld = minValLoss;
+			double testLoss = IOHelper.INSTANCE.getQuantifierFromFile("test_loss.txt");
+			experimentLogger.info("\nTest Loss after training network: {}", testLoss);
+			updateNetworks(episode, testLoss < testLossOld);
+			testLossOld = testLoss;
 		}
 
 		logger.info("Testing MCTS with estimators against basic MCTS with random playout\n");

@@ -53,8 +53,6 @@ def load_all_cbor_files(path):
 
 
 def load_dataset(episode_number, network_type, path_function):
-    if episode_number == 'test':
-        return load_all_cbor_files(path_function("test", network_type))
     dataset = None
     for episode in range(max(episode_number - REPLAY_MEMORY_SIZE_FACTOR + 1, 0), episode_number + 1, 1):
         dataset = concat(dataset, load_all_cbor_files(path_function(zero_pad(episode), network_type)))
