@@ -75,12 +75,12 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
             strengthLevel = mctsConfig.trumpfStrengthLevel
             scoreEstimator = gameSession.trumpfSelectingPlayer.scoreEstimator
             cardsEstimator = gameSession.trumpfSelectingPlayer.cardsEstimator
-            jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator, cardsEstimator)
+            jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, mctsConfig.cheating, scoreEstimator, cardsEstimator)
         } else {
             strengthLevel = mctsConfig.cardStrengthLevel
             scoreEstimator = gameSession.currentGame.currentPlayer.scoreEstimator
             cardsEstimator = gameSession.currentGame.currentPlayer.cardsEstimator
-            jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.currentGame, scoreEstimator, cardsEstimator)
+            jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.currentGame, mctsConfig.cheating, scoreEstimator, cardsEstimator)
         }
 
         var numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.numDeterminizationsFactor)

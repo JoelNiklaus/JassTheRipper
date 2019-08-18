@@ -220,6 +220,22 @@ public class MCTSBenchmarkTest {
 	}
 
 	@Test
+	public void testCardsEstimatorLosesAgainstCheatingPlayer() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, true, true, false, false),
+					new Config(true, false, false, false, false)
+			};
+			configs[1].setMctsConfig(new MCTSConfig(true));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance < 100);
+		}
+	}
+
+	@Test
 	public void testDifferentPlayouts() {
 		final GameSession gameSession = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(6).createGameSession();
 		//final GameSession gameSession = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession();

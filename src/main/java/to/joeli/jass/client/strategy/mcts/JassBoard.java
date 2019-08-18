@@ -34,6 +34,7 @@ public class JassBoard implements Board {
 	private GameSession gameSession;
 	private boolean shifted;
 	private Game game;
+	private boolean cheating; // Determines if the player knows the cards of the other players or not (used for experiments)
 
 	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
 	private final ScoreEstimator scoreEstimator;
@@ -42,11 +43,12 @@ public class JassBoard implements Board {
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, boolean cheating, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		this.availableCards = availableCards;
 		this.gameSession = gameSession;
 		this.shifted = shifted;
 		this.game = game;
+		this.cheating = cheating;
 		this.scoreEstimator = scoreEstimator;
 		this.cardsEstimator = cardsEstimator;
 	}
@@ -61,8 +63,8 @@ public class JassBoard implements Board {
 	 * @param cardsEstimator
 	 * @return
 	 */
-	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
-		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, scoreEstimator, cardsEstimator);
+	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, boolean cheating, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
+		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, cheating, scoreEstimator, cardsEstimator);
 		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
 		return jassBoard;
 	}
@@ -76,8 +78,8 @@ public class JassBoard implements Board {
 	 * @param cardsEstimator
 	 * @return
 	 */
-	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
-		return new JassBoard(EnumSet.copyOf(availableCards), null, game.isShifted(), new Game(game), scoreEstimator, cardsEstimator);
+	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, boolean cheating, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
+		return new JassBoard(EnumSet.copyOf(availableCards), null, game.isShifted(), new Game(game), cheating, scoreEstimator, cardsEstimator);
 	}
 
 	/**
@@ -91,13 +93,15 @@ public class JassBoard implements Board {
 
 
 	void sampleCardDeterminizationToPlayersInTrumpfSelection() {
-		CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.gameSession, this.availableCards);
+		if (!cheating) // if cheating: do nothing -> all the cards are known
+			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.gameSession, this.availableCards);
 	}
 
 	/**
 	 * This method should only be called when we want to distribute new cards to the players
 	 */
 	void sampleCardDeterminizationToPlayersInCardPlay() {
+		if (!cheating) // if cheating: do nothing -> all the cards are known
 			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards, cardsEstimator);
 	}
 
@@ -106,8 +110,8 @@ public class JassBoard implements Board {
 	 * If they do, we are in a Trumpf selection tree, where the cards are already distributed.
 	 * If they don't, we are in a card selection tree where we the player do not have cards yet.
 	 *
-	 * @deprecated Now this is solved with the isChoosingTrumpf method
 	 * @return
+	 * @deprecated Now this is solved with the isChoosingTrumpf method
 	 */
 	private boolean cardsAreNotDistributedYet() {
 		for (Player player : this.game.getPlayers()) {
@@ -125,9 +129,9 @@ public class JassBoard implements Board {
 	@Override
 	public Board duplicate(boolean newRandomCards) {
 		if (isChoosingTrumpf())
-			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, scoreEstimator, cardsEstimator);
+			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, cheating, scoreEstimator, cardsEstimator);
 
-		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, scoreEstimator, cardsEstimator);
+		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, cheating, scoreEstimator, cardsEstimator);
 		if (newRandomCards)
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 		return jassBoard;

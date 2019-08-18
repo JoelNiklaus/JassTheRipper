@@ -104,7 +104,6 @@ TODO Make new experiments with the improvements so far:
 	// IDEA: only one stateless jasstheripper computation container which provides an api to be called
 
 	// TODO consider ForkJoinPool so we can also do leaf parallelisation or tree parallelisation
-	// TODO implement cheating player as a benchmark: not very easily possible because we dont know the cards -> not planned at the moment
 	// TODO find a way to visualize the MCTS tree
 	// TODO hilfsmethoden bockVonJederFarbe, TruempfeNochImSpiel, statistisches Modell von möglichen Karten von jedem Spieler -> neural network (CardsEstimator)
 	// TODO add exceptions to code!!!

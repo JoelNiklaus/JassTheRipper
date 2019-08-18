@@ -10,6 +10,8 @@ class MCTSConfig {
     var trumpfStrengthLevel = StrengthLevel.INSANE
     var cardStrengthLevel = StrengthLevel.POWERFUL
 
+    var cheating = false // enable this for comparing the cards estimator performance to a player who knows all the cards
+
     var seed = 42
     var scoreBoundsUsed = false
     var explorationConstant = sqrt(2.0)
@@ -26,6 +28,10 @@ class MCTSConfig {
         this.scoreBoundsUsed = scoreBoundsUsed
         this.pessimisticBias = pessimisticBias
         this.optimisticBias = optimisticBias
+    }
+
+    constructor(cheating: Boolean) {
+        this.cheating = cheating
     }
 
     constructor(explorationConstant: Double) {
