@@ -4,6 +4,7 @@ import sys
 import numpy
 from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, History
 from keras.engine.saving import load_model
+from keras.optimizers import SGD, Adam
 from tensorflow.contrib.learn.python.learn.estimators._sklearn import train_test_split
 
 from export_model_checkpoint import ExportModelCheckpoint
@@ -38,7 +39,9 @@ def train(episode_padded, network_type):
         else:
             model = define_separate_model(network_type)
             # Try also: 'mape', 'kullback_leibler_divergence', 'categorical_crossentropy', 'acc'
-            model.compile(loss='mse', optimizer='adam',
+            optimizer = SGD(lr=1e-2, momentum=0.9, decay=1e-6, nesterov=True)
+            # optimizer = Adam()
+            model.compile(loss='mse', optimizer=optimizer,
                           metrics=['mae'])  # Reason for mse: big errors should be punished!
             print("\nCompiled new model")
     else:  # self_play setting: loading existing model of the previous episode and saving to current episode
@@ -79,7 +82,7 @@ def train(episode_padded, network_type):
                          verbose=1)
     emc = ExportModelCheckpoint(export_path(episode_padded, network_type), save_best_only=True, verbose=1)
 
-    history = model.fit(x_train, y_train, epochs=999, batch_size=64, validation_split=0.1,
+    history = model.fit(x_train, y_train, epochs=99, batch_size=32, validation_split=0.1,
                         callbacks=[h, tb, es, mc, wc, emc])
 
     min_val_loss = min(history.history['val_loss'])
