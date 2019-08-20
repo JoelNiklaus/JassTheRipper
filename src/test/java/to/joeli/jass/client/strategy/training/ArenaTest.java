@@ -6,7 +6,7 @@ import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD
 
 public class ArenaTest {
 
-	private Arena arena = new Arena(2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+	private Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
 
 	@Test

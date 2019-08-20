@@ -16,7 +16,7 @@ public class NeuralNetworkBenchmarkTest {
 	private static final long SEED = 42;
 	private static final int NUM_GAMES = 10;
 
-	private Arena arena = new Arena(2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+	private Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
 	/**
 	 * Tests if it is worthwhile to use a score estimator
@@ -30,7 +30,7 @@ public class NeuralNetworkBenchmarkTest {
 					new Config(true, false, false)
 			};
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			assertTrue(performance > 100);
 			System.out.println(performance);

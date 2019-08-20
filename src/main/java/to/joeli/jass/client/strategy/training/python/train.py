@@ -59,17 +59,17 @@ def train(episode_padded, network_type):
 
     print("Loading data...")
 
-    x_train = load_dataset(episode_number, network_type, features_path)
-    y_train = load_dataset(episode_number, network_type, targets_path)
-    # First two games of the dataset are used as test set.
-    # Can only be used in pre-training, in self-play the data has already been seen in previous epochs during training!
-    size = 36 * 24 * 2  # cards x data augmentation multiplier * fair tournament mode multiplier
-    x_test = x_train[:size - 1]
-    y_test = y_train[:size - 1]
-    x_train = x_train[size:]
-    y_train = y_train[size:]
+    x_train = load_dataset(episode_number, network_type, "train/", features_path)
+    y_train = load_dataset(episode_number, network_type, "train/", targets_path)
     shuffle_in_unison(x_train, y_train)
+
+    x_test = load_dataset(episode_number, network_type, "test/", features_path)
+    y_test = load_dataset(episode_number, network_type, "test/", targets_path)
     shuffle_in_unison(x_test, y_test)
+
+    x_val = load_dataset(episode_number, network_type, "val/", features_path)
+    y_val = load_dataset(episode_number, network_type, "val/", targets_path)
+    shuffle_in_unison(x_val, y_val)
 
     print("Training...")
 
@@ -82,7 +82,7 @@ def train(episode_padded, network_type):
                          verbose=1)
     emc = ExportModelCheckpoint(export_path(episode_padded, network_type), save_best_only=True, verbose=1)
 
-    history = model.fit(x_train, y_train, epochs=99, batch_size=32, validation_split=0.1,
+    history = model.fit(x_train, y_train, epochs=999, batch_size=32, validation_data=(x_val, y_val),
                         callbacks=[h, tb, es, mc, wc, emc])
 
     min_val_loss = min(history.history['val_loss'])

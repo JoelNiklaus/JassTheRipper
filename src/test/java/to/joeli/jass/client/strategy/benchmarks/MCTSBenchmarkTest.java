@@ -25,7 +25,7 @@ public class MCTSBenchmarkTest {
 	private static final long SEED = 43; // To get a match at the start use 42
 	private static final int NUM_GAMES = 50;
 
-	private Arena arena = new Arena(2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+	private Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
 	/**
 	 * Tests if it is worthwhile to use the MCTS trumpf selection method
@@ -43,7 +43,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
 			configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -63,7 +63,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_STRONG_TIME));
 			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_WEAK_TIME));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -84,7 +84,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS));
 			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -105,7 +105,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 			configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -122,7 +122,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(FinalSelectionPolicy.ROBUST_CHILD));
 			configs[1].setMctsConfig(new MCTSConfig(FinalSelectionPolicy.MAX_CHILD));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -140,7 +140,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(2));
 			configs[1].setMctsConfig(new MCTSConfig(1));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -159,7 +159,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(false, 0.0, 0.0));
 			configs[1].setMctsConfig(new MCTSConfig(true, 0.0, 10.0));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -178,7 +178,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(0));
 			configs[1].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -195,7 +195,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(0.0));
 			configs[1].setMctsConfig(new MCTSConfig(-0.3));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -212,7 +212,7 @@ public class MCTSBenchmarkTest {
 			configs[0].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
 			configs[1].setMctsConfig(new MCTSConfig(1.7));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -227,7 +227,7 @@ public class MCTSBenchmarkTest {
 					new Config(true, false, false, false, false)
 			};
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
@@ -243,7 +243,7 @@ public class MCTSBenchmarkTest {
 			};
 			configs[1].setMctsConfig(new MCTSConfig(true));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance < 100);
@@ -259,7 +259,7 @@ public class MCTSBenchmarkTest {
 			};
 			configs[1].setMctsConfig(new MCTSConfig(true));
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance < 100);
@@ -275,14 +275,14 @@ public class MCTSBenchmarkTest {
 			};
 			configs[1].setMctsConfig(new MCTSConfig(true));
 
-			final double cardsEstimatorPerformance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double cardsEstimatorPerformance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(cardsEstimatorPerformance);
 
 			configs[0].setCardsEstimatorUsed(false);
 			configs[0].setCardsEstimatorTrainable(false);
 
-			final double regularPerformance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+			final double regularPerformance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(regularPerformance);
 			assertTrue(cardsEstimatorPerformance > regularPerformance);

@@ -11,10 +11,10 @@ public abstract class DataSet {
 
 	public abstract List getTargets();
 
-	protected abstract String getNetworkTypePath();
+	protected abstract String getNetworkType();
 
-	public String getPath(int episode) {
-		return getEpisodePath(episode) + getNetworkTypePath();
+	public static String zeroPadded(int number) {
+		return String.format("%04d", number);
 	}
 
 	@NotNull
@@ -22,15 +22,19 @@ public abstract class DataSet {
 		return BASE_PATH + "episodes/" + zeroPadded(episode) + "/";
 	}
 
-	public static String zeroPadded(int number) {
-		return String.format("%04d", number);
+	public String getNetworkTypePath(int episode) {
+		return getEpisodePath(episode) + getNetworkType();
 	}
 
-	public String getFeaturesPath(int episode) {
-		return getPath(episode) + "features/";
+	public String getDataSetTypePath(int episode, String dataSetType) {
+		return getNetworkTypePath(episode) + dataSetType;
 	}
 
-	public String getTargetsPath(int episode) {
-		return getPath(episode) + "targets/";
+	public String getFeaturesPath(int episode, String dataSetType) {
+		return getDataSetTypePath(episode, dataSetType) + "features/";
+	}
+
+	public String getTargetsPath(int episode, String dataSetType) {
+		return getDataSetTypePath(episode, dataSetType) + "targets/";
 	}
 }

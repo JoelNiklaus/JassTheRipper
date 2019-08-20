@@ -52,10 +52,10 @@ def load_all_cbor_files(path):
     return combined
 
 
-def load_dataset(episode_number, network_type, path_function):
+def load_dataset(episode_number, network_type, data_set_type, path_function):
     dataset = None
     for episode in range(max(episode_number - REPLAY_MEMORY_SIZE_FACTOR + 1, 0), episode_number + 1, 1):
-        dataset = concat(dataset, load_all_cbor_files(path_function(zero_pad(episode), network_type)))
+        dataset = concat(dataset, load_all_cbor_files(path_function(zero_pad(episode), network_type, data_set_type)))
     return dataset
 
 
@@ -76,23 +76,26 @@ def shuffle_in_unison(a, b):
 
 """
 Folder structure:
-    ####/                   --> episode number: 0 -> pre_train, 1..n -> self_play
+test_loss.txt
+min_val_loss.txt
+experiment.log
+episodes/
+    ####/                           --> episode number: 0 -> pre_train, 1..n -> self_play
         cards/                      --> network_type
-            features/
-            targets/
-            models/
-                export/
-                keras/
-                    model.hdf5
-                    weights.hdf5
+            train/                  --> data_set_type      
+                features/
+                targets/
+                models/
+                    export/
+                    keras/
+                        model.hdf5
+                        weights.hdf5
+            test/
+                ...
+            val/
+                ...
         score/                      --> network_type
-            features/
-            targets/
-            models/
-                export/
-                keras/
-                    model.hdf5
-                    weights.hdf5
+            ...
 """
 
 
@@ -101,20 +104,28 @@ def base_path():
     return str(root_path) + "/resources/"
 
 
-def path(episode_number, network_type):
-    return base_path() + "episodes/" + episode_number + "/" + network_type
+def episode_path(episode_number):
+    return base_path() + "episodes/" + episode_number + "/"
 
 
-def features_path(episode_number, network_type):
-    return create_if_not_exists(path(episode_number, network_type) + "features/")
+def network_type_path(episode_number, network_type):
+    return episode_path(episode_number) + network_type
 
 
-def targets_path(episode_number, network_type):
-    return create_if_not_exists(path(episode_number, network_type) + "targets/")
+def data_set_type_path(episode_number, network_type, data_set_type):
+    return network_type_path(episode_number, network_type) + data_set_type
+
+
+def features_path(episode_number, network_type, data_set_type):
+    return create_if_not_exists(data_set_type_path(episode_number, network_type, data_set_type) + "features/")
+
+
+def targets_path(episode_number, network_type, data_set_type):
+    return create_if_not_exists(data_set_type_path(episode_number, network_type, data_set_type) + "targets/")
 
 
 def models_path(episode_number, network_type):
-    return create_if_not_exists(path(episode_number, network_type) + "models/")
+    return create_if_not_exists(network_type_path(episode_number, network_type) + "models/")
 
 
 def export_path(episode_number, network_type):

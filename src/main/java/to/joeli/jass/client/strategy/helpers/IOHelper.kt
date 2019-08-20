@@ -80,25 +80,25 @@ object IOHelper {
      * These files can then be loaded and concatenated again to form the big dataset.
      * The reason for not storing just one big file is that we cannot hold such big arrays in memory (Java throws OutOfMemoryErrors)
      */
-    fun saveData(cardsDataSet: CardsDataSet, scoreDataSet: ScoreDataSet, episode: Int, name: String): Boolean {
-        return saveDataSet(cardsDataSet, episode, name) && saveDataSet(scoreDataSet, episode, name)
+    fun saveData(cardsDataSet: CardsDataSet, scoreDataSet: ScoreDataSet, episode: Int, dataSetType: String, name: String): Boolean {
+        return saveDataSet(cardsDataSet, episode, dataSetType, name) && saveDataSet(scoreDataSet, episode, dataSetType, name)
     }
 
-    private fun saveDataSet(dataSet: DataSet, episode: Int, name: String): Boolean {
-        if (createIfNotExists(File(dataSet.getFeaturesPath(episode))) && createIfNotExists(File(dataSet.getTargetsPath(episode)))) {
+    private fun saveDataSet(dataSet: DataSet, episode: Int, dataSetType: String, name: String): Boolean {
+        if (createIfNotExists(File(dataSet.getFeaturesPath(episode, dataSetType))) && createIfNotExists(File(dataSet.getTargetsPath(episode, dataSetType)))) {
             try {
-                write(dataSet.features, dataSet.getFeaturesPath(episode) + name)
-                write(dataSet.targets, dataSet.getTargetsPath(episode) + name)
+                write(dataSet.features, dataSet.getFeaturesPath(episode, dataSetType) + name)
+                write(dataSet.targets, dataSet.getTargetsPath(episode, dataSetType) + name)
             } catch (e: IOException) {
                 e.printStackTrace()
-                logger.error("Failed to save datasets to {}", dataSet.getPath(episode))
+                logger.error("Failed to save datasets to {}", dataSet.getNetworkTypePath(episode))
                 return false
             }
 
-            logger.info("Saved datasets to {}", dataSet.getPath(episode))
+            logger.info("Saved datasets to {}", dataSet.getNetworkTypePath(episode))
             return true
         }
-        logger.error("Failed to save datasets to {}", dataSet.getPath(episode))
+        logger.error("Failed to save datasets to {}", dataSet.getNetworkTypePath(episode))
         return false
     }
 }

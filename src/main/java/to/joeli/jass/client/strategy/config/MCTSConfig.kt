@@ -8,7 +8,7 @@ import kotlin.math.sqrt
 class MCTSConfig {
     var runMode = RunMode.TIME
     var trumpfStrengthLevel = StrengthLevel.INSANE
-    var cardStrengthLevel = StrengthLevel.POWERFUL
+    var cardStrengthLevel = StrengthLevel.INSANE
 
     var cheating = false // enable this for comparing the cards estimator performance to a player who knows all the cards
 
@@ -22,7 +22,11 @@ class MCTSConfig {
     var heuristicFunction: HeuristicFunction? = null
     var playoutPolicy: PlayoutSelection? = null
 
-    constructor()
+    constructor() {
+        // Different settings on local machine for faster testing
+        if(Runtime.getRuntime().availableProcessors() <= 8)
+            cardStrengthLevel = StrengthLevel.FAST
+    }
 
     constructor(scoreBoundsUsed: Boolean, pessimisticBias: Double, optimisticBias: Double) {
         this.scoreBoundsUsed = scoreBoundsUsed

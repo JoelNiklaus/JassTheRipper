@@ -40,7 +40,7 @@ public class CardsDataSet extends DataSet {
 		return new ArrayList(targets);
 	}
 
-	protected String getNetworkTypePath() {
+	protected String getNetworkType() {
 		return "cards/";
 	}
 }

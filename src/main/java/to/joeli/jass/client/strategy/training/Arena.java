@@ -19,17 +19,14 @@ import static to.joeli.jass.client.strategy.training.data.DataSet.zeroPadded;
 
 public class Arena {
 
-	// Determines how often the dataset is saved to the filesystem
-	private static final int SAVING_FREQUENCY = 2;
 	private static final boolean DATA_AUGMENTATION_ENABLED = true;
 	private static final int NUM_EPISODES = 1000; // TEST: 1
 
-	// Should not be bigger than 32 because it might result in OutOfMemoryErrors
+	private static final int NUM_GAMES_TEST_SET = 20;
+	private static final int NUM_GAMES_TRAIN_SET = 100;
+	private static final int NUM_GAMES_VAL_SET = 10;
 	// TEST: 2, Needs to be an even number because of fairTournamentMode!
-	// Needs to be >= 4 because first 2 games are used as test set
-	private static final int NUM_TRAINING_GAMES = 20;
-	private static final int NUM_TESTING_GAMES = 10;
-	private static final int NUM_PRE_TRAINING_GAMES = 100;
+	private static final int NUM_EVALUATION_GAMES = 10;
 
 	// If the learning network scores more points than the frozen network times this factor, the frozen network gets replaced
 	public static final double IMPROVEMENT_THRESHOLD_PERCENTAGE = 105;
@@ -39,8 +36,7 @@ public class Arena {
 	private static final boolean CARDS_ESTIMATOR_USED = true;
 	private static final boolean SCORE_ESTIMATOR_USED = false;
 
-	private final int numTrainingGames;
-	private final int numTestingGames;
+
 	private final double improvementThresholdPercentage;
 	private final Random random;
 
@@ -56,17 +52,15 @@ public class Arena {
 	public static final Logger experimentLogger = LoggerFactory.getLogger("Experiment");
 
 	public static void main(String[] args) {
-		final Arena arena = new Arena(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+		final Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 
 		logger.info("Training the networks with self-play\n");
 		arena.trainForNumEpisodes(NUM_EPISODES);
 	}
 
-	public Arena(int numTrainingGames, int numTestingGames, double improvementThresholdPercentage, int seed) {
+	public Arena(double improvementThresholdPercentage, int seed) {
 		// CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true); // NOTE: This might have to be enabled on the server
 
-		this.numTrainingGames = numTrainingGames;
-		this.numTestingGames = numTestingGames;
 		this.improvementThresholdPercentage = improvementThresholdPercentage;
 		random = new Random(seed);
 
@@ -74,7 +68,7 @@ public class Arena {
 	}
 
 	public Arena(GameSession gameSession) {
-		this(NUM_TRAINING_GAMES, NUM_TESTING_GAMES, IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
+		this(IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
 		this.gameSession = gameSession;
 	}
 
@@ -82,15 +76,14 @@ public class Arena {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
-		int size = SAVING_FREQUENCY * computeDataSetSize();
 		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
-		cardsDataSet = new CardsDataSet(size);
-		scoreDataSet = new ScoreDataSet(size);
+		cardsDataSet = new CardsDataSet(computeDataSetSize());
+		scoreDataSet = new ScoreDataSet(computeDataSetSize());
 
 		String path = DataSet.getEpisodePath(0);
 		if (!new File(path).exists()) {
 			logger.info("No dataset found. Collecting a dataset of games played using MCTS with random playouts\n");
-			runMCTSWithRandomPlayout(random, NUM_PRE_TRAINING_GAMES);
+			runMCTSWithRandomPlayout(random);
 		}
 
 		logger.info("Existing dataset found. Pre-training the neural networks\n");
@@ -139,7 +132,7 @@ public class Arena {
 		experimentLogger.info("\n===========================\nEpisode #{}\n===========================", episode);
 
 		logger.info("Collecting training examples by self play with estimator enhanced MCTS\n");
-		runMCTSWithEstimators(random, numTrainingGames, episode);
+		runMCTSWithEstimators(random, episode);
 
 		logger.info("Training the trainable networks with the collected examples\n");
 		trainNetworks(episode);
@@ -150,7 +143,7 @@ public class Arena {
 		if (SCORE_ESTIMATOR_USED) {
 			logger.info("Pitting the 'naked' score estimators against each other to see " +
 					"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
-			final boolean wasImproved = runOnlyNetworks(random, numTestingGames) > improvementThresholdPercentage;
+			final boolean wasImproved = runOnlyNetworks(random) > improvementThresholdPercentage;
 			updateNetworks(episode, wasImproved);
 		}
 		if (CARDS_ESTIMATOR_USED) {
@@ -165,7 +158,7 @@ public class Arena {
 		}
 
 		logger.info("Testing MCTS with estimators against basic MCTS with random playout\n");
-		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random, numTestingGames, episode);
+		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random);
 		experimentLogger.info("\nEstimator enhanced MCTS scored {}% of the points of regular MCTS", performance);
 
 		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episode, performance);
@@ -210,54 +203,65 @@ public class Arena {
 			NeuralNetwork.train(episode, NetworkType.SCORE);
 	}
 
-	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
-		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
+	public double runMatchWithConfigs(Random random, Config[] configs) {
+		return performMatch(random, TrainMode.EVALUATION, -1, configs);
 	}
 
-	private double runMCTSWithRandomPlayout(Random random, int numGames) {
-		Config[] configs = {
-				new Config(true, false, false, false, false),
-				new Config(true, false, false, false, false)
-		};
-		return performMatch(random, numGames, TrainMode.PRE_TRAIN, 0, configs);
-	}
-
-	private double runMCTSWithEstimators(Random random, int numGames, int episode) {
-		Config[] configs = {
-				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
-				new Config(true, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)
-		};
-		return performMatch(random, numGames, TrainMode.SELF_PLAY, episode, configs);
-	}
-
-	private double runOnlyNetworks(Random random, int numGames) {
+	private double runOnlyNetworks(Random random) {
 		Config[] configs = {
 				new Config(false, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(false, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)
 		};
-		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
+		return performMatch(random, TrainMode.EVALUATION, -1, configs);
 	}
 
-	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(Random random, int numGames, int episode) {
+	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(Random random) {
 		Config[] configs = {
 				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(true, false, false, false, false)
 		};
-		return performMatch(random, numGames, TrainMode.EVALUATION, episode, configs);
+		return performMatch(random, TrainMode.EVALUATION, -1, configs);
+	}
+
+	private double runMCTSWithRandomPlayout(Random random) {
+		Config[] configs = {
+				new Config(true, false, false, false, false),
+				new Config(true, false, false, false, false)
+		};
+		return performMatch(random, TrainMode.DATA_COLLECTION, 0, configs);
+	}
+
+	private double runMCTSWithEstimators(Random random, int episode) {
+		Config[] configs = {
+				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
+				new Config(true, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)
+		};
+		return performMatch(random, TrainMode.DATA_COLLECTION, episode, configs);
 	}
 
 	/**
 	 * Performs a match which can be parametrized along multiple dimensions to test the things we want
 	 *
-	 * @param numGames
 	 * @param trainMode
 	 * @param configs
 	 * @return
 	 */
-	private double performMatch(Random random, int numGames, TrainMode trainMode, int episode, Config[] configs) {
+	private double performMatch(Random random, TrainMode trainMode, int episode, Config[] configs) {
 		gameSession.setConfigs(configs);
 
-		return playGames(random, numGames, trainMode, episode);
+		if (trainMode == TrainMode.DATA_COLLECTION) {
+			logger.info("Collecting training set\n");
+			playGames(random, NUM_GAMES_TRAIN_SET, trainMode, "train/", episode);
+
+			logger.info("Collecting validation set\n");
+			playGames(random, NUM_GAMES_VAL_SET, trainMode, "val/", episode);
+
+			logger.info("Collecting test set\n");
+			playGames(random, NUM_GAMES_TEST_SET, trainMode, "test/", episode);
+		}
+		if (trainMode == TrainMode.EVALUATION)
+			return playGames(random, NUM_EVALUATION_GAMES, trainMode, null, episode);
+		return 0;
 	}
 
 	/**
@@ -268,7 +272,7 @@ public class Arena {
 	 * @param trainMode
 	 * @return
 	 */
-	private double playGames(Random random, int numGames, TrainMode trainMode, int episode) {
+	private double playGames(Random random, int numGames, TrainMode trainMode, String dataSetType, int episode) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
@@ -289,10 +293,8 @@ public class Arena {
 
 			logger.info("Result of game #{}: {}\n", i, result);
 
-			if (trainMode.isSavingData() && i % SAVING_FREQUENCY == 0) {
-				final String name = zeroPadded(i - SAVING_FREQUENCY) + "-" + zeroPadded(i);
-				IOHelper.INSTANCE.saveData(cardsDataSet, scoreDataSet, episode, name);
-			}
+			if (trainMode.isSavingData())
+				IOHelper.INSTANCE.saveData(cardsDataSet, scoreDataSet, episode, dataSetType, zeroPadded(i));
 		}
 		gameSession.updateResult(); // normally called within gameSession.startNewGame(), so we need it at the end again
 		final Result result = gameSession.getResult();
@@ -305,7 +307,6 @@ public class Arena {
 
 		return improvement;
 	}
-
 
 	/**
 	 * Simulates a game being played. The gameSession can be configured in many different ways to allow different simulations.
