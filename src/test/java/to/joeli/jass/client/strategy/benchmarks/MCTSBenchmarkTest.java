@@ -23,7 +23,7 @@ public class MCTSBenchmarkTest {
 	private static final boolean RUN_BENCHMARKS = false;
 
 	private static final long SEED = 43; // To get a match at the start use 42
-	private static final int NUM_GAMES = 10;
+	private static final int NUM_GAMES = 50;
 
 	private Arena arena = new Arena(2, 2, IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
@@ -211,6 +211,21 @@ public class MCTSBenchmarkTest {
 			};
 			configs[0].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
 			configs[1].setMctsConfig(new MCTSConfig(1.7));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testCardsEstimatorWinsAgainstRegularPlayer() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(true, true, true, false, false),
+					new Config(true, false, false, false, false)
+			};
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), NUM_GAMES, configs);
 

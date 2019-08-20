@@ -15,6 +15,9 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class CardsEstimatorTest {
 
 
@@ -43,5 +46,40 @@ public class CardsEstimatorTest {
 
 		final Map<Card, Distribution> cardDistributionMap = network.predictCardDistribution(diamondsGame, availableCards);
 		cardDistributionMap.forEach((card, distribution) -> System.out.println(card + ": " + Arrays.toString(distribution.getProbabilitiesInSeatIdOrder())));
+	}
+
+	@Test
+	public void testPredictCardDistribution() {
+		Game clubsGame = GameSessionBuilder.startedClubsGame();
+
+		CardsEstimator estimator = new CardsEstimator(false);
+		estimator.loadModel(0);
+
+		final EnumSet<Card> availableCards = EnumSet.copyOf(clubsGame.getCurrentPlayer().getCards());
+		final Map<Card, Distribution> cardDistributionMap = estimator.predictCardDistribution(clubsGame, availableCards);
+
+		final EnumSet<Card> otherCards = EnumSet.allOf(Card.class);
+		otherCards.removeAll(availableCards);
+
+		availableCards.forEach(card -> assertTrue(cardDistributionMap.get(card).hasPlayer(clubsGame.getCurrentPlayer())));
+		availableCards.forEach(card -> assertEquals(1, cardDistributionMap.get(card).size()));
+
+		otherCards.forEach(card -> assertEquals(3, cardDistributionMap.get(card).size()));
+		System.out.println(cardDistributionMap);
+	}
+
+	@Test
+	public void testPredictCardDistributionWithPlayedRounds() {
+		Game clubsGame = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(6).createGameSession().getCurrentGame();
+
+		CardsEstimator estimator = new CardsEstimator(false);
+		estimator.loadModel(0);
+
+		final EnumSet<Card> availableCards = EnumSet.copyOf(clubsGame.getCurrentPlayer().getCards());
+		final Map<Card, Distribution> cardDistributionMap = estimator.predictCardDistribution(clubsGame, availableCards);
+
+		availableCards.forEach(card -> assertTrue(cardDistributionMap.get(card).hasPlayer(clubsGame.getCurrentPlayer())));
+		availableCards.forEach(card -> assertEquals(1, cardDistributionMap.get(card).size()));
+		System.out.println(cardDistributionMap);
 	}
 }

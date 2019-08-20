@@ -160,6 +160,7 @@ public class JassBoard implements Board {
 				moves.add(new TrumpfMove(player, mode));
 		} else {
 			final Player player = game.getCurrentPlayer();
+			if ((player.getCards().isEmpty())) throw new AssertionError("Do not call this method when the player's cards are empty");
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 
@@ -180,7 +181,6 @@ public class JassBoard implements Board {
 
 			for (Card card : possibleCards)
 				moves.add(new CardMove(player, card));
-			if ((moves.isEmpty())) throw new AssertionError();
 		}
 		if (moves.isEmpty()) throw new AssertionError();
 		return moves;

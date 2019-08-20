@@ -17,7 +17,6 @@ import java.util.*;
 
 import static to.joeli.jass.client.strategy.training.data.DataSet.zeroPadded;
 
-
 public class Arena {
 
 	// Determines how often the dataset is saved to the filesystem
@@ -83,7 +82,7 @@ public class Arena {
 		logger.info("Setting up the training process\n");
 		gameSession = GameSessionBuilder.newSession().createGameSession();
 
-		int size = SAVING_FREQUENCY * computeSize();
+		int size = SAVING_FREQUENCY * computeDataSetSize();
 		// The Datasets operate with an evicting queue. When a new element is added and the queue is full, the head is removed.
 		cardsDataSet = new CardsDataSet(size);
 		scoreDataSet = new ScoreDataSet(size);
@@ -105,10 +104,6 @@ public class Arena {
 		gameSession.setConfigs(configs);
 		loadNetworks(0, true);
 		loadNetworks(0, false);
-	}
-
-	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
-		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
 	}
 
 	public void trainForNumEpisodes(int numEpisodes) {
@@ -215,6 +210,9 @@ public class Arena {
 			NeuralNetwork.train(episode, NetworkType.SCORE);
 	}
 
+	public double runMatchWithConfigs(Random random, int numGames, Config[] configs) {
+		return performMatch(random, numGames, TrainMode.EVALUATION, -1, configs);
+	}
 
 	private double runMCTSWithRandomPlayout(Random random, int numGames) {
 		Config[] configs = {
@@ -357,7 +355,7 @@ public class Arena {
 		}
 
 		if (savingData) {
-			if (scoreFeaturesForPlayer.size() != computeSize()) throw new AssertionError();
+			if (scoreFeaturesForPlayer.size() != computeDataSetSize()) throw new AssertionError();
 			for (Map.Entry<float[][], Player> entry : scoreFeaturesForPlayer.entrySet()) {
 				scoreDataSet.addFeature(entry.getKey());
 				scoreDataSet.addTarget(NeuralNetworkHelper.getScoreTarget(game, entry.getValue()));
@@ -367,7 +365,7 @@ public class Arena {
 		return game.getResult();
 	}
 
-	private int computeSize() {
+	private int computeDataSetSize() {
 		// 36: Number of Cards in a game
 		int size = 36;
 		if (DATA_AUGMENTATION_ENABLED)

@@ -47,9 +47,7 @@ public class Distribution {
 
 		// Redistribute the remaining probability on the other players
 		float probabilityToAdd = deletedProbability / probabilities.size();
-		for (Map.Entry<Player, Float> entry : probabilities.entrySet()) {
-			probabilities.put(entry.getKey(), entry.getValue() + probabilityToAdd);
-		}
+		probabilities.replaceAll((k, v) -> v + probabilityToAdd);
 
 		if (probabilities.keySet().isEmpty()) throw new AssertionError();
 		if (sumProbabilities() - 1.0 >= DELTA) throw new AssertionError();
