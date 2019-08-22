@@ -2,12 +2,12 @@ from keras import Input, Model
 from keras.layers import Dense, Reshape, Softmax, Dropout, GaussianNoise, Activation, BatchNormalization
 from keras.regularizers import l2
 
-num_neurons = 128  # TODO Try 32, 64, 128, 256, 512, 1024
-dropout_rate = 0.3  # dropout makes the validation loss smaller than the training loss!
-activation = 'elu'
+num_neurons = 256  # TODO Try 32, 64, 128, 256, 512, 1024
+dropout_rate = 0.4
+activation = 'selu'  # 'elu' a bit slower in training
 
 
-# kernel_regularizer = l2(0.01)
+# l2 = l2(1e-4)
 
 
 def input():
@@ -16,12 +16,11 @@ def input():
 
 def hidden(inp):
     inp = Reshape((73 * 18,))(inp)
-    # finetune architecture
     hid = Dense(units=num_neurons, activation=activation)(inp)
-    # hid = GaussianNoise(0.1)(hid)
-    # hid = BatchNormalization()
-    # hid = Activation('elu')(hid)
-    hid = Dropout(dropout_rate)(hid)
+    # hid = GaussianNoise(0.1)(hid)  # seems to have almost no effect
+    hid = BatchNormalization()(hid)  # makes training much faster (ca. 3x) but error on test set a bit worse
+    # hid = Activation(activation)(hid)
+    hid = Dropout(dropout_rate)(hid)  # dropout can make the validation loss smaller than the training loss!
     # hid = Dense(units=num_neurons, activation=activation)(hid)
     # hid = Dropout(dropout_rate)(hid)
     return hid
@@ -29,7 +28,8 @@ def hidden(inp):
 
 def cards(hid):
     cards = Dense(units=36 * 4, activation=activation)(hid)
-    cards = Dropout(dropout_rate)(cards)
+    # cards = Dropout(0.2)(cards)  # no dropout towards end of network
+    # cards = BatchNormalization()(cards)
     cards = Reshape((36, 4))(cards)
     cards = Softmax(name='cards')(cards)
     return cards

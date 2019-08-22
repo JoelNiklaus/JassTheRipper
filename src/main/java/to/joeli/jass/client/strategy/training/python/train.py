@@ -6,11 +6,19 @@ from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, History
 from keras.engine.saving import load_model
 from keras.optimizers import SGD, Adam
 from tensorflow.contrib.learn.python.learn.estimators._sklearn import train_test_split
+from numpy.random import seed
+from tensorflow import set_random_seed
 
 from export_model_checkpoint import ExportModelCheckpoint
 from neural_networks import define_separate_model
 from util import model_path, features_path, targets_path, weights_path, export_path, load_dataset, zero_pad, base_path, \
     shuffle_in_unison
+from keras_radam import RAdam
+import keras.backend as K
+
+
+def card_accuracy(y_true, y_pred):
+    return K.mean(y_pred)
 
 
 def train(episode_padded, network_type):
@@ -27,6 +35,10 @@ def train(episode_padded, network_type):
     :param network_type:    cards or score
     """
 
+    # set random seeds for reproducible experiments
+    seed(1)  # numpy
+    set_random_seed(2)  # tensorflow backend
+
     episode_number = int(episode_padded)
     if episode_number < 0:
         print("\nPlease enter an episode number >= 0!")
@@ -38,11 +50,11 @@ def train(episode_padded, network_type):
             return
         else:
             model = define_separate_model(network_type)
-            # Try also: 'mape', 'kullback_leibler_divergence', 'categorical_crossentropy', 'acc'
-            optimizer = SGD(lr=1e-2, momentum=0.9, decay=1e-6, nesterov=True)
-            # optimizer = Adam()
-            model.compile(loss='mse', optimizer=optimizer,
-                          metrics=['mae'])  # Reason for mse: big errors should be punished!
+            optimizer = SGD(lr=1e-2, momentum=0.9, decay=1e-6, nesterov=True)  # Tried also RAdam(), Adam()
+            # Reason for mse: big errors should be punished!
+            loss = 'mse'  # Tried also: 'mae', 'mape', 'kullback_leibler_divergence', 'categorical_crossentropy', 'acc', 'hinge', 'logcosh'
+            model.compile(loss=loss, optimizer=optimizer,
+                          metrics=['acc', 'mae'])
             print("\nCompiled new model")
     else:  # self_play setting: loading existing model of the previous episode and saving to current episode
         saved_model_path = model_path(zero_pad(episode_number - 1), network_type)
@@ -75,7 +87,7 @@ def train(episode_padded, network_type):
 
     h = History()
     tb = TensorBoard(log_dir='./Graph', write_images=True)
-    es = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=5, restore_best_weights=True)
     mc = ModelCheckpoint(model_path(episode_padded, network_type), save_best_only=True, save_weights_only=False,
                          verbose=1)
     wc = ModelCheckpoint(weights_path(episode_padded, network_type), save_best_only=True, save_weights_only=True,
@@ -88,12 +100,15 @@ def train(episode_padded, network_type):
     min_val_loss = min(history.history['val_loss'])
     print(min_val_loss, file=open(base_path() + "min_val_loss.txt", "w"))  # This file is then read in the Java code
 
-    test_loss = model.evaluate(x_test, y_test)[0]
-    print(test_loss, file=open(base_path() + "test_loss.txt", "w"))  # This file is then read in the Java code
+    print("Performance on test set")
+    test_loss = model.evaluate(x_test, y_test)
+    print(model.metrics_names)
+    print(test_loss)
+    print(test_loss[0], file=open(base_path() + "test_loss.txt", "w"))  # This file is then read in the Java code
 
-    numpy.set_printoptions(threshold=sys.maxsize)  # so that the print output is not truncated
-    print(model.predict(numpy.expand_dims(x_test[0], axis=0)))
-    print(y_test[0])
+    numpy.set_printoptions(precision=2, threshold=sys.maxsize)  # so that the print output is not truncated
+    prediction = model.predict(numpy.expand_dims(x_test[0], axis=0))
+    print(numpy.hstack((prediction[0], y_test[0])))
 
 
 if __name__ == '__main__':
