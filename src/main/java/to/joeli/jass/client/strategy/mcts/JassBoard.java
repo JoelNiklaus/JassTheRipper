@@ -95,6 +95,12 @@ public class JassBoard implements Board {
 	void sampleCardDeterminizationToPlayersInTrumpfSelection() {
 		if (!cheating) // if cheating: do nothing -> all the cards are known
 			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.gameSession, this.availableCards);
+		else
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 
 	/**
@@ -103,6 +109,12 @@ public class JassBoard implements Board {
 	void sampleCardDeterminizationToPlayersInCardPlay() {
 		if (!cheating) // if cheating: do nothing -> all the cards are known
 			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.game, this.availableCards, cardsEstimator);
+		else
+			try {
+				Thread.sleep(1); // to make comparison fairer
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 
 	/**
@@ -160,7 +172,7 @@ public class JassBoard implements Board {
 				moves.add(new TrumpfMove(player, mode));
 		} else {
 			final Player player = game.getCurrentPlayer();
-			if ((player.getCards().isEmpty())) throw new AssertionError("Do not call this method when the player's cards are empty");
+			if ((player.getCards().isEmpty())) throw new AssertionError("The current player's cards are empty");
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
 

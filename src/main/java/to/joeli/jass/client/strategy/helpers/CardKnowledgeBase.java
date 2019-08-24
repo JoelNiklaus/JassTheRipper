@@ -60,6 +60,12 @@ public class CardKnowledgeBase {
 	public static void sampleCardDeterminizationToPlayers(Game game, Set<Card> availableCards, CardsEstimator cardsEstimator) {
 		// INFO: This method should only be used when new cards are distributed (at the beginning of a move).
 
+		int[] numCards = new int[4];
+		for (int i = 0; i < 4; i++) {
+			numCards[i] = game.getPlayers().get(i).getCards().size();
+		}
+
+
 		Map<Card, Distribution> cardKnowledge;
 		if (cardsEstimator == null) {
 			cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);
@@ -85,6 +91,12 @@ public class CardKnowledgeBase {
 
 						deletePlayerFromRemainingDistributions(game, availableCards, cardKnowledge, player);
 					});
+		}
+
+		for (int i = 0; i < 4; i++) {
+			if (game.getPlayers().get(i).getCards().size() != numCards[i]) {
+				logger.error("Some weird coincidence made it impossible to sample the cards for the other players validly");
+			}
 		}
 	}
 

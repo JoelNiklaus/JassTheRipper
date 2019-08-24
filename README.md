@@ -42,6 +42,12 @@ Run experiment as a background process
 nohup ./gradlew runExperiment > nohup.out &
 ```
 
+Train network
+```
+python3 src/main/java/to/joeli/jass/client/strategy/training/python/train.py 0010 cards/
+nohup python3 src/main/java/to/joeli/jass/client/strategy/training/python/train.py 0010 cards/ > nohup.out &
+```
+
 
 This client allows you to easily develop a bot for the Jass challenge.
 

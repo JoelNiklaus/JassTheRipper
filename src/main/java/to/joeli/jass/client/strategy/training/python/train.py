@@ -13,7 +13,7 @@ from export_model_checkpoint import ExportModelCheckpoint
 from neural_networks import define_separate_model
 from util import model_path, features_path, targets_path, weights_path, export_path, load_dataset, zero_pad, base_path, \
     shuffle_in_unison
-from keras_radam import RAdam
+# from keras_radam import RAdam
 import keras.backend as K
 
 
@@ -51,6 +51,7 @@ def train(episode_padded, network_type):
         else:
             model = define_separate_model(network_type)
             optimizer = SGD(lr=1e-2, momentum=0.9, decay=1e-6, nesterov=True)  # Tried also RAdam(), Adam()
+            # optimizer = Adam() # use adam for score estimation
             # Reason for mse: big errors should be punished!
             loss = 'mse'  # Tried also: 'mae', 'mape', 'kullback_leibler_divergence', 'categorical_crossentropy', 'acc', 'hinge', 'logcosh'
             model.compile(loss=loss, optimizer=optimizer,

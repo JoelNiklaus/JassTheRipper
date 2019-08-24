@@ -63,12 +63,12 @@ public class NeuralNetworkHelper {
 		return Math.min(game.getResult().getTeamScore(player), Arena.TOTAL_POINTS);
 	}
 
-
 	/**
 	 * Gets the observations of all the color permutations for the given game state.
 	 * This will generate 24 instead of just 1 observation for trumpfs which are not top-down or bottom-up.
 	 * This can be used for data augmentation purposes.
 	 * TODO an additional idea for data augmentation would be adding noise (e.g. switch 6s and 7s inside every suit)
+	 *  but would only be possible in the beginning, because afterwards some of these cards might already have been played
 	 *
 	 * @param game
 	 * @return

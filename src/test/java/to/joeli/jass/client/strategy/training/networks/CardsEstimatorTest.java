@@ -82,4 +82,28 @@ public class CardsEstimatorTest {
 		availableCards.forEach(card -> assertEquals(1, cardDistributionMap.get(card).size()));
 		System.out.println(cardDistributionMap);
 	}
+
+	@Test
+	public void testPredictionSpeed() {
+		Game clubsGame = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(6).createGameSession().getCurrentGame();
+
+		CardsEstimator estimator = new CardsEstimator(false);
+		estimator.loadModel(0);
+
+		final EnumSet<Card> availableCards = EnumSet.copyOf(clubsGame.getCurrentPlayer().getCards());
+
+		System.out.println("Cards estimator prediction speed");
+		for (int i = 0; i < 100; i++) {
+			long startTime = System.nanoTime();
+			final Map<Card, Distribution> cardDistributionMap = estimator.predictCardDistribution(clubsGame, availableCards);
+			System.out.println(System.nanoTime() - startTime + "ns");
+		}
+
+		System.out.println("Base implementation speed");
+		for (int i = 0; i < 100; i++) {
+			long startTime = System.nanoTime();
+			CardKnowledgeBase.initCardKnowledge(clubsGame, availableCards);
+			System.out.println(System.nanoTime() - startTime + "ns");
+		}
+	}
 }
