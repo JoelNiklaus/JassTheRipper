@@ -3,6 +3,9 @@ package to.joeli.jass.client.rest;
 import to.joeli.jass.client.game.GameSession;
 import to.joeli.jass.client.strategy.JassStrategy;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
+import to.joeli.jass.client.strategy.config.Config;
+import to.joeli.jass.client.strategy.config.MCTSConfig;
+import to.joeli.jass.client.strategy.config.StrengthLevel;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
@@ -21,7 +24,9 @@ import java.util.List;
 @Path("jass")
 public class JassResource {
 
-	private JassStrategy jassStrategy = new JassTheRipperJassStrategy();
+	private MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.IRONMAN);
+	private Config config = new Config(mctsConfig);
+	private JassStrategy jassStrategy = new JassTheRipperJassStrategy(config);
 
 	/**
 	 * Method handling HTTP GET requests. The returned object will be sent
@@ -58,8 +63,6 @@ public class JassResource {
 	public Response playCard(JassRequest jassRequest) {
 		List<Card> playedCards = new ArrayList<>();
 		jassRequest.getTricks().forEach(trick -> playedCards.addAll(trick.getCardsTrick()));
-		jassRequest.getCurrentPlayer(); // TODO do we need to know this?
-		jassRequest.getDealer();// TODO do we need to know this?
 		GameSession gameSession = GameSessionBuilder.newSession()
 				.withStartedGame(Mode.from(jassRequest.getTrump()), jassRequest.getTss() == 1)
 				.withCardsPlayed(playedCards)

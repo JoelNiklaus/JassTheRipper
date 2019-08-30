@@ -22,6 +22,11 @@ task(runExperiment, dependsOn: 'classes', type: JavaExec) {
     systemProperty 'simple.message', 'Hello ' // Retrieve with System.getProperty("simple.message")
 }
 
+task(startServer, dependsOn: 'classes', type: JavaExec) {
+    main = 'to.joeli.jass.client.rest.Server'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 repositories {
     mavenCentral()
 }

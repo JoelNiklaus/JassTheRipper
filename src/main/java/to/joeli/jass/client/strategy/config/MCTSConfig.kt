@@ -24,7 +24,7 @@ class MCTSConfig {
 
     constructor() {
         // Different settings on local machine for faster testing
-        if (Runtime.getRuntime().availableProcessors() <= 8)
+        if (System.getProperty("os.name") == "Mac OS X")
             cardStrengthLevel = StrengthLevel.FAST
     }
 
@@ -56,6 +56,10 @@ class MCTSConfig {
 
     constructor(trumpfStrengthLevel: StrengthLevel, cardStrengthLevel: StrengthLevel) : this() {
         this.trumpfStrengthLevel = trumpfStrengthLevel
+        this.cardStrengthLevel = cardStrengthLevel
+    }
+
+    constructor(cardStrengthLevel: StrengthLevel) : this() {
         this.cardStrengthLevel = cardStrengthLevel
     }
 }
