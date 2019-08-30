@@ -29,9 +29,9 @@ public class DataAugmentationHelperTest {
 		List<List<Color>> permutations = new ArrayList<>(Collections2.permutations(asList(Color.values())));
 		assertEquals(Mode.trump(Color.DIAMONDS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(0)));
 		assertEquals(Mode.trump(Color.DIAMONDS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(1)));
-		assertEquals(Mode.trump(Color.SPADES), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(2)));
-		assertEquals(Mode.trump(Color.HEARTS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(3)));
-		assertEquals(Mode.trump(Color.HEARTS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(4)));
+		assertEquals(Mode.trump(Color.DIAMONDS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(2)));
+		assertEquals(Mode.trump(Color.CLUBS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(3)));
+		assertEquals(Mode.trump(Color.CLUBS), DataAugmentationHelper.getRespectiveMode(Mode.trump(Color.DIAMONDS), permutations.get(4)));
 	}
 
 	@Test

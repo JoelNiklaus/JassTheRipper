@@ -48,20 +48,20 @@ public class NeuralNetworkHelperTest {
 
 	@Test
 	public void testFromCardToEncoding() {
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.CLUBS), 0), DELTA);
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.HEARTS), 1), DELTA);
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.SPADES), 2), DELTA);
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.DIAMONDS), 3), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.CLUBS), 0), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.HEARTS), 1), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.SPADES), 2), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.trump(Color.DIAMONDS), 3), DELTA);
 
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.shift(), 0), DELTA);
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.topDown(), 1), DELTA);
-		assertArrayEquals(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.bottomUp(), 2), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.shift(), 0), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.topDown(), 1), DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0}, NeuralNetworkHelper.fromMoveToEncoding(Card.DIAMOND_JACK, Mode.bottomUp(), 2), DELTA);
 	}
 
 	@Test
 	public void testFromEncodingToCard() {
-		assertEquals(Card.DIAMOND_JACK, NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
-		assertEquals(Card.CLUB_EIGHT, NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
+		assertEquals(Card.DIAMOND_JACK, NeuralNetworkHelper.fromEncodingToCard(new float[]{1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
+		assertEquals(Card.CLUB_EIGHT, NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
 
 		assertNull(NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
 		assertNull(NeuralNetworkHelper.fromEncodingToCard(new float[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
@@ -72,7 +72,7 @@ public class NeuralNetworkHelperTest {
 		Game clubsGame = GameSessionBuilder.startedClubsGame();
 		final float[] infoRow = NeuralNetworkHelper.createInfoRow(clubsGame, clubsGame.getMode());
 		System.out.println(Arrays.toString(infoRow));
-		assertArrayEquals(new float[]{1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0}, infoRow, DELTA);
+		assertArrayEquals(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0}, infoRow, DELTA);
 	}
 
 	@Test
@@ -95,7 +95,7 @@ public class NeuralNetworkHelperTest {
 		clubsGame.makeMove(move);
 		final float[][] features = NeuralNetworkHelper.getScoreFeatures(clubsGame);
 		System.out.println(Arrays.deepToString(features));
-		assertArrayEquals(new float[]{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0}, features[1], DELTA);
+		assertArrayEquals(new float[]{0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0}, features[1], DELTA);
 
 	}
 

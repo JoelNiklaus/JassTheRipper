@@ -73,9 +73,11 @@ public class MCTSHelperTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
+		final Player player = gameSession.getCurrentGame().getCurrentPlayer();
+		final Move move = new Move(player, Card.CLUB_NINE);
+		gameSession.makeMove(move);
+		player.onMoveMade(move);
 
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 
 		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
 		mctsConfig.setRunMode(RunMode.RUNS);

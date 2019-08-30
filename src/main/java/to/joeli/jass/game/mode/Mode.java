@@ -28,15 +28,27 @@ public abstract class Mode {
 
 	public static Mode from(Trumpf trumpf, Color trumpfColor) {
 		switch (trumpf) {
-			case UNDEUFE:
-				return bottomUp();
 			case OBEABE:
 				return topDown();
+			case UNDEUFE:
+				return bottomUp();
 			case SCHIEBE:
 				return shift();
 			default:
 				return trump(trumpfColor);
 		}
+	}
+
+	public static Mode from(int code) {
+		if (code >= 0 && code <= 3)
+			return new TrumpfColorMode(Color.getColor(code));
+		if (code == 4)
+			return topDown();
+		if (code == 5)
+			return bottomUp();
+		if (code == 10)
+			return shift();
+		throw new IllegalArgumentException("The code must either be between 0 and 5 or 10!");
 	}
 
 	public static List<Mode> trumpfModes() {

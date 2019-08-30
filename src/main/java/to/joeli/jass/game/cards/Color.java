@@ -1,11 +1,10 @@
 package to.joeli.jass.game.cards;
 
 public enum Color {
-	HEARTS("(H)", 0),
-	DIAMONDS("(D)", 1),
-	CLUBS("(C)", 2),
-	SPADES("(S)", 3);
-
+	DIAMONDS("D", 0),
+	HEARTS("H", 1),
+	SPADES("S", 2),
+	CLUBS("C", 3);
 
 	private final String sign;
 	private final int value;
@@ -15,20 +14,34 @@ public enum Color {
 		this.value = value;
 	}
 
+	public static Color getColor(String sign) {
+		switch (sign) {
+			case "D":
+				return DIAMONDS;
+			case "H":
+				return HEARTS;
+			case "S":
+				return SPADES;
+			case "C":
+				return CLUBS;
+			default:
+				return null;
+		}
+	}
+
 	public static Color getColor(int value) {
-		if (value < 0 || value > 3)
-			return null;
 		switch (value) {
 			case 0:
-				return HEARTS;
-			case 1:
 				return DIAMONDS;
+			case 1:
+				return HEARTS;
 			case 2:
-				return CLUBS;
-			case 3:
 				return SPADES;
+			case 3:
+				return CLUBS;
+			default:
+				return null;
 		}
-		return null;
 	}
 
 	public int getValue() {

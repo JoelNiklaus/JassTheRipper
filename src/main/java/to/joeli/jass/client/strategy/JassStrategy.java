@@ -8,7 +8,7 @@ import to.joeli.jass.game.mode.Mode;
 import java.util.Set;
 
 public interface JassStrategy {
-    Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe);
+    Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean shifted);
     Card chooseCard(Set<Card> availableCards, GameSession session);
 
     default void onSessionStarted(GameSession session) {}

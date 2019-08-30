@@ -15,6 +15,7 @@ import static to.joeli.jass.game.cards.Card.*;
 public class GameSessionBuilder {
 
 	private Mode startedGameMode = null;
+	private boolean shifted;
 
 	public static final List<Set<Card>> shiftCards = asList(
 			EnumSet.of(CLUB_QUEEN, CLUB_ACE, HEART_SIX, HEART_JACK, HEART_KING, DIAMOND_SEVEN, DIAMOND_QUEEN, SPADE_TEN, SPADE_KING),
@@ -82,7 +83,7 @@ public class GameSessionBuilder {
 	public GameSession createGameSession() {
 		final GameSession gameSession = new GameSession(teams, playingOrder);
 		if (startedGameMode != null) {
-			gameSession.startNewGame(startedGameMode, false);
+			gameSession.startNewGame(startedGameMode, shifted);
 
 			for (Card card : playedCards) {
 				final Player player = gameSession.getCurrentRound().getPlayingOrder().getCurrentPlayer();
@@ -101,8 +102,18 @@ public class GameSessionBuilder {
 		return this;
 	}
 
+	public GameSessionBuilder withStartedGame(Mode mode, boolean shifted) {
+		startedGameMode = mode;
+		this.shifted = shifted;
+		return this;
+	}
+
 	public GameSessionBuilder withCardsPlayed(Card... cards) {
-		playedCards.addAll(Arrays.stream(cards).collect(Collectors.toList()));
+		return withCardsPlayed(Arrays.stream(cards).collect(Collectors.toList()));
+	}
+
+	public GameSessionBuilder withCardsPlayed(List<Card> cards) {
+		playedCards.addAll(cards);
 		return this;
 	}
 

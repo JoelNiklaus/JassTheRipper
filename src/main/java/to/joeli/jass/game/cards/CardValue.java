@@ -32,9 +32,32 @@ public enum CardValue {
 		this.bottomUpScore = bottomUpScore;
 	}
 
+	public static CardValue getCardValue(String name) {
+		switch (name) {
+			case "6":
+				return SIX;
+			case "7":
+				return SEVEN;
+			case "8":
+				return EIGHT;
+			case "9":
+				return NINE;
+			case "10":
+				return TEN;
+			case "J":
+				return JACK;
+			case "Q":
+				return QUEEN;
+			case "K":
+				return KING;
+			case "A":
+				return ACE;
+			default:
+				return null;
+		}
+	}
+
 	public static CardValue getCardValue(int rank) {
-		if (rank < 1 || rank > 9)
-			return null;
 		switch (rank) {
 			case 1:
 				return SIX;
@@ -54,8 +77,9 @@ public enum CardValue {
 				return KING;
 			case 9:
 				return ACE;
+			default:
+				return null;
 		}
-		return null;
 	}
 
 	public int getScore() {

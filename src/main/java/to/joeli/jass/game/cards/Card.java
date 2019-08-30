@@ -51,6 +51,18 @@ public enum Card {
 		this.color = color;
 	}
 
+	/**
+	 * Used in the rest service communicating with the HSLU infrastructure
+	 *
+	 * @param cardString
+	 * @return
+	 */
+	public static Card getCard(String cardString) {
+		Color color = Color.getColor(cardString.substring(0, 1));
+		CardValue value = CardValue.getCardValue(cardString.substring(1));
+		return getCard(color, value);
+	}
+
 	public static Card getCard(Color color, CardValue value) {
 		return Card.valueOf(StringUtils.chop(color.name()) + "_" + value.name());
 	}
@@ -89,6 +101,6 @@ public enum Card {
 
 	@Override
 	public String toString() {
-		return value.toString() + color.toString();
+		return color.toString() + value.toString();
 	}
 }

@@ -133,20 +133,20 @@ TODO Make new experiments with the improvements so far:
 	}
 
 	@Override
-	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean isGschobe) {
+	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean shifted) {
 		try {
 			final long startTime = System.currentTimeMillis();
 			printCards(availableCards);
 
-			Mode mode = TrumpfSelectionHelper.getRandomMode(isGschobe);
+			Mode mode = TrumpfSelectionHelper.getRandomMode(shifted);
 
 			if (config.getTrumpfSelectionMethod() == TrumpfSelectionMethod.RULE_BASED)
-				mode = TrumpfSelectionHelper.predictTrumpf(availableCards, isGschobe);
+				mode = TrumpfSelectionHelper.predictTrumpf(availableCards, shifted);
 
 			if (config.getTrumpfSelectionMethod() == TrumpfSelectionMethod.MCTS)
 				try {
 					if (mctsHelper == null) throw new AssertionError();
-					Move move = mctsHelper.predictMove(availableCards, session, true, isGschobe);
+					Move move = mctsHelper.predictMove(availableCards, session, true, shifted);
 					mode = ((TrumpfMove) move).getChosenTrumpf();
 				} catch (MCTSException e) {
 					logger.error("{}", e);
@@ -159,7 +159,7 @@ TODO Make new experiments with the improvements so far:
 		} catch (Exception e) {
 			logger.error("{}", e);
 			logger.error("Something unexpectedly went terribly wrong! But could catch exception and chose random trumpf now.");
-			return TrumpfSelectionHelper.getRandomMode(isGschobe);
+			return TrumpfSelectionHelper.getRandomMode(shifted);
 		}
 	}
 

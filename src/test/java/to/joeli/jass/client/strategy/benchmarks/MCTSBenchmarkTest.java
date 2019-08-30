@@ -9,6 +9,7 @@ import to.joeli.jass.client.strategy.config.MCTSConfig;
 import to.joeli.jass.client.strategy.config.StrengthLevel;
 import to.joeli.jass.client.strategy.config.TrumpfSelectionMethod;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
+import to.joeli.jass.client.strategy.mcts.JassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
@@ -220,6 +221,21 @@ public class MCTSBenchmarkTest {
 	}
 
 	@Test
+	public void testPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(new MCTSConfig(new JassPlayoutSelectionPolicy())),
+					new Config(new MCTSConfig()),
+			};
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
 	public void testCardsEstimatorWinsAgainstRegularPlayer() {
 		if (RUN_BENCHMARKS) {
 			Config[] configs = {
@@ -291,24 +307,25 @@ public class MCTSBenchmarkTest {
 
 	@Test
 	public void testDifferentPlayouts() {
-		final GameSession gameSession = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(6).createGameSession();
-		//final GameSession gameSession = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession();
-		int n = 4;
-		final int mcts = run(gameSession, n);
+		if (RUN_BENCHMARKS) {
+			final GameSession gameSession = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(6).createGameSession();
+			//final GameSession gameSession = GameSessionBuilder.newSession(GameSessionBuilder.topDiamondsCards).withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession();
+			int n = 4;
+			final int mcts = run(gameSession, n);
 
-		gameSession.getPlayersInInitialPlayingOrder().forEach(player -> player.setConfig(new Config(false, true, true)));
-		final int scoreEstimatorPlayed = run(gameSession, n);
+			gameSession.getPlayersInInitialPlayingOrder().forEach(player -> player.setConfig(new Config(false, true, true)));
+			final int scoreEstimatorPlayed = run(gameSession, n);
 
-		final double scoreEstimatorPredicted = new ScoreEstimator(true).predictScore(gameSession.getCurrentGame());
+			final double scoreEstimatorPredicted = new ScoreEstimator(true).predictScore(gameSession.getCurrentGame());
 
-		gameSession.getPlayersInInitialPlayingOrder().forEach(player -> player.setJassStrategy(new RandomJassStrategy()));
-		final int random = run(gameSession, n);
+			gameSession.getPlayersInInitialPlayingOrder().forEach(player -> player.setJassStrategy(new RandomJassStrategy()));
+			final int random = run(gameSession, n);
 
-
-		System.out.println("MCTS: " + mcts);
-		System.out.println("ScoreEstimatorPlayed: " + scoreEstimatorPlayed);
-		System.out.println("ScoreEstimatorPredicted: " + scoreEstimatorPredicted);
-		System.out.println("Random: " + random);
+			System.out.println("MCTS: " + mcts);
+			System.out.println("ScoreEstimatorPlayed: " + scoreEstimatorPlayed);
+			System.out.println("ScoreEstimatorPredicted: " + scoreEstimatorPredicted);
+			System.out.println("Random: " + random);
+		}
 	}
 
 

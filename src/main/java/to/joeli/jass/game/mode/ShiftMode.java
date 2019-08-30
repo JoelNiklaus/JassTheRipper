@@ -15,9 +15,8 @@ public class ShiftMode extends Mode {
 
 	@Override
 	public int getCode() {
-		// Dummy return value. This should never be called!
-		System.err.println("Do not call this method for the shift mode!");
-		return 7;
+		// This should not be called from the neural network data generation part!
+		return 10;
 	}
 
 	@Override
