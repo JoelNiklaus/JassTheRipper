@@ -19,7 +19,7 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="to.joeli" level="ERROR" />
+    <logger name="to.joeli" level="INFO" />
     <logger name="to.joeli.jass.client.strategy.training.Arena" level="INFO" />
 
     <root level="INFO">

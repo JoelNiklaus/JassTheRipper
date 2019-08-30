@@ -53,6 +53,8 @@ Connect to digitalocean server
 ssh -i ~/.ssh/digitalocean root@167.99.133.247
 ```
 
+REST endpoint available over http://167.99.133.247/jass
+
 
 This client allows you to easily develop a bot for the Jass challenge.
 

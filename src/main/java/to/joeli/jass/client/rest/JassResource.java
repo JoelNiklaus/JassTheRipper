@@ -1,5 +1,7 @@
 package to.joeli.jass.client.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.GameSession;
 import to.joeli.jass.client.strategy.JassStrategy;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
@@ -27,6 +29,9 @@ public class JassResource {
 	private MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.IRONMAN);
 	private Config config = new Config(mctsConfig);
 	private JassStrategy jassStrategy = new JassTheRipperJassStrategy(config);
+
+	public static final Logger logger = LoggerFactory.getLogger(JassResource.class);
+
 
 	/**
 	 * Method handling HTTP GET requests. The returned object will be sent
@@ -79,7 +84,7 @@ public class JassResource {
 	@Path("game_info")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response gameInfo(JassRequest jassRequest) {
-		System.out.println(jassRequest);
+		logger.info("{}", jassRequest);
 
 		return Response
 				.status(Response.Status.OK)
