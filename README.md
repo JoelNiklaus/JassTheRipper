@@ -43,9 +43,14 @@ nohup ./gradlew runExperiment > nohup.out &
 ```
 
 Train network
-```
+```bash
 python3 src/main/java/to/joeli/jass/client/strategy/training/python/train.py 0010 cards/
 nohup python3 src/main/java/to/joeli/jass/client/strategy/training/python/train.py 0010 cards/ > nohup.out &
+```
+
+Connect to digitalocean server
+```bash
+ssh -i ~/.ssh/digitalocean root@167.99.133.247
 ```
 
 
