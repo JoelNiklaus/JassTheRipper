@@ -55,6 +55,10 @@ public class PlayingOrder {
 		return getPlayerByIndex(currentPlayerIndex);
 	}
 
+	public Player getNextPlayer() {
+		return getPlayerByIndex(currentPlayerIndex + 1);
+	}
+
 	public Player getPartnerOfPlayer(Player player) {
 		return getPlayerByIndex(playersInInitialPlayingOrder.indexOf(player) + 2);
 	}

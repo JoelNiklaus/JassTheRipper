@@ -1,8 +1,10 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.Game;
+import to.joeli.jass.client.game.Move;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.game.Round;
 import to.joeli.jass.game.cards.Card;
@@ -29,14 +31,16 @@ public class CardSelectionHelper {
 	 * @return
 	 */
 	public static Card getRandomCard(Set<Card> availableCards, Game game) {
-		final List<Card> possibleCards = new ArrayList<>(getCardsPossibleToPlay(availableCards, game));
+		final Set<Card> possibleCards = getCardsPossibleToPlay(availableCards, game);
 		if (possibleCards.isEmpty()) throw new RuntimeException("There should always be a card to play");
-		return possibleCards.get(new Random().nextInt(possibleCards.size()));
+		return chooseRandomCard(possibleCards);
+	}
+
+	public static Card chooseRandomCard(Set<Card> cards) {
+		return new ArrayList<>(cards).get(new Random().nextInt(cards.size()));
 	}
 
 	/**
-	 * TODO Maybe this can be used as a heuristicFunction function in the MCTS!
-	 * <p>
 	 * Reduces the set of the possible cards which can be played in a move to the sensible cards.
 	 * This is done by expert jass knowledge. It is done here so that all the players play as intelligently as possible
 	 * and therefore the simulation gets the most realistic outcome.
@@ -54,7 +58,6 @@ public class CardSelectionHelper {
 		 * STECHEN (als letzter Spieler)
 		 */
 		if (shouldStechen(round, player)) {
-			int stichValue = round.calculateScore();
 			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
 
 			// wenn möglich mit nicht trumpf zu stechen
@@ -74,6 +77,27 @@ public class CardSelectionHelper {
 		final Set<Card> trumps = JassHelper.getTrumps(possibleCards, mode);
 		if (shouldAustrumpfen(round, trumps))
 			return trumps;
+
+		/**
+		 * SCHMIEREN
+		 */
+		// wenn partner schon gespielt hat
+		if (JassHelper.hasPartnerAlreadyPlayed(round)) {
+			Card cardOfPartner = JassHelper.getCardOfPartner(round);
+			// wenn partner den stich macht bis jetzt
+			if (JassHelper.stichBelongsToPartner(round)) {
+				Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, cardOfPartner, mode);
+				// wenn letzter spieler einfach schmieren
+				if (isLastPlayer(round))
+					return schmierCards;
+				else {
+					if (!isThirdPlayer(round)) throw new AssertionError();
+					// weil das spiel determinisiert ist wissen wir genau welcher spieler welche karten hat
+					if (!nextPlayerCanWinStich(round))
+						return schmierCards;
+				}
+			}
+		}
 
 		/**
 		 * VERWERFEN (Nachricht empfangen)
@@ -174,6 +198,18 @@ public class CardSelectionHelper {
 		*/
 
 		return possibleCards;
+	}
+
+	private static boolean nextPlayerCanWinStich(Round round) {
+		final Player nextPlayer = round.getPlayingOrder().getNextPlayer();
+		final Set<Card> nextPlayerPossibleCards = getCardsPossibleToPlay(nextPlayer.getCards(), round);
+		for (Card card : nextPlayerPossibleCards) {
+			final List<Move> moves = new ArrayList<>(round.getMoves());
+			moves.add(new Move(nextPlayer, card));
+			if (round.getMode().determineWinningMove(moves).getPlayedCard().equals(card))
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -424,7 +460,11 @@ public class CardSelectionHelper {
 	 */
 	public static Set<Card> getCardsPossibleToPlay(Set<Card> availableCards, Game game) {
 		// if (availableCards.isEmpty()) throw new AssertionError(); // NOTE: Might be a problem inside MCTS
-		Round round = game.getCurrentRound();
+		return getCardsPossibleToPlay(availableCards, game.getCurrentRound());
+	}
+
+	@NotNull
+	private static Set<Card> getCardsPossibleToPlay(Set<Card> availableCards, Round round) {
 		Mode mode = round.getMode();
 		// If you have a card
 		Set<Card> validCards = availableCards.stream().

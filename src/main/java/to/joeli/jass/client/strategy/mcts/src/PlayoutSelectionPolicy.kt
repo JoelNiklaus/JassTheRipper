@@ -10,6 +10,6 @@ package to.joeli.jass.client.strategy.mcts.src
  *
  * @author joelniklaus
  */
-interface PlayoutSelection {
+interface PlayoutSelectionPolicy {
     fun getBestMove(board: Board): Move
 }

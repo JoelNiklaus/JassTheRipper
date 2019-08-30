@@ -2,7 +2,7 @@ package to.joeli.jass.client.strategy.config
 
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy
 import to.joeli.jass.client.strategy.mcts.src.HeuristicFunction
-import to.joeli.jass.client.strategy.mcts.src.PlayoutSelection
+import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy
 import kotlin.math.sqrt
 
 class MCTSConfig {
@@ -20,11 +20,11 @@ class MCTSConfig {
     var numPlayouts = 2 // Scored the best in experiments
     var finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD
     var heuristicFunction: HeuristicFunction? = null
-    var playoutPolicy: PlayoutSelection? = null
+    var playoutSelectionPolicy: PlayoutSelectionPolicy? = null
 
     constructor() {
         // Different settings on local machine for faster testing
-        if(Runtime.getRuntime().availableProcessors() <= 8)
+        if (Runtime.getRuntime().availableProcessors() <= 8)
             cardStrengthLevel = StrengthLevel.FAST
     }
 

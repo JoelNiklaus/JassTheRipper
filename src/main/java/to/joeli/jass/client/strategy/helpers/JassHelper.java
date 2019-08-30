@@ -267,7 +267,7 @@ public class JassHelper {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static boolean isTeamMember(Player player, Player otherPlayer) {
+	public static boolean isPartner(Player player, Player otherPlayer) {
 		return !isOpponent(otherPlayer, player);
 	}
 
@@ -280,6 +280,10 @@ public class JassHelper {
 	 */
 	public static boolean isOpponent(Player otherPlayer, Player player) {
 		return (otherPlayer.getSeatId() * player.getSeatId()) % 2 != player.getSeatId() % 2;
+	}
+
+	public static boolean stichBelongsToPartner(Round round) {
+		return isPartner(round.getWinner(), round.getCurrentPlayer());
 	}
 
 	/**
@@ -319,22 +323,19 @@ public class JassHelper {
 	 * @return
 	 */
 	public static Set<Card> getSchmierCards(Set<Card> possibleCards, Card cardOfPartner, Mode mode) {
-		Set<Card> cardsOfColour = getCardsOfColor(possibleCards, cardOfPartner.getColor());
-		if (cardsOfColour.isEmpty()) throw new AssertionError();
-
 		List<CardValue> possibleCardValues = new LinkedList<>();
 		possibleCardValues.add(CardValue.TEN);
 		if (isTopDown(mode))
 			possibleCardValues.add(CardValue.EIGHT);
 
 		Set<Card> schmierCards = EnumSet.noneOf(Card.class);
-		for (Card card : cardsOfColour)
+		for (Card card : possibleCards)
 			if (possibleCardValues.contains(card.getValue()))
 				schmierCards.add(card);
 
 		if (!schmierCards.isEmpty())
 			return schmierCards;
-		return cardsOfColour;
+		return possibleCards;
 	}
 
 

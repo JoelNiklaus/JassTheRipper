@@ -72,6 +72,8 @@ def train(episode_padded, network_type):
 
     print("Loading data...")
 
+    # TODO evtl mit mehr daten trainieren (mit generator laden)
+
     x_train = load_dataset(episode_number, network_type, "train/", features_path)
     y_train = load_dataset(episode_number, network_type, "train/", targets_path)
     shuffle_in_unison(x_train, y_train)

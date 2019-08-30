@@ -26,7 +26,7 @@ public class MCTS {
 	private int numPlayouts = 2; // Scored the best in experiments
 	private FinalSelectionPolicy finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD;
 	private HeuristicFunction heuristicFunction;
-	private PlayoutSelection playoutPolicy;
+	private PlayoutSelectionPolicy playoutSelectionPolicy;
 
 	private ExecutorService threadPool;
 	private ArrayList<FutureTask<Move>> futures;
@@ -50,7 +50,7 @@ public class MCTS {
 		} else {
 			logger.info("Running {} determinizations :)", numDeterminizations);
 			submitTimeTasks(startingBoard, numDeterminizations, endingTime);
-			logger.info("On average the MCTS searched {} nodes in {} determinizations", numRuns / numDeterminizations, numDeterminizations);
+			logger.error("On average the MCTS searched {} nodes in {} determinizations", numRuns / numDeterminizations, numDeterminizations);
 			synchronized (this) {
 				numRuns = 0;
 			}
@@ -311,9 +311,8 @@ public class MCTS {
 		// Start playing random moves until the game is over
 		while (!board.gameOver()) {
 			Move move;
-			if (playoutPolicy == null) {
-				List<Move> moves;
-				moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
+			if (playoutSelectionPolicy == null) {
+				List<Move> moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
 				if (moves.isEmpty()) throw new AssertionError();
 				if (board.getCurrentPlayer() >= 0) {
 					// make random selection normally
@@ -326,7 +325,7 @@ public class MCTS {
 					move = getRandomMove(board, moves);
 				}
 			} else {
-				move = playoutPolicy.getBestMove(board); // NOTE: Originally it used the not duplicated oldBoard here.
+				move = playoutSelectionPolicy.getBestMove(board); // NOTE: Originally it used the not duplicated oldBoard here.
 			}
 			board.makeMove(move);
 		}
@@ -524,10 +523,10 @@ public class MCTS {
 	/**
 	 * Sets the playoutPolicy used to replace the random rollout during the simulation phase.
 	 *
-	 * @param playoutSelection
+	 * @param playoutSelectionPolicy
 	 */
-	public void setPlayoutSelection(PlayoutSelection playoutSelection) {
-		playoutPolicy = playoutSelection;
+	public void setPlayoutSelectionPolicy(PlayoutSelectionPolicy playoutSelectionPolicy) {
+		this.playoutSelectionPolicy = playoutSelectionPolicy;
 	}
 
 	/**
