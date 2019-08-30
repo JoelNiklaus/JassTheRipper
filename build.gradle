@@ -8,6 +8,7 @@ apply plugin: 'application'
 mainClassName = "to.joeli.jass.Application"
 
 def javaVersion = 1.8 // We have to use 1.8 because of the server
+def jerseyVersion = 2.29
 
 compileJava {
     sourceCompatibility = javaVersion
@@ -53,6 +54,13 @@ dependencies {
 
     // JSON Interpretation
     testCompile 'com.shazam:shazamcrest:0.11'
+
+    // REST Endpoint
+    compile "org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion"
+    compile "org.glassfish.jersey.core:jersey-client:$jerseyVersion"
+    compile "org.glassfish.jersey.media:jersey-media-json-jackson:$jerseyVersion"
+    compile "org.glassfish.jersey.containers:jersey-container-grizzly2-http:$jerseyVersion"
+    compile "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
 
     // Tests
     testCompile 'junit:junit:4.12'

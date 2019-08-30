@@ -28,29 +28,33 @@ class MCTSConfig {
             cardStrengthLevel = StrengthLevel.FAST
     }
 
-    constructor(scoreBoundsUsed: Boolean, pessimisticBias: Double, optimisticBias: Double) {
+    constructor(scoreBoundsUsed: Boolean, pessimisticBias: Double, optimisticBias: Double) : this() {
         this.scoreBoundsUsed = scoreBoundsUsed
         this.pessimisticBias = pessimisticBias
         this.optimisticBias = optimisticBias
     }
 
-    constructor(cheating: Boolean) {
+    constructor(cheating: Boolean) : this() {
         this.cheating = cheating
     }
 
-    constructor(explorationConstant: Double) {
+    constructor(explorationConstant: Double) : this() {
         this.explorationConstant = explorationConstant
     }
 
-    constructor(numPlayouts: Int) {
+    constructor(numPlayouts: Int) : this() {
         this.numPlayouts = numPlayouts
     }
 
-    constructor(finalSelectionPolicy: FinalSelectionPolicy) {
+    constructor(finalSelectionPolicy: FinalSelectionPolicy) : this() {
         this.finalSelectionPolicy = finalSelectionPolicy
     }
 
-    constructor(trumpfStrengthLevel: StrengthLevel, cardStrengthLevel: StrengthLevel) {
+    constructor(playoutSelectionPolicy: PlayoutSelectionPolicy) : this() {
+        this.playoutSelectionPolicy = playoutSelectionPolicy
+    }
+
+    constructor(trumpfStrengthLevel: StrengthLevel, cardStrengthLevel: StrengthLevel) : this() {
         this.trumpfStrengthLevel = trumpfStrengthLevel
         this.cardStrengthLevel = cardStrengthLevel
     }
