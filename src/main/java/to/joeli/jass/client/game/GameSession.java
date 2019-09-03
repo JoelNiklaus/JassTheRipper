@@ -95,6 +95,10 @@ public class GameSession {
 		return gameStartingPlayingOrder.getCurrentPlayer();
 	}
 
+	public Player getCurrentPlayer() {
+		return currentGame.getCurrentPlayer();
+	}
+
 	public void makeMove(Move move) {
 		currentGame.makeMove(move);
 	}

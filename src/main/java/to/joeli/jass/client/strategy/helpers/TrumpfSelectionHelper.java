@@ -90,9 +90,9 @@ public class TrumpfSelectionHelper {
 		//  IMPORTANT: This filters out obeabe and undeufe for easier training of the neural network
 		if (ALL_TRUMPFS) {
 			// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
-			float noTrumpfWeight = 0.8f; // INFO: favor trumpf to topdown and bottomup because bot is better in cardplay relative to humans there
+			float noTrumpfWeight = 0.9f; // INFO: slightly favor trumpf to topdown and bottomup because bot is probably better in cardplay relative to humans there
 			if (isGschobe)
-				noTrumpfWeight -= 0.1f; // INFO: make obeae and undeufe just a little bit more unlikely
+				noTrumpfWeight -= 0.1f; // INFO: make obeabe and undeufe just a little bit more unlikely because when shifted there is more risk involved
 			trumpfRatings.put(Mode.topDown(), Math.round(noTrumpfWeight * rateObeabe(availableCards)));
 			trumpfRatings.put(Mode.bottomUp(), Math.round(noTrumpfWeight * rateUndeufe(availableCards)));
 		}

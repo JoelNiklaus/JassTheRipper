@@ -169,7 +169,8 @@ public class Player implements Comparable<Player> {
 	}
 
 	public void onMoveMade(Move move) {
-		cards.remove(move.getPlayedCard());
+		if (!cards.remove(move.getPlayedCard()))
+			logger.error("The player {} did not have card {}", move.getPlayer(), move.getPlayedCard());
 		jassStrategy.onMoveMade(move);
 	}
 

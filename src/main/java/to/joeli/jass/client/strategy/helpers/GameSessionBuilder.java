@@ -86,7 +86,7 @@ public class GameSessionBuilder {
 			gameSession.startNewGame(startedGameMode, shifted);
 
 			for (Card card : playedCards) {
-				final Player player = gameSession.getCurrentRound().getPlayingOrder().getCurrentPlayer();
+				final Player player = gameSession.getCurrentPlayer();
 				final Move move = new Move(player, card);
 				gameSession.makeMove(move);
 				player.onMoveMade(move);

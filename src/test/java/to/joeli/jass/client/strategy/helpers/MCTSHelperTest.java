@@ -58,7 +58,6 @@ public class MCTSHelperTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-
 		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
 		mctsConfig.setRunMode(RunMode.RUNS);
 		MCTSHelper mctsHelper = new MCTSHelper(mctsConfig);
@@ -73,8 +72,8 @@ public class MCTSHelperTest {
 				.withStartedGame(Mode.bottomUp())
 				.createGameSession();
 
-		final Player player = gameSession.getCurrentGame().getCurrentPlayer();
-		final Move move = new Move(player, Card.CLUB_NINE);
+		final Player player = gameSession.getCurrentPlayer();
+		final Move move = new Move(player, Card.CLUB_QUEEN);
 		gameSession.makeMove(move);
 		player.onMoveMade(move);
 
@@ -95,19 +94,19 @@ public class MCTSHelperTest {
 
 		PlayingOrder order = gameSession.getCurrentRound().getPlayingOrder();
 
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_QUEEN));
 		order.moveToNextPlayer();
 		Player player = order.getCurrentPlayer();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_SEVEN));
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_NINE));
 		order.moveToNextPlayer();
 		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_KING));
 		order.moveToNextPlayer();
-		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_ACE));
+		gameSession.makeMove(new Move(order.getCurrentPlayer(), Card.CLUB_TEN));
 		order.moveToNextPlayer();
 
 		gameSession.startNextRound();
 
-		gameSession.makeMove(new Move(player, Card.HEART_ACE));
+		gameSession.makeMove(new Move(player, Card.HEART_EIGHT));
 
 		final MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.FAST, StrengthLevel.FAST_TEST);
 		mctsConfig.setRunMode(RunMode.RUNS);

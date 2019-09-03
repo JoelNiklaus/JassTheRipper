@@ -109,7 +109,7 @@ public class Round {
 	}
 
 	public Player getCurrentPlayer() {
-		return getPlayingOrder().getCurrentPlayer();
+		return playingOrder.getCurrentPlayer();
 	}
 
 	public boolean roundFinished() {
