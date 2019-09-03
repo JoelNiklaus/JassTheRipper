@@ -52,7 +52,14 @@ public class JassResource {
 	public Response selectTrump(JassRequest jassRequest) {
 		final EnumSet<Card> availableCards = getAvailableCards(jassRequest);
 		final boolean shifted = jassRequest.getTss() == 1;
-		GameSession gameSession = GameSessionBuilder.newSession().createGameSession();
+		GameSession gameSession = GameSessionBuilder.newSession()
+				.withHSLUInterface(jassRequest.getDealer())
+				.createGameSession();
+		int seatId = gameSession.getTrumpfSelectingPlayer().getSeatId();
+		if (shifted)
+			seatId = (seatId + 2) % 4;
+		if (seatId != jassRequest.getCurrentPlayer())
+			throw new AssertionError("The local current player does not match the server's current player.");
 		final Mode trumpf = jassStrategy.chooseTrumpf(availableCards, gameSession, shifted);
 
 		return Response
@@ -69,9 +76,12 @@ public class JassResource {
 		List<Card> playedCards = new ArrayList<>();
 		jassRequest.getTricks().forEach(trick -> playedCards.addAll(trick.getCardsTrick()));
 		GameSession gameSession = GameSessionBuilder.newSession()
+				.withHSLUInterface(jassRequest.getDealer())
 				.withStartedGame(Mode.from(jassRequest.getTrump()), jassRequest.getTss() == 1)
 				.withCardsPlayed(playedCards)
 				.createGameSession();
+		if (gameSession.getCurrentPlayer().getSeatId() != jassRequest.getCurrentPlayer())
+			throw new AssertionError("The local current player does not match the server's current player.");
 		final Card card = jassStrategy.chooseCard(getAvailableCards(jassRequest), gameSession);
 
 		return Response

@@ -65,7 +65,6 @@ public class CardKnowledgeBase {
 			numCards[i] = game.getPlayers().get(i).getCards().size();
 		}
 
-
 		Map<Card, Distribution> cardKnowledge;
 		if (cardsEstimator == null) {
 			cardKnowledge = CardKnowledgeBase.initCardKnowledge(game, availableCards);

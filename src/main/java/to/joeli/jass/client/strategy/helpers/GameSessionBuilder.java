@@ -35,6 +35,8 @@ public class GameSessionBuilder {
 
 	private List<Card> playedCards = new ArrayList<>();
 
+	private boolean withDefaultCards = true; // determines if the players have default cards at the beginning
+
 	public GameSessionBuilder(List<Set<Card>> cards) {
 		for (int i = 0; i < 4; i++)
 			playingOrder.add(new Player("" + i, "Player" + i, i, EnumSet.copyOf(cards.get(i)), JassTheRipperJassStrategy.getTestInstance()));
@@ -89,12 +91,50 @@ public class GameSessionBuilder {
 				final Player player = gameSession.getCurrentPlayer();
 				final Move move = new Move(player, card);
 				gameSession.makeMove(move);
-				player.onMoveMade(move);
+				if (withDefaultCards)
+					player.onMoveMade(move);
 				if (gameSession.getCurrentRound().roundFinished())
 					gameSession.startNextRound();
 			}
 		}
 		return gameSession;
+	}
+
+	/**
+	 * Removes the default cards from the players
+	 *
+	 * @return
+	 */
+	public GameSessionBuilder withoutCards() {
+		withDefaultCards = false;
+		playingOrder.forEach(player -> player.setCards(EnumSet.noneOf(Card.class)));
+		return this;
+	}
+
+	/**
+	 * In the hslu interface the players are ordered clock-wise but the play happens anti-clock-wise.
+	 * Therefore, we need to reverse the playingOrder.
+	 *
+	 * @return
+	 */
+	public GameSessionBuilder withClockWisePlayerNumbering() {
+		Collections.reverse(playingOrder);
+		return this;
+	}
+
+	/**
+	 * Starts the playingOrder at the position of the dealer. Good for setting up a game session from any state.
+	 *
+	 * @param dealer
+	 * @return
+	 */
+	public GameSessionBuilder withDealer(int dealer) {
+		Collections.rotate(playingOrder, dealer);
+		return this;
+	}
+
+	public GameSessionBuilder withHSLUInterface(int dealer) {
+		return withoutCards().withClockWisePlayerNumbering().withDealer(dealer);
 	}
 
 	public GameSessionBuilder withStartedGame(Mode mode) {
