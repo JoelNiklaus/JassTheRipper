@@ -17,7 +17,7 @@ package to.joeli.jass.client.strategy.config
  * IMPORTANT: numRuns is a hyperparameter. Determines how many nodes should be explored in one mcts tree
  */
 enum class StrengthLevel constructor(val numDeterminizationsFactor: Int, val maxThinkingTime: Long, val numRuns: Long) {
-    //
+
     FAST_TEST(1, 50, 10),
     TEST(2, 100, 20),
     FAST(3, 200, 40),

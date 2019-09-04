@@ -8,6 +8,7 @@ data class JassRequest(
         val tss: Int,
         val tricks: List<Trick>,
         val player: List<Hand>,
-        val jassTyp: String) {
-    constructor() : this("", 0, 0, 0, 0, ArrayList<Trick>(), ArrayList<Hand>(), "")
+        val jassTyp: String,
+        val gameId: String) {
+    constructor() : this("", 0, 0, 0, 0, ArrayList<Trick>(), ArrayList<Hand>(), "", "")
 }
