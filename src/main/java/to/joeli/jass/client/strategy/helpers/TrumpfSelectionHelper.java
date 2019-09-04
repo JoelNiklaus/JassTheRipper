@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class TrumpfSelectionHelper {
 
-	public static final boolean ALL_TRUMPFS = false;
+	public static final boolean ALL_TRUMPFS = true;
 
 	public static final Logger logger = LoggerFactory.getLogger(TrumpfSelectionHelper.class);
 

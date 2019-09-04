@@ -54,6 +54,11 @@ ssh -i ~/.ssh/digitalocean root@167.99.133.247
 ```
 
 REST endpoint available over http://167.99.133.247/jass
+HSLU opponents: 
+http://10.180.39.12:5001/randomsimple
+http://10.180.39.12:5001/soismcts-10000
+http://10.180.39.12:5001/soismcts-100000
+http://10.180.39.12:5001/dnn-max-policy
 
 
 This client allows you to easily develop a bot for the Jass challenge.

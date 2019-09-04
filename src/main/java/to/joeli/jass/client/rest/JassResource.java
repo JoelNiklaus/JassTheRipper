@@ -26,7 +26,7 @@ import java.util.List;
 @Path("jass")
 public class JassResource {
 
-	private MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.IRONMAN);
+	private MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.HSLU_SERVER);
 	private Config config = new Config(mctsConfig);
 	private JassStrategy jassStrategy = new JassTheRipperJassStrategy(config);
 
