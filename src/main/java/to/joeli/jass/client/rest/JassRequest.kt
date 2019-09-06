@@ -1,5 +1,8 @@
 package to.joeli.jass.client.rest
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class JassRequest(
         val version: String,
         val trump: Int,
