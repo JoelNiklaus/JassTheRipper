@@ -31,7 +31,6 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
         get() = mcts.isShutDown
 
     init {
-
         mcts.setRandom(mctsConfig.seed)
         mcts.setScoreBoundsUsed(mctsConfig.scoreBoundsUsed)
         mcts.setExplorationConstant(mctsConfig.explorationConstant)
@@ -56,7 +55,6 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
     fun shutDown() {
         mcts.shutDown()
     }
-
 
     /**
      * Chooses a card by running the MCTS method.

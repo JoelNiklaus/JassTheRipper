@@ -26,12 +26,7 @@ import java.util.List;
 @Path("jass")
 public class JassResource {
 
-	private MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.HSLU_SERVER);
-	private Config config = new Config(mctsConfig);
-	private JassStrategy jassStrategy = new JassTheRipperJassStrategy(config);
-
 	public static final Logger logger = LoggerFactory.getLogger(JassResource.class);
-
 
 	/**
 	 * Method handling HTTP GET requests. The returned object will be sent
@@ -60,7 +55,7 @@ public class JassResource {
 			seatId = (seatId + 2) % 4;
 		if (seatId != jassRequest.getCurrentPlayer())
 			throw new AssertionError("The local current player does not match the server's current player.");
-		final Mode trumpf = jassStrategy.chooseTrumpf(availableCards, gameSession, shifted);
+		final Mode trumpf = Server.jassStrategy.chooseTrumpf(availableCards, gameSession, shifted);
 
 		return Response
 				.status(Response.Status.OK)
@@ -82,7 +77,7 @@ public class JassResource {
 				.createGameSession();
 		if (gameSession.getCurrentPlayer().getSeatId() != jassRequest.getCurrentPlayer())
 			throw new AssertionError("The local current player does not match the server's current player.");
-		final Card card = jassStrategy.chooseCard(getAvailableCards(jassRequest), gameSession);
+		final Card card = Server.jassStrategy.chooseCard(getAvailableCards(jassRequest), gameSession);
 
 		return Response
 				.status(Response.Status.OK)

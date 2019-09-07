@@ -5,6 +5,10 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
+import to.joeli.jass.client.strategy.config.Config;
+import to.joeli.jass.client.strategy.config.MCTSConfig;
+import to.joeli.jass.client.strategy.config.StrengthLevel;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,6 +17,11 @@ import java.net.URI;
  * Main class.
  */
 public class Server {
+
+	private static MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.HSLU_SERVER);
+	private static Config config = new Config(mctsConfig);
+	static JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy(config);
+
 	// Base URI the Grizzly HTTP server will listen on
 	public static final String BASE_URI = "http://0.0.0.0/";
 
@@ -43,9 +52,11 @@ public class Server {
 	public static void main(String[] args) throws IOException {
 		final HttpServer server = startServer();
 		logger.info("Jersey app started with WADL available at {}sapplication.wadl", BASE_URI);
-		//System.out.println("Hit enter to stop the server...");
-		//System.in.read();
-		//server.shutdownNow();
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			server.shutdownNow();
+			jassStrategy.shutDown();
+			logger.info("Server shut down gracefully.");
+		}));
 	}
 }
 

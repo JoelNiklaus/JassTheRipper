@@ -256,6 +256,9 @@ TODO Make new experiments with the improvements so far:
 		this.scoreEstimator = scoreEstimator;
 	}
 
+	public void shutDown() {
+		this.mctsHelper.shutDown();
+	}
 
 	public void setConfig(Config config) {
 		this.config = config;
