@@ -32,6 +32,7 @@ public class MCTS {
 	private ArrayList<FutureTask<Move>> futures;
 
 	private int numRuns;
+	private int numDeterminizations;
 
 	public static final Logger logger = LoggerFactory.getLogger(MCTS.class);
 
@@ -45,20 +46,17 @@ public class MCTS {
 	 */
 	public Move runForTime(Board startingBoard, int numDeterminizations, long endingTime) throws MCTSException {
 		if (!rootParallelisationEnabled) {
-			logger.info("Only running one determinization :(");
+			logger.info("Only running one determinization");
 			return executeByTime(startingBoard, endingTime);
 		} else {
-			logger.info("Running {} determinizations :)", numDeterminizations);
-			submitTimeTasks(startingBoard, numDeterminizations, endingTime);
-			logger.error("On average the MCTS searched {} nodes in {} determinizations", numRuns / numDeterminizations, numDeterminizations);
-			synchronized (this) {
-				numRuns = 0;
-			}
+			this.numDeterminizations = numDeterminizations;
+			logger.info("Running {} determinizations", numDeterminizations);
+			submitTimeTasks(startingBoard, endingTime);
 			return collectResultsAndGetFinalSelectedMove();
 		}
 	}
 
-	private void submitTimeTasks(Board startingBoard, int numDeterminizations, long endingTime) {
+	private void submitTimeTasks(Board startingBoard, long endingTime) {
 		for (int i = 0; i < numDeterminizations; i++)
 			futures.add((FutureTask<Move>) threadPool.submit(new MCTSTaskTime(startingBoard, endingTime)));
 	}
@@ -76,14 +74,15 @@ public class MCTS {
 			logger.info("Only running one determinization :(");
 			return executeByRuns(startingBoard, runs);
 		} else {
+			this.numDeterminizations = numDeterminizations;
 			logger.info("Running {} determinizations :)", numDeterminizations);
-			submitRunsTasks(startingBoard, numDeterminizations, runs);
+			submitRunsTasks(startingBoard, runs);
 			return collectResultsAndGetFinalSelectedMove();
 		}
 	}
 
 
-	private void submitRunsTasks(Board startingBoard, int numDeterminizations, long runs) {
+	private void submitRunsTasks(Board startingBoard, long runs) {
 		for (int i = 0; i < numDeterminizations; i++)
 			futures.add((FutureTask<Move>) threadPool.submit(new MCTSTaskRuns(startingBoard, runs)));
 	}
@@ -135,7 +134,7 @@ public class MCTS {
 		try {
 			while (!checkDone(futures)) {
 				// logger.debug("Futures not ready yet. Simulation is still running. Waiting now...");
-				Thread.sleep(10);
+				Thread.sleep(1);
 			}
 
 			for (FutureTask<Move> future : futures) {
@@ -149,6 +148,11 @@ public class MCTS {
 				final Move move = future.get();
 				if (move != null)
 					moves.add(move);
+			}
+
+			logger.info("The MCTS searched {} nodes per determinization", numRuns / numDeterminizations);
+			synchronized (this) {
+				numRuns = 0;
 			}
 
 			return vote(moves);
