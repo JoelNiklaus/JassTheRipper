@@ -9,8 +9,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * IMPORTANT: At the moment this class only selects a random move.
- * But the goal would be to use rules for good play in a perfect information game scenario.
+ * Uses rules for good play in a perfect information game scenario to find a move.
  * Using a rule based bot like for example the challenge bot would be an idea too.
  */
 public class PerfectInformationGameSolver {

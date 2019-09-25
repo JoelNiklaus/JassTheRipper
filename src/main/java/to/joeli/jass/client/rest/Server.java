@@ -49,7 +49,7 @@ public class Server {
 	 * @param args
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		final HttpServer server = startServer();
 		logger.info("Jersey app started with WADL available at {}sapplication.wadl", BASE_URI);
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {

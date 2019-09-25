@@ -223,9 +223,11 @@ public class MCTSBenchmarkTest {
 	@Test
 	public void testPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
 		if (RUN_BENCHMARKS) {
+			MCTSConfig mctsConfig = new MCTSConfig();
+			mctsConfig.setPlayoutSelectionPolicy(null);
 			Config[] configs = {
-					new Config(new MCTSConfig(new JassPlayoutSelectionPolicy())),
 					new Config(new MCTSConfig()),
+					new Config(mctsConfig),
 			};
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);

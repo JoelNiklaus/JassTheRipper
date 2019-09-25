@@ -93,8 +93,12 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
                 numDeterminizations *= 2 // NOTE: Can do more determinizations in the same time because it should be faster than random playout
                 logger.info("Running even {} determinizations", numDeterminizations)
             }
-        } else
-            logger.info("Using a random playout to determine the score")
+        } else {
+            if (mctsConfig.playoutSelectionPolicy != null)
+                logger.info("Using a rule based playout to determine the score")
+            else
+                logger.info("Using a random playout to determine the score")
+        }
 
         if (mctsConfig.runMode === RunMode.RUNS)
             return mcts.runForRuns(jassBoard, numDeterminizations, numRuns)
