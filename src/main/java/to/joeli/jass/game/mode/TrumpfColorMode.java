@@ -92,13 +92,18 @@ class TrumpfColorMode extends Mode {
 	}
 
 	private boolean hasOnlyJackOfTrumpf(Set<Card> playerCards) {
-		return playerCards.stream()
-				.filter(cards -> cards.getColor() == trumpfColor)
-				.allMatch(card -> card.getValue() == CardValue.JACK);
+		for (Card cards : playerCards)
+			if (cards.getColor() == trumpfColor)
+				if (cards.getValue() != CardValue.JACK)
+					return false;
+		return true;
 	}
 
 	private boolean hasOnlyTrumpf(Set<Card> cards) {
-		return cards.stream().allMatch(card -> card.getColor() == trumpfColor);
+		for (Card card : cards)
+			if (card.getColor() != trumpfColor)
+				return false;
+		return true;
 	}
 
 	private boolean isHighestTrumpf(Card card, Set<Card> alreadyPlayedCards) {
