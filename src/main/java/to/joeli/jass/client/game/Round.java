@@ -5,12 +5,9 @@ import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class Round {
 	private final Mode mode;
@@ -76,15 +73,18 @@ public class Round {
 	}
 
 	public Set<Card> getPlayedCards() {
-		return moves.stream()
-				.map(Move::getPlayedCard)
-				.collect(toSet());
+		// TODO this seems to be a performance bottleneck
+		Set<Card> cards = EnumSet.noneOf(Card.class);
+		for (Move move : moves)
+			cards.add(move.getPlayedCard());
+		return cards;
 	}
 
 	public List<Card> getPlayedCardsInOrder() {
-		return moves.stream()
-				.map(Move::getPlayedCard)
-				.collect(toList());
+		List<Card> cards = new ArrayList<>();
+		for (Move move : moves)
+			cards.add(move.getPlayedCard());
+		return cards;
 	}
 
 	public Color getRoundColor() {

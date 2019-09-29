@@ -6,7 +6,6 @@ import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class Mode {
 
@@ -99,9 +98,18 @@ public abstract class Mode {
 	}
 
 	public Move determineWinningMove(List<Move> moves) {
-		List<Card> cards = moves.stream().map(Move::getPlayedCard).collect(Collectors.toList());
+		List<Card> cards = new ArrayList<>();
+		for (Move move : moves) {
+			Card playedCard = move.getPlayedCard();
+			cards.add(playedCard);
+		}
 		Card winningCard = determineWinningCard(cards);
-		return moves.stream().filter(move -> winningCard == move.getPlayedCard()).findFirst().orElse(null);
+		for (Move move : moves) {
+			if (winningCard == move.getPlayedCard()) {
+				return move;
+			}
+		}
+		return null;
 	}
 
 	public abstract boolean canPlayCard(Card card, Set<Card> alreadyPlayedCards, Color currentRoundColor, Set<Card> playerCards);

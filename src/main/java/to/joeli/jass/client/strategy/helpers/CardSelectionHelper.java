@@ -12,7 +12,6 @@ import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class CardSelectionHelper {
 
@@ -537,9 +536,10 @@ public class CardSelectionHelper {
 	private static Set<Card> getCardsPossibleToPlay(Set<Card> availableCards, Round round) {
 		Mode mode = round.getMode();
 		// If you have a card
-		Set<Card> validCards = availableCards.stream().
-				filter(card -> mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards)).
-				collect(Collectors.toSet());
+		Set<Card> validCards = EnumSet.noneOf(Card.class);
+		for (Card card : availableCards)
+			if (mode.canPlayCard(card, round.getPlayedCards(), round.getRoundColor(), availableCards))
+				validCards.add(card);
 		if (!validCards.isEmpty())
 			return validCards;
 		else

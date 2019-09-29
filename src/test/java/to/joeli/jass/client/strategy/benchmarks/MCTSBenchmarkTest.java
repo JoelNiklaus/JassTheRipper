@@ -22,6 +22,8 @@ import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD
 
 public class MCTSBenchmarkTest {
 
+	// TODO use JMH
+
 	private static final boolean RUN_BENCHMARKS = false;
 
 	private static final long SEED = 43; // To get a match at the start use 42

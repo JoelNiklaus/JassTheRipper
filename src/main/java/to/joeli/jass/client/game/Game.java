@@ -151,6 +151,11 @@ public class Game {
 		return getOrder().getPlayersInInitialOrder();
 	}
 
+	public List<Player> getPlayersBySeatId() {
+		// Player implements Comparable and is compared using the seatId
+		return getPlayers().stream().sorted().collect(Collectors.toList());
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -179,8 +184,4 @@ public class Game {
 				'}';
 	}
 
-	public List<Player> getPlayersBySeatId() {
-		// Player implements Comparable and is compared using the seatId
-		return getPlayers().stream().sorted().collect(Collectors.toList());
-	}
 }
