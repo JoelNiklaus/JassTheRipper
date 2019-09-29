@@ -1,10 +1,10 @@
 package to.joeli.jass.client.strategy;
 
+import org.junit.Test;
 import to.joeli.jass.client.game.*;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -15,8 +15,6 @@ import static org.junit.Assert.*;
  * Created by joelniklaus on 06.05.17.
  */
 public class DeepCopyTest {
-
-	private Set<Card> cards1 = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
 
 	private GameSession gameSession = GameSessionBuilder.newSession().withStartedGame(Mode.topDown()).createGameSession();
 
@@ -153,8 +151,9 @@ public class DeepCopyTest {
 
 	@Test
 	public void testCopyPlayer() {
+		Set<Card> cards = EnumSet.of(Card.CLUB_ACE, Card.CLUB_EIGHT, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_SEVEN, Card.SPADE_QUEEN, Card.HEART_TEN, Card.SPADE_NINE, Card.SPADE_KING);
 		Player originalPlayer = new Player("1", "test", 1);
-		originalPlayer.setCards(cards1);
+		originalPlayer.setCards(cards);
 		Player player = new Player(originalPlayer);
 
 		assertEquals(originalPlayer, player);

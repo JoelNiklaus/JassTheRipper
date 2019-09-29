@@ -60,12 +60,12 @@ public class CardSelectionHelper {
 			Set<Card> roundWinningCards = getRoundWinningCards(possibleCards, round);
 
 			// wenn möglich mit nicht trumpf zu stechen
-			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, mode);
+			Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNonTrumpfs(roundWinningCards, mode);
 			if (!notTrumpsOfRoundWinningCards.isEmpty())
 				return notTrumpsOfRoundWinningCards;
 
 			// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
-			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, mode);
+			Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumpfs(roundWinningCards, mode);
 			if (!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
 				return trumpsOfRoundWinningCards;
 		}
@@ -73,7 +73,7 @@ public class CardSelectionHelper {
 		/**
 		 * AUSTRUMPFEN
 		 */
-		final Set<Card> trumps = JassHelper.getTrumps(possibleCards, mode);
+		final Set<Card> trumps = JassHelper.getTrumpfs(possibleCards, mode);
 		if (shouldAustrumpfen(round, trumps))
 			return trumps;
 

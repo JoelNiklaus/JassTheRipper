@@ -398,10 +398,12 @@ public class JassHelper {
 	 * @param mode
 	 * @return
 	 */
-	public static Set<Card> getTrumps(Set<Card> cards, Mode mode) {
-		return cards.stream()
-				.filter(card -> hasTrumpfColor(card, mode))
-				.collect(Collectors.toSet());
+	public static Set<Card> getTrumpfs(Set<Card> cards, Mode mode) {
+		Set<Card> trumpfs = EnumSet.noneOf(Card.class);
+		for (Card card : cards)
+			if (hasTrumpfColor(card, mode))
+				trumpfs.add(card);
+		return trumpfs;
 	}
 
 	/**
@@ -411,10 +413,12 @@ public class JassHelper {
 	 * @param mode
 	 * @return
 	 */
-	public static Set<Card> getNotTrumps(Set<Card> cards, Mode mode) {
-		return cards.stream()
-				.filter(card -> !hasTrumpfColor(card, mode))
-				.collect(Collectors.toSet());
+	public static Set<Card> getNonTrumpfs(Set<Card> cards, Mode mode) {
+		Set<Card> nonTrumpfs = EnumSet.noneOf(Card.class);
+		for (Card card : cards)
+			if (!hasTrumpfColor(card, mode))
+				nonTrumpfs.add(card);
+		return nonTrumpfs;
 	}
 
 	/**

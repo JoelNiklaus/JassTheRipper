@@ -73,7 +73,6 @@ public class Round {
 	}
 
 	public Set<Card> getPlayedCards() {
-		// TODO this seems to be a performance bottleneck
 		Set<Card> cards = EnumSet.noneOf(Card.class);
 		for (Move move : moves)
 			cards.add(move.getPlayedCard());

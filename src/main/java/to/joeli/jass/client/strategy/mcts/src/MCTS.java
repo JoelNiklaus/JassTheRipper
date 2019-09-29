@@ -317,18 +317,7 @@ public class MCTS {
 		while (!board.gameOver()) {
 			Move move;
 			if (playoutSelectionPolicy == null) {
-				List<Move> moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
-				if (moves.isEmpty()) throw new AssertionError();
-				if (board.getCurrentPlayer() >= 0) {
-					// make random selection normally
-					move = moves.get(random.nextInt(moves.size()));
-				} else {
-					// This situation only occurs when a move
-					// is entirely random, for example a die
-					// roll. We must consider the random weights
-					// of the moves.
-					move = getRandomMove(board, moves);
-				}
+				move = getRandomMove(board);
 			} else {
 				move = playoutSelectionPolicy.getBestMove(board); // NOTE: Originally it used the not duplicated oldBoard here.
 			}
@@ -337,8 +326,21 @@ public class MCTS {
 		return board.getScore();
 	}
 
-	private Move getRandomMove(Board board, List<Move> moves) {
-		return moves.get(getRandomChildNodeIndex(board));
+	public Move getRandomMove(Board board) {
+		Move move;
+		List<Move> moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
+		if (moves.isEmpty()) throw new AssertionError();
+		if (board.getCurrentPlayer() >= 0) {
+			// make random selection normally
+			move = moves.get(random.nextInt(moves.size()));
+		} else {
+			// This situation only occurs when a move
+			// is entirely random, for example a die
+			// roll. We must consider the random weights
+			// of the moves.
+			move = moves.get(getRandomChildNodeIndex(board));
+		}
+		return move;
 	}
 
 	/**

@@ -75,7 +75,7 @@ public class JassHelperTest {
 	public void testGetTrumps() {
 		Set<Card> cards = EnumSet.of(Card.CLUB_SEVEN, Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
 		Mode trump = Mode.from(Trumpf.TRUMPF, Color.DIAMONDS);
-		Set<Card> trumps = JassHelper.getTrumps(cards, trump);
+		Set<Card> trumps = JassHelper.getTrumpfs(cards, trump);
 		Set<Card> expectedTrumps = EnumSet.of(Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
 		assertEquals(expectedTrumps, trumps);
 	}

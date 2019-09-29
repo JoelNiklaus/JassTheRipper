@@ -89,14 +89,14 @@ public class PerfectInformationGameSolver {
 			// STECHEN
 			final Set<Card> roundWinningCards = CardSelectionHelper.getRoundWinningCards(possibleCards, round);
 
-			final Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNotTrumps(roundWinningCards, mode);
+			final Set<Card> notTrumpsOfRoundWinningCards = JassHelper.getNonTrumpfs(roundWinningCards, mode);
 			if (!notTrumpsOfRoundWinningCards.isEmpty())
 				// wenn möglich mit nicht trumpf zu stechen
 				advisableCards.addAll(notTrumpsOfRoundWinningCards);
 
 			else {
 				// wenn möglich mit trumpf zu stechen und stich hat mindestens 10 punkte
-				final Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumps(roundWinningCards, mode);
+				final Set<Card> trumpsOfRoundWinningCards = JassHelper.getTrumpfs(roundWinningCards, mode);
 				if (!trumpsOfRoundWinningCards.isEmpty() && round.calculateScore() > 10)
 					advisableCards.addAll(trumpsOfRoundWinningCards);
 			}
@@ -130,11 +130,12 @@ public class PerfectInformationGameSolver {
 		final Player secondOpponent = players.get(3);
 		// AUSTRUMPFEN
 		if (mode.isTrumpfMode()
-				&& !JassHelper.getTrumps(firstOpponent.getCards(), mode).isEmpty()
-				&& !JassHelper.getTrumps(secondOpponent.getCards(), mode).isEmpty())
-			advisableCards.addAll(JassHelper.getTrumps(possibleCards, mode));
+				&& !JassHelper.getTrumpfs(firstOpponent.getCards(), mode).isEmpty()
+				&& !JassHelper.getTrumpfs(secondOpponent.getCards(), mode).isEmpty())
+			advisableCards.addAll(JassHelper.getTrumpfs(possibleCards, mode));
 
 		// BOCK SPIELEN
+		// TODO This method is a performance bottleneck!
 		final Map<Color, List<Card>> orderedRemainingCards = JassHelper.getCardsStillInGameInStrengthOrder(game);
 		final Set<Card> bocks = JassHelper.getBocks(game.getMode(), orderedRemainingCards);
 		for (Card bock : bocks)

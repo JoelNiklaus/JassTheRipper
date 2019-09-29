@@ -10,8 +10,6 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.lang.String.valueOf;
-
 class TrumpfColorMode extends Mode {
 
 	private final Color trumpfColor;
@@ -65,7 +63,7 @@ class TrumpfColorMode extends Mode {
 	@Override
 	public boolean canPlayCard(Card card, Set<Card> alreadyPlayedCards, Color currentRoundColor, Set<Card> playerCards) {
 		final boolean noCardsHaveBeenPlayed = alreadyPlayedCards.isEmpty();
-		final boolean hasOtherCardsOfRoundColor = playerCards.stream().anyMatch(playersCard -> playersCard.getColor() == currentRoundColor);
+		boolean hasOtherCardsOfRoundColor = hasOtherCardsOfRoundColor(currentRoundColor, playerCards);
 		final boolean isHighestTrumpfInRound = isTrumpf(card) && isHighestTrumpf(card, alreadyPlayedCards);
 
 		if (noCardsHaveBeenPlayed) return true;
@@ -73,6 +71,13 @@ class TrumpfColorMode extends Mode {
 		if (isTrumpf(card) && currentRoundColor != trumpfColor) return isHighestTrumpfInRound;
 		if (currentRoundColor == trumpfColor && hasOnlyJackOfTrumpf(playerCards)) return true;
 		else return !hasOtherCardsOfRoundColor || card.getColor() == currentRoundColor;
+	}
+
+	private boolean hasOtherCardsOfRoundColor(Color currentRoundColor, Set<Card> playerCards) {
+		for (Card playersCard : playerCards)
+			if (playersCard.getColor() == currentRoundColor)
+				return true;
+		return false;
 	}
 
 	@Override
@@ -88,7 +93,7 @@ class TrumpfColorMode extends Mode {
 
 	@Override
 	public String toString() {
-		return valueOf(getTrumpfName()) + " - " + valueOf(getTrumpfColor());
+		return getTrumpfName() + " - " + getTrumpfColor();
 	}
 
 	private boolean hasOnlyJackOfTrumpf(Set<Card> playerCards) {
