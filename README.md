@@ -53,7 +53,7 @@ Connect to digitalocean server
 ssh -i ~/.ssh/digitalocean root@167.99.133.247
 ```
 
-REST endpoint available over http://167.99.133.247/jass
+REST endpoint available over http://167.99.133.247/jass or http://jasstheripper.joeli.to/jass
 
 HSLU opponents: 
 - http://10.180.39.12:5001/randomsimple

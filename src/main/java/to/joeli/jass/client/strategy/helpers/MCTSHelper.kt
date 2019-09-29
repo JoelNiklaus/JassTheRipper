@@ -95,7 +95,7 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
             }
         } else {
             if (mctsConfig.playoutSelectionPolicy != null)
-                logger.info("Using a rule based playout to determine the score")
+                logger.info("Using a {} to determine the score", mctsConfig.playoutSelectionPolicy.toString())
             else
                 logger.info("Using a random playout to determine the score")
         }

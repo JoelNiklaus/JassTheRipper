@@ -1,19 +1,21 @@
 package to.joeli.jass.client.strategy.helpers;
 
-import to.joeli.jass.client.game.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import to.joeli.jass.client.game.Game;
+import to.joeli.jass.client.game.Player;
+import to.joeli.jass.client.game.Round;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.CardValue;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * This class comprises a collection of helper methods for both trumpf and card selection
- *
+ * <p>
  * Created by joelniklaus on 05.05.17.
  */
 public class JassHelper {
@@ -26,6 +28,109 @@ public class JassHelper {
 
 	private JassHelper() {
 
+	}
+
+	/**
+	 * Calculates the current bocks (highest cards) of each suit (excluding trumpf).
+	 * Slightly faster method if only bocks are calculated.
+	 *
+	 * @param game
+	 * @return
+	 */
+	public static Set<Card> getBocks(Game game) {
+		EnumSet<Card> bocks = EnumSet.noneOf(Card.class);
+		for (Color color : Color.values()) {
+			if (!isTrumpfModeAndMatchesColor(game.getMode(), color)) {
+				// Start with the highest card first
+				List<CardValue> values = Arrays.asList(CardValue.values());
+				if (!isBottomUp(game.getMode()))
+					Collections.reverse(values);
+				// And then check for every card down the value line
+				for (CardValue value : values) {
+					Card card = Card.getCard(color, value);
+					// if it is still in the game
+					if (!game.getAlreadyPlayedCards().contains(card)) {
+						bocks.add(card);
+						break;
+					}
+				}
+			}
+		}
+		return bocks;
+	}
+
+	/**
+	 * Calculates the current bocks (highest cards) of each suit (excluding trumpf).
+	 * Slightly faster method if also second highest cards are needed.
+	 *
+	 * @param mode
+	 * @param orderedRemainingCards
+	 * @return
+	 */
+	public static Set<Card> getBocks(Mode mode, Map<Color, List<Card>> orderedRemainingCards) {
+		EnumSet<Card> bocks = EnumSet.noneOf(Card.class);
+		for (Color color : Color.values())
+			if (!isTrumpfModeAndMatchesColor(mode, color) && !orderedRemainingCards.get(color).isEmpty())
+				bocks.add(orderedRemainingCards.get(color).get(0));
+		return bocks;
+	}
+
+	/**
+	 * Calculates the second highest cards of each suit (excluding trumpf).
+	 *
+	 * @param mode
+	 * @param orderedRemainingCards
+	 * @return
+	 */
+	public static Set<Card> getRemainingCardsBelowBocks(Mode mode, Map<Color, List<Card>> orderedRemainingCards) {
+		EnumSet<Card> bocks = EnumSet.noneOf(Card.class);
+		for (Color color : Color.values())
+			if (!isTrumpfModeAndMatchesColor(mode, color) && orderedRemainingCards.get(color).size() > 1)
+				bocks.add(orderedRemainingCards.get(color).get(1));
+		return bocks;
+	}
+
+	/**
+	 * Returns a map of the cards still in the game ordered by the strength.
+	 * Example: In the beginning of a clubs game:
+	 * HA, HK, etc.
+	 * DA, DK, etc.
+	 * SA, SK, etc.
+	 * CJ, C9, CA, CK, etc.
+	 * <p>
+	 * In the beginning of a bottom up game:
+	 * H6, H7, etc.
+	 * D6, D7, etc.
+	 * etc.
+	 *
+	 * @param game
+	 * @return
+	 */
+	public static Map<Color, List<Card>> getCardsStillInGameInStrengthOrder(Game game) {
+		EnumMap<Color, List<Card>> orderedRemainingCards = new EnumMap<>(Color.class);
+		for (Color color : Color.values()) {
+			// Start with the highest card first
+			List<CardValue> values = Arrays.asList(CardValue.values());
+			if (!isBottomUp(game.getMode()))
+				Collections.reverse(values);
+			if (isTrumpfModeAndMatchesColor(game.getMode(), color))
+				values = values.stream().sorted(Comparator.comparing(CardValue::getTrumpfRank).reversed()).collect(Collectors.toList());
+
+			List<Card> cards = new ArrayList<>();
+			// And then check for every card down the value line
+			for (CardValue value : values) {
+				Card card = Card.getCard(color, value);
+				// if it is still in the game
+				if (!game.getAlreadyPlayedCards().contains(card))
+					cards.add(card);
+				orderedRemainingCards.put(color, cards);
+			}
+		}
+		return orderedRemainingCards;
+	}
+
+	private static boolean isTrumpfModeAndMatchesColor(Mode mode, Color color) {
+		return mode.isTrumpfMode() && mode.getTrumpfColor().equals(color);
 	}
 
 
@@ -312,30 +417,59 @@ public class JassHelper {
 				.collect(Collectors.toSet());
 	}
 
+	/**
+	 * Gets all the cards which are of a given suit out of the card set
+	 *
+	 * @param cards
+	 * @param color
+	 * @return
+	 */
+	public static Set<Card> getCardsOfSuit(Set<Card> cards, Color color) {
+		return cards.stream()
+				.filter(card -> card.getColor().equals(color))
+				.collect(Collectors.toSet());
+	}
+
 
 	/**
 	 * Gets all the cards which can be used for Schmieren out of the possible cards
-	 * TODO could be made more sophisticated
 	 *
 	 * @param possibleCards
-	 * @param cardOfPartner
 	 * @param mode
 	 * @return
 	 */
-	public static Set<Card> getSchmierCards(Set<Card> possibleCards, Card cardOfPartner, Mode mode) {
+	public static Set<Card> getSchmierCards(Set<Card> possibleCards, Mode mode) {
 		List<CardValue> possibleCardValues = new LinkedList<>();
 		possibleCardValues.add(CardValue.TEN);
 		if (isTopDown(mode))
 			possibleCardValues.add(CardValue.EIGHT);
+		if (isBottomUp(mode)) {
+			possibleCardValues.add(CardValue.KING);
+			possibleCardValues.add(CardValue.QUEEN);
+			possibleCardValues.add(CardValue.JACK);
+		}
 
 		Set<Card> schmierCards = EnumSet.noneOf(Card.class);
 		for (Card card : possibleCards)
 			if (possibleCardValues.contains(card.getValue()))
 				schmierCards.add(card);
 
-		if (!schmierCards.isEmpty())
-			return schmierCards;
-		return possibleCards;
+		return schmierCards;
+	}
+
+	/**
+	 * Gets all the cards which can be used for Verwerfen out of the possible cards (= Brettli)
+	 *
+	 * @param possibleCards
+	 * @param mode
+	 * @return
+	 */
+	public static Set<Card> getVerwerfCards(Set<Card> possibleCards, Mode mode) {
+		Set<Card> verwerfCards = EnumSet.noneOf(Card.class);
+		for (Card card : possibleCards)
+			if (isBrettli(card, mode))
+				verwerfCards.add(card);
+		return verwerfCards;
 	}
 
 

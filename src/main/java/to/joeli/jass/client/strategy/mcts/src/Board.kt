@@ -48,7 +48,7 @@ interface Board {
      *
      * @return
      */
-    val bestMove: Move
+    fun getBestMove(playoutSelectionPolicy: PlayoutSelectionPolicy): Move
 
     /**
      * Create one copy of the board. It is important that the copies do

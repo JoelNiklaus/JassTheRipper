@@ -1,5 +1,7 @@
 package to.joeli.jass.client.strategy.mcts.src
 
+import to.joeli.jass.client.game.Game
+
 /**
  * Use this as a replacement for the conventional
  * playout function during simulations. The idea
@@ -12,4 +14,6 @@ package to.joeli.jass.client.strategy.mcts.src
  */
 interface PlayoutSelectionPolicy {
     fun getBestMove(board: Board): Move
+
+    fun runPlayout(game: Game): Move
 }

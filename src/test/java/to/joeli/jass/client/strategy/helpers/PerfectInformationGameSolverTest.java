@@ -21,7 +21,7 @@ public class PerfectInformationGameSolverTest {
 		obeAbeGame.makeMove(new CardMove(obeAbeGame.getPlayers().get(0), Card.HEART_TEN));
 		obeAbeGame.makeMove(new CardMove(obeAbeGame.getPlayers().get(1), Card.HEART_KING));
 
-		final CardMove move = PerfectInformationGameSolver.getMove(obeAbeGame);
+		final CardMove move = PerfectInformationGameSolver.runHeavyPlayout(obeAbeGame);
 		// assertEquals(Card.HEART_ACE, move.getPlayedCard()); // NOTE: So far this solver still selects a random move
 	}
 

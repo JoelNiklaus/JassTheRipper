@@ -1,14 +1,18 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.junit.Test;
+import to.joeli.jass.client.game.Game;
 import to.joeli.jass.game.Trumpf;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by dominikbriner on 20.05.17.
@@ -80,5 +84,47 @@ public class JassHelperTest {
 	public void testGetCardRank() {
 		// Test that the Ace has Rank 9
 		assertEquals(9, Card.CLUB_ACE.getRank());
+	}
+
+	@Test
+	public void testGetBocksFirstRound() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+		final Set<Card> bocks = JassHelper.getBocks(game);
+		assertEquals(3, bocks.size());
+		assertTrue(bocks.contains(Card.HEART_ACE));
+		assertTrue(bocks.contains(Card.DIAMOND_ACE));
+		assertTrue(bocks.contains(Card.SPADE_ACE));
+	}
+
+	@Test
+	public void testGetBocksSixthRound() {
+		final Game game = GameSessionBuilder.newSession().withStartedClubsGameWithRoundsPlayed(5).createGameSession().getCurrentGame();
+		final Set<Card> bocks = JassHelper.getBocks(game);
+		assertEquals(3, bocks.size());
+		assertTrue(bocks.contains(Card.HEART_KING));
+		assertTrue(bocks.contains(Card.DIAMOND_KING));
+		assertTrue(bocks.contains(Card.SPADE_KING));
+	}
+
+	@Test
+	public void testGetBocksTopDown() {
+		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.topDown()).createGameSession().getCurrentGame();
+		final Set<Card> bocks = JassHelper.getBocks(game);
+		assertEquals(4, bocks.size());
+		assertTrue(bocks.contains(Card.HEART_ACE));
+		assertTrue(bocks.contains(Card.DIAMOND_ACE));
+		assertTrue(bocks.contains(Card.SPADE_ACE));
+		assertTrue(bocks.contains(Card.CLUB_ACE));
+	}
+
+	@Test
+	public void testGetBocksBottomUp() {
+		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.bottomUp()).createGameSession().getCurrentGame();
+		final Set<Card> bocks = JassHelper.getBocks(game);
+		assertEquals(4, bocks.size());
+		assertTrue(bocks.contains(Card.HEART_SIX));
+		assertTrue(bocks.contains(Card.DIAMOND_SIX));
+		assertTrue(bocks.contains(Card.SPADE_SIX));
+		assertTrue(bocks.contains(Card.CLUB_SIX));
 	}
 }

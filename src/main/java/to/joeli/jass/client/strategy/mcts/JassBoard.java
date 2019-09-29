@@ -1,5 +1,6 @@
 package to.joeli.jass.client.strategy.mcts;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.Game;
@@ -13,6 +14,7 @@ import to.joeli.jass.client.strategy.helpers.TrumpfSelectionHelper;
 import to.joeli.jass.client.strategy.mcts.src.Board;
 import to.joeli.jass.client.strategy.mcts.src.CallLocation;
 import to.joeli.jass.client.strategy.mcts.src.Move;
+import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
@@ -38,7 +40,7 @@ public class JassBoard implements Board {
 
 	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
 	private final ScoreEstimator scoreEstimator;
-	// The neural netowrk of the player estimating the hidden cards of the other players. If null -> only use heuristics
+	// The neural network of the player estimating the hidden cards of the other players. If null -> only use heuristics
 	private final CardsEstimator cardsEstimator;
 
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
@@ -300,21 +302,19 @@ public class JassBoard implements Board {
 	 * This method is not used by this game (we do not have any chance nodes),
 	 * but at least a function body is required to fulfill the Board interface contract.
 	 */
+	@Override
 	public double[] getMoveWeights() {
 		return new double[game.getCurrentPlayer().getCards().size()];
 	}
 
 	@Override
-	public Move getBestMove() {
+	public Move getBestMove(@NotNull PlayoutSelectionPolicy playoutSelectionPolicy) {
 		if (isChoosingTrumpf()) {
-			final List<Move> moves = getMoves(CallLocation.PLAYOUT); // This must only be called in playout!
 			final Mode mode = TrumpfSelectionHelper.predictTrumpf(currentPlayer().getCards(), shifted);
-			final Move move = new TrumpfMove(currentPlayer(), mode);
-			final int bestTrumpfIndex = moves.indexOf(move);
-			return moves.get(bestTrumpfIndex); // return top rated trumpf
+			return new TrumpfMove(currentPlayer(), mode);
 		}
 
-		return PerfectInformationGameSolver.getMove(game);
+		return playoutSelectionPolicy.runPlayout(game);
 	}
 
 	@Override

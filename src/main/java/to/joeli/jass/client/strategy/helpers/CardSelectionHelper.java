@@ -81,19 +81,18 @@ public class CardSelectionHelper {
 		/**
 		 * SCHMIEREN
 		 */
-		// wenn partner schon gespielt hat
-		if (JassHelper.hasPartnerAlreadyPlayed(round)) {
-			Card cardOfPartner = JassHelper.getCardOfPartner(round);
+		Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, mode);
+		// wenn partner schon gespielt hat und wir Karten zum Schmieren haben
+		if (JassHelper.hasPartnerAlreadyPlayed(round) && !schmierCards.isEmpty()) {
 			// wenn partner den stich macht bis jetzt
 			if (JassHelper.stichBelongsToPartner(round)) {
-				Set<Card> schmierCards = JassHelper.getSchmierCards(possibleCards, cardOfPartner, mode);
 				// wenn letzter spieler einfach schmieren
 				if (isLastPlayer(round))
 					return schmierCards;
 				else {
 					if (!isThirdPlayer(round)) throw new AssertionError();
 					// weil das spiel determinisiert ist wissen wir genau welcher spieler welche karten hat
-					if (!nextPlayerCanWinStich(round))
+					if (!opponentCanWinStich(round))
 						return schmierCards;
 				}
 			}
@@ -200,14 +199,85 @@ public class CardSelectionHelper {
 		return possibleCards;
 	}
 
-	private static boolean nextPlayerCanWinStich(Round round) {
-		final Player nextPlayer = round.getPlayingOrder().getNextPlayer();
-		final Set<Card> nextPlayerPossibleCards = getCardsPossibleToPlay(nextPlayer.getCards(), round);
-		for (Card card : nextPlayerPossibleCards) {
+	/**
+	 * Determines if the opponent after me can still win the stich.
+	 * IMPORTANT: This method can only be called in a determinized game because only there we know the cards of the other players.
+	 *
+	 * @param round
+	 * @return
+	 */
+	public static boolean opponentCanWinStich(Round round) {
+		if (round.numberOfPlayedCards() == 3) // if we are the last player
+			return false;
+
+		final Player opponent = round.getPlayingOrder().getNextPlayer();
+		final Set<Card> opponentPossibleCards = getCardsPossibleToPlay(opponent.getCards(), round);
+
+		for (Card card : opponentPossibleCards) {
 			final List<Move> moves = new ArrayList<>(round.getMoves());
-			moves.add(new Move(nextPlayer, card));
+			moves.add(new Move(opponent, card));
 			if (round.getMode().determineWinningMove(moves).getPlayedCard().equals(card))
 				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Determines if my partner can still win the stich.
+	 * For every possible card the opponent might play, the partner has to be able to win the stich.
+	 * Should only be called when we are the second player!
+	 * IMPORTANT: This method can only be called in a determinized game because only there we know the cards of the other players.
+	 * TODO TEST
+	 *
+	 * @param round
+	 * @return
+	 */
+	public static boolean partnerCanDefinitelyWinStich(Round round) {
+		if (round.numberOfPlayedCards() != 1) throw new AssertionError("We have to be the second player!");
+
+		final List<Player> players = round.getPlayingOrder().getPlayersInCurrentOrder();
+		final Player opponent = players.get(1);
+		final Player ownTeamPlayer = players.get(2);
+		return ownTeamCanDefinitelyWinStich(round, opponent, ownTeamPlayer);
+	}
+
+	/**
+	 * Determines if the current player can still win the stich.
+	 * For every possible card the opponent might play, the I have to be able to win the stich.
+	 * Should only be called when we are the third player!
+	 * IMPORTANT: This method can only be called in a determinized game because only there we know the cards of the other players.
+	 * TODO TEST
+	 *
+	 * @param round
+	 * @return
+	 */
+	public static boolean currentPlayerCanDefinitelyWinStich(Round round) {
+		if (round.numberOfPlayedCards() != 2) throw new AssertionError("We have to be the third player!");
+
+		final List<Player> players = round.getPlayingOrder().getPlayersInCurrentOrder();
+		final Player opponent = players.get(1);
+		final Player ownTeamPlayer = players.get(0);
+		return ownTeamCanDefinitelyWinStich(round, opponent, ownTeamPlayer);
+	}
+
+	private static boolean ownTeamCanDefinitelyWinStich(Round round, Player opponent, Player ownTeamPlayer) {
+		final Set<Card> opponentPossibleCards = getCardsPossibleToPlay(opponent.getCards(), round);
+		final Set<Card> ownTeamPlayerPossibleCards = getCardsPossibleToPlay(ownTeamPlayer.getCards(), round);
+
+		for (Card opponentCard : opponentPossibleCards) {
+			final List<Move> moves = new ArrayList<>(round.getMoves());
+			moves.add(new Move(opponent, opponentCard));
+			if (!ownTeamCanWinStich(round, ownTeamPlayer, ownTeamPlayerPossibleCards, moves)) return false;
+		}
+		return true;
+	}
+
+	private static boolean ownTeamCanWinStich(Round round, Player ownTeamPlayer, Set<Card> ownTeamPlayerPossibleCards, List<Move> moves) {
+		for (Card ownTeamPlayerCard : ownTeamPlayerPossibleCards) {
+			moves.add(new Move(ownTeamPlayer, ownTeamPlayerCard));
+			if (round.getMode().determineWinningMove(moves).getPlayedCard().equals(ownTeamPlayerCard))
+				return true;
+			moves.remove(moves.size() - 1); // remove last move added
 		}
 		return false;
 	}
@@ -435,8 +505,8 @@ public class CardSelectionHelper {
 	 * @param round
 	 * @return
 	 */
-	private static Set<Card> getRoundWinningCards(Set<Card> possibleCards, Round round) {
-		Set<Card> remainingCards = new HashSet<>(possibleCards);
+	public static Set<Card> getRoundWinningCards(Set<Card> possibleCards, Round round) {
+		Set<Card> remainingCards = EnumSet.copyOf(possibleCards);
 		Card winningCard = round.getWinningCard();
 		Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
 		for (Card card : remainingCards) {
@@ -527,7 +597,7 @@ public class CardSelectionHelper {
 	 * @param round
 	 * @return
 	 */
-	private static boolean isStartingPlayer(Round round) {
+	static boolean isStartingPlayer(Round round) {
 		return round.numberOfPlayedCards() == 0;
 	}
 
@@ -537,7 +607,7 @@ public class CardSelectionHelper {
 	 * @param round
 	 * @return
 	 */
-	public static boolean isSecondPlayer(Round round) {
+	static boolean isSecondPlayer(Round round) {
 		return round.numberOfPlayedCards() == 1;
 	}
 

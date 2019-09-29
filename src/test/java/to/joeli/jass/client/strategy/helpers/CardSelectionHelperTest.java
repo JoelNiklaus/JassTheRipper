@@ -1,17 +1,16 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.junit.Test;
 import to.joeli.jass.client.game.*;
 import to.joeli.jass.game.Trumpf;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by dominikbriner on 20.05.17.
@@ -125,5 +124,27 @@ public class CardSelectionHelperTest {
 		Set<Card> refinedCards = CardSelectionHelper.refineCardsWithJassKnowledge(cards, game);
 		Set<Card> expectedCards = EnumSet.of(Card.DIAMOND_JACK, Card.DIAMOND_NINE, Card.DIAMOND_KING);
 		assertEquals(expectedCards, refinedCards);
+	}
+
+	@Test
+	public void testOpponentCanWinStich() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+		Player player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.DIAMOND_QUEEN));
+		player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.DIAMOND_EIGHT));
+
+		assertTrue(CardSelectionHelper.opponentCanWinStich(game.getCurrentRound()));
+	}
+
+	@Test
+	public void testOpponentCannotWinStich() {
+		final Game game = GameSessionBuilder.newSession().withStartedGame(Mode.topDown()).createGameSession().getCurrentGame();
+		Player player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.SPADE_KING));
+		player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.SPADE_EIGHT));
+
+		assertFalse(CardSelectionHelper.opponentCanWinStich(game.getCurrentRound()));
 	}
 }

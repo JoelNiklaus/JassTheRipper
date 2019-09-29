@@ -9,7 +9,8 @@ import to.joeli.jass.client.strategy.config.MCTSConfig;
 import to.joeli.jass.client.strategy.config.StrengthLevel;
 import to.joeli.jass.client.strategy.config.TrumpfSelectionMethod;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
-import to.joeli.jass.client.strategy.mcts.JassPlayoutSelectionPolicy;
+import to.joeli.jass.client.strategy.mcts.HeavyJassPlayoutSelectionPolicy;
+import to.joeli.jass.client.strategy.mcts.LightJassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
@@ -221,13 +222,45 @@ public class MCTSBenchmarkTest {
 	}
 
 	@Test
-	public void testPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
+	public void testHeavyPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
 		if (RUN_BENCHMARKS) {
 			MCTSConfig mctsConfig = new MCTSConfig();
 			mctsConfig.setPlayoutSelectionPolicy(null);
 			Config[] configs = {
-					new Config(new MCTSConfig()),
+					new Config(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy())),
 					new Config(mctsConfig),
+			};
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testLightPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
+		if (RUN_BENCHMARKS) {
+			MCTSConfig mctsConfig = new MCTSConfig();
+			mctsConfig.setPlayoutSelectionPolicy(null);
+			Config[] configs = {
+					new Config(new MCTSConfig(new LightJassPlayoutSelectionPolicy())),
+					new Config(mctsConfig),
+			};
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testHeavyPlayoutSelectionPolicyEnabledBeatsLightPlayoutSelectionPolicyEnabled() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy())),
+					new Config(new MCTSConfig(new LightJassPlayoutSelectionPolicy())),
 			};
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);

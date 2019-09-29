@@ -1,6 +1,6 @@
 package to.joeli.jass.client.strategy.config
 
-import to.joeli.jass.client.strategy.mcts.JassPlayoutSelectionPolicy
+import to.joeli.jass.client.strategy.mcts.HeavyJassPlayoutSelectionPolicy
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy
 import to.joeli.jass.client.strategy.mcts.src.HeuristicFunction
 import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy
@@ -21,12 +21,12 @@ class MCTSConfig {
     var numPlayouts = 2 // Scored the best in experiments
     var finalSelectionPolicy = FinalSelectionPolicy.ROBUST_CHILD
     var heuristicFunction: HeuristicFunction? = null
-    var playoutSelectionPolicy: PlayoutSelectionPolicy? = JassPlayoutSelectionPolicy()
+    var playoutSelectionPolicy: PlayoutSelectionPolicy? = HeavyJassPlayoutSelectionPolicy()
 
     constructor() {
         // Different settings on local machine for faster testing
         if (System.getProperty("os.name") == "Mac OS X")
-            cardStrengthLevel = StrengthLevel.FAST
+            cardStrengthLevel = StrengthLevel.EXTREME
     }
 
     constructor(scoreBoundsUsed: Boolean, pessimisticBias: Double, optimisticBias: Double) : this() {
@@ -58,5 +58,9 @@ class MCTSConfig {
 
     constructor(cardStrengthLevel: StrengthLevel) : this() {
         this.cardStrengthLevel = cardStrengthLevel
+    }
+
+    constructor(playoutSelectionPolicy: PlayoutSelectionPolicy?) : this() {
+        this.playoutSelectionPolicy = playoutSelectionPolicy
     }
 }

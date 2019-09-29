@@ -283,25 +283,26 @@ public class MCTS {
 	/**
 	 * Playout function for MCTS
 	 *
-	 * @param oldBoard
+	 * @param board
 	 * @return
 	 */
-	private double[] playout(Board oldBoard) {
+	private double[] playout(Board board) {
 		// Do not simulate the playout but estimate the score directly with a neural network
-		if (oldBoard.hasScoreEstimator())
-			return oldBoard.estimateScore();
+		if (board.hasScoreEstimator())
+			return board.estimateScore();
 
 		// INFO: Run multiple playouts and take average to get a more reliable outcome. If numPlayouts = 1 take the outcome directly
-		double[] scoreAggregate = new double[oldBoard.getQuantityOfPlayers()];
+		double[] scoreAggregate = new double[board.getQuantityOfPlayers()];
 		for (int i = 0; i < numPlayouts; i++) {
-			final double[] score = runPlayout(oldBoard.duplicate(false));
+			final double[] score = runPlayout(board.duplicate(false));
 			for (int j = 0; j < score.length; j++) {
 				scoreAggregate[j] += score[j];
 			}
 		}
-		for (int i = 0; i < scoreAggregate.length; i++) {
-			scoreAggregate[i] /= numPlayouts;
-		}
+		if (numPlayouts > 1)
+			for (int i = 0; i < scoreAggregate.length; i++)
+				scoreAggregate[i] /= numPlayouts;
+
 		return scoreAggregate;
 	}
 
