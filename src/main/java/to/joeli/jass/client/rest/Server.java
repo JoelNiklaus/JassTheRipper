@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.client.strategy.config.Config;
 import to.joeli.jass.client.strategy.config.MCTSConfig;
+import to.joeli.jass.client.strategy.config.RunMode;
 import to.joeli.jass.client.strategy.config.StrengthLevel;
 import to.joeli.jass.client.strategy.mcts.HeavyJassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.LightJassPlayoutSelectionPolicy;
@@ -36,6 +37,11 @@ public class Server {
 	public static final JassTheRipperJassStrategy HEAVY_PLAYOUT_STRATEGY = new JassTheRipperJassStrategy(
 			new Config(
 					new MCTSConfig(strengthLevel, new HeavyJassPlayoutSelectionPolicy())
+			));
+
+	public static final JassTheRipperJassStrategy RUNS_100000_STRATEGY = new JassTheRipperJassStrategy(
+			new Config(
+					new MCTSConfig(strengthLevel, RunMode.RUNS, 1)
 			));
 
 	// Base URI the Grizzly HTTP server will listen on

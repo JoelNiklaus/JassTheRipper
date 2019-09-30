@@ -47,6 +47,12 @@ class MCTSConfig {
         this.numPlayouts = numPlayouts
     }
 
+    constructor(cardStrengthLevel: StrengthLevel, runMode: RunMode, numPlayouts: Int) : this() {
+        this.cardStrengthLevel = cardStrengthLevel
+        this.runMode = runMode
+        this.numPlayouts = numPlayouts
+    }
+
     constructor(finalSelectionPolicy: FinalSelectionPolicy) : this() {
         this.finalSelectionPolicy = finalSelectionPolicy
     }

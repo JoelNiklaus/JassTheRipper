@@ -100,9 +100,11 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
                 logger.info("Using a random playout to determine the score")
         }
 
-        if (mctsConfig.runMode === RunMode.RUNS)
+        if (mctsConfig.runMode === RunMode.RUNS) {
+            if (mctsConfig.cardStrengthLevel == StrengthLevel.HSLU_SERVER) // small hack to make it to 1000000 simulations every time
+                numRuns = 100000L / numDeterminizations
             return mcts.runForRuns(jassBoard, numDeterminizations, numRuns)
-        else if (mctsConfig.runMode === RunMode.TIME)
+        } else if (mctsConfig.runMode === RunMode.TIME)
             return mcts.runForTime(jassBoard, numDeterminizations, System.currentTimeMillis() + strengthLevel.maxThinkingTime - BUFFER_TIME_MILLIS)
         return null
     }

@@ -58,7 +58,11 @@ Start REST endpoint:
 nohup ./gradlew startServer > nohup.out &
 ```
 
-REST endpoint available over http://167.99.133.247/jass or http://jasstheripper.joeli.to/jass
+JassTheRipper bots:
+- http://jasstheripper.joeli.to/random-playout
+- http://jasstheripper.joeli.to/light-playout
+- http://jasstheripper.joeli.to/heavy-playout
+- http://jasstheripper.joeli.to/runs-100000
 
 HSLU opponents:
 - http://10.180.39.12:5001/randomsimple
