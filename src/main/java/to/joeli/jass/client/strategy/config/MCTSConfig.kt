@@ -63,4 +63,9 @@ class MCTSConfig {
     constructor(playoutSelectionPolicy: PlayoutSelectionPolicy?) : this() {
         this.playoutSelectionPolicy = playoutSelectionPolicy
     }
+
+    constructor(cardStrengthLevel: StrengthLevel, playoutSelectionPolicy: PlayoutSelectionPolicy?) : this() {
+        this.cardStrengthLevel = cardStrengthLevel
+        this.playoutSelectionPolicy = playoutSelectionPolicy
+    }
 }

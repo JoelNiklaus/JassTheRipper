@@ -1,8 +1,14 @@
-package to.joeli.jass.client.rest;
+package to.joeli.jass.client.rest.resources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.game.GameSession;
+import to.joeli.jass.client.rest.requests.Hand;
+import to.joeli.jass.client.rest.requests.JassRequest;
+import to.joeli.jass.client.rest.requests.Trick;
+import to.joeli.jass.client.rest.responses.CardResponse;
+import to.joeli.jass.client.rest.responses.TrumpResponse;
+import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
@@ -15,13 +21,11 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
-/**
- * Root resource (exposed at "jass" path)
- */
-@Path("jass")
-public class JassResource {
+public abstract class AbstractJassResource {
 
-	public static final Logger logger = LoggerFactory.getLogger(JassResource.class);
+	public static final Logger logger = LoggerFactory.getLogger(AbstractJassResource.class);
+
+	protected abstract JassTheRipperJassStrategy getJassStrategy();
 
 	/**
 	 * Method handling HTTP GET requests. The returned object will be sent
@@ -32,7 +36,7 @@ public class JassResource {
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getIt() {
-		return "Got it!";
+		return "The bot is available :)";
 	}
 
 	@POST
@@ -40,17 +44,18 @@ public class JassResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response selectTrump(JassRequest jassRequest) {
-		final EnumSet<Card> availableCards = getAvailableCards(jassRequest);
-		final boolean shifted = jassRequest.getTss() == 1;
 		GameSession gameSession = GameSessionBuilder.newSession()
 				.withHSLUInterface(jassRequest.getDealer())
 				.createGameSession();
 		int seatId = gameSession.getTrumpfSelectingPlayer().getSeatId();
+		final boolean shifted = jassRequest.getTss() == 1;
 		if (shifted)
 			seatId = (seatId + 2) % 4;
+
 		if (seatId != jassRequest.getCurrentPlayer())
 			throw new AssertionError("The local current player does not match the server's current player.");
-		final Mode trumpf = Server.jassStrategy.chooseTrumpf(availableCards, gameSession, shifted);
+
+		final Mode trumpf = getJassStrategy().chooseTrumpf(getAvailableCards(jassRequest), gameSession, shifted);
 
 		return Response
 				.status(Response.Status.OK)
@@ -64,15 +69,19 @@ public class JassResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response playCard(JassRequest jassRequest) {
 		List<Card> playedCards = new ArrayList<>();
-		jassRequest.getTricks().forEach(trick -> playedCards.addAll(trick.getCardsTrick()));
+		for (Trick trick : jassRequest.getTricks())
+			playedCards.addAll(trick.getCardsTrick());
+		final boolean shifted = jassRequest.getTss() == 1;
 		GameSession gameSession = GameSessionBuilder.newSession()
 				.withHSLUInterface(jassRequest.getDealer())
-				.withStartedGame(Mode.from(jassRequest.getTrump()), jassRequest.getTss() == 1)
+				.withStartedGame(Mode.from(jassRequest.getTrump()), shifted)
 				.withCardsPlayed(playedCards)
 				.createGameSession();
+
 		if (gameSession.getCurrentPlayer().getSeatId() != jassRequest.getCurrentPlayer())
 			throw new AssertionError("The local current player does not match the server's current player.");
-		final Card card = Server.jassStrategy.chooseCard(getAvailableCards(jassRequest), gameSession);
+
+		final Card card = getJassStrategy().chooseCard(getAvailableCards(jassRequest), gameSession);
 
 		return Response
 				.status(Response.Status.OK)

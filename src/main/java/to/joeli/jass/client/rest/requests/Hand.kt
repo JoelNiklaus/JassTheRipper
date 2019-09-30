@@ -1,4 +1,4 @@
-package to.joeli.jass.client.rest
+package to.joeli.jass.client.rest.requests
 
 import to.joeli.jass.game.cards.Card
 import java.util.function.Consumer

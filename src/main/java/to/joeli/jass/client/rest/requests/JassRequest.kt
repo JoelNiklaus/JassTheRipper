@@ -1,4 +1,4 @@
-package to.joeli.jass.client.rest
+package to.joeli.jass.client.rest.requests
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

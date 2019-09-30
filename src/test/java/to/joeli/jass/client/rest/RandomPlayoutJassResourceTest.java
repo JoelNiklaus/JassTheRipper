@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import to.joeli.jass.client.rest.requests.JassRequest;
+import to.joeli.jass.client.rest.responses.CardResponse;
+import to.joeli.jass.client.rest.responses.TrumpResponse;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
@@ -19,13 +22,15 @@ import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 
-public class JassResourceTest {
+public class RandomPlayoutJassResourceTest {
 
 	private HttpServer server;
 	private WebTarget target;
 
+	private String path = "random-playout";
+
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		// start the server
 		server = Server.startServer();
 		// create the client
@@ -40,12 +45,12 @@ public class JassResourceTest {
 	}
 
 	/**
-	 * Test to see that the message "Got it!" is sent in the response.
+	 * Test to see that the message "The bot is available :)" is sent in the response.
 	 */
 	@Test
 	public void testGetIt() {
-		String responseMsg = target.path("jass").request().get(String.class);
-		assertEquals("Got it!", responseMsg);
+		String responseMsg = target.path(path).request().get(String.class);
+		assertEquals("The bot is available :)", responseMsg);
 	}
 
 	@Test
@@ -53,7 +58,7 @@ public class JassResourceTest {
 		String jsonString = "{\"version\": \"V0.1\", \"dealer\": 0, \"currentPlayer\": 3, \"tricks\": [], \"jassTyp\": \"SCHIEBER_1000\"," +
 				" \"player\": [{\"hand\": []}, {\"hand\": []}, {\"hand\": []}, {\"hand\": [\"D10\", \"HA\", \"HJ\", \"SQ\", \"S10\", \"S7\", \"S6\", \"CK\", \"C7\"]}]}";
 
-		Response response = target.path("jass").path("select_trump")
+		Response response = target.path(path).path("select_trump")
 				.request(MediaType.APPLICATION_JSON)
 				.post(getEntity(jsonString));
 
@@ -67,7 +72,7 @@ public class JassResourceTest {
 		String jsonString = "{\"version\": \"V0.1\", \"dealer\": 0, \"currentPlayer\": 1, \"tss\": 1, \"tricks\": [], \"jassTyp\": \"SCHIEBER_1000\"," +
 				" \"player\": [{\"hand\": []}, {\"hand\": [\"DJ\", \"D9\", \"H6\", \"SK\", \"CA\", \"CJ\", \"C9\", \"C8\", \"C6\"]}, {\"hand\": []}, {\"hand\": []}]}";
 
-		Response response = target.path("jass").path("select_trump")
+		Response response = target.path(path).path("select_trump")
 				.request(MediaType.APPLICATION_JSON)
 				.post(getEntity(jsonString));
 
@@ -83,7 +88,7 @@ public class JassResourceTest {
 				" {\"cards\": [\"DQ\", \"DA\", \"D8\"], \"first\": 0}], \"jassTyp\": \"SCHIEBER_1000\", " +
 				"\"player\": [{\"hand\": []}, {\"hand\": [\"D6\", \"HA\", \"HK\", \"H9\", \"H7\", \"H6\", \"C8\", \"C7\"]}, {\"hand\": []}, {\"hand\": []}]}";
 
-		Response response = target.path("jass").path("play_card")
+		Response response = target.path(path).path("play_card")
 				.request(MediaType.APPLICATION_JSON)
 				.post(getEntity(jsonString));
 
@@ -100,7 +105,7 @@ public class JassResourceTest {
 				"{\"cards\": [\"HJ\"], \"first\": 3}], \"jassTyp\": \"SCHIEBER_1000\", " +
 				"\"player\": [{\"hand\": []}, {\"hand\": []}, {\"hand\": [\"DK\", \"D9\", \"H10\", \"SA\", \"CQ\", \"C9\", \"C7\"]}, {\"hand\": []}]}";
 
-		Response response = target.path("jass").path("play_card")
+		Response response = target.path(path).path("play_card")
 				.request(MediaType.APPLICATION_JSON)
 				.post(getEntity(jsonString));
 
@@ -118,7 +123,7 @@ public class JassResourceTest {
 				"{\"cards\": [\"CJ\", \"C10\", \"C7\"], \"first\": 0}], \"jassTyp\": \"SCHIEBER_1000\", " +
 				"\"player\": [{\"hand\": []}, {\"hand\": [\"D6\", \"HA\", \"HK\", \"H9\", \"H7\", \"C8\"]}, {\"hand\": []}, {\"hand\": []}]}";
 
-		Response response = target.path("jass").path("play_card")
+		Response response = target.path(path).path("play_card")
 				.request(MediaType.APPLICATION_JSON)
 				.post(getEntity(jsonString));
 
@@ -141,7 +146,7 @@ public class JassResourceTest {
 				"{\"cards\": [\"DJ\", \"CK\", \"H7\"], \"first\": 0}], \"jassTyp\": \"SCHIEBER_1000\", " +
 				"\"player\": [{\"hand\": []}, {\"hand\": [\"SJ\"]}, {\"hand\": []}, {\"hand\": []}]}";
 
-		Response response = target.path("jass").path("play_card")
+		Response response = target.path(path).path("play_card")
 				.request(MediaType.APPLICATION_JSON)
 				.post(getEntity(jsonString));
 
@@ -164,7 +169,7 @@ public class JassResourceTest {
 				"{\"cards\": [\"DJ\", \"CK\", \"H7\"], \"first\": 0}], \"jassTyp\": \"SCHIEBER_1000\", " +
 				"\"player\": [{\"hand\": []}, {\"hand\": [\"SJ\"]}, {\"hand\": []}, {\"hand\": []}]}";
 
-		Response response = target.path("jass").path("game_info")
+		Response response = target.path(path).path("game_info")
 				.request()
 				.post(getEntity(jsonString));
 

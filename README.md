@@ -53,14 +53,22 @@ Connect to digitalocean server
 ssh -i ~/.ssh/digitalocean root@167.99.133.247
 ```
 
+Start REST endpoint: 
+```bash
+nohup ./gradlew startServer > nohup.out &
+```
+
 REST endpoint available over http://167.99.133.247/jass or http://jasstheripper.joeli.to/jass
 
-HSLU opponents: 
+HSLU opponents:
 - http://10.180.39.12:5001/randomsimple
-- http://10.180.39.12:5001/soismcts-10000
-- http://10.180.39.12:5001/soismcts-100000
-- http://10.180.39.12:5001/dnn-max-policy
+- http://10.180.39.12:5001/soismcts-100000-trump
+- http://10.180.39.12:5001/dnn-max-policy-trump
+- http://10.180.39.12:5001/dnn-max-value-trump
+- http://10.180.39.12:5001/prob-ismcts-trump
 
+
+Tournament Server available on: https://jass-server.abiz.ch/
 
 This client allows you to easily develop a bot for the Jass challenge.
 

@@ -9,6 +9,9 @@ import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.client.strategy.config.Config;
 import to.joeli.jass.client.strategy.config.MCTSConfig;
 import to.joeli.jass.client.strategy.config.StrengthLevel;
+import to.joeli.jass.client.strategy.mcts.HeavyJassPlayoutSelectionPolicy;
+import to.joeli.jass.client.strategy.mcts.LightJassPlayoutSelectionPolicy;
+import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,9 +21,22 @@ import java.net.URI;
  */
 public class Server {
 
-	private static MCTSConfig mctsConfig = new MCTSConfig(StrengthLevel.HSLU_SERVER);
-	private static Config config = new Config(mctsConfig);
-	static JassTheRipperJassStrategy jassStrategy = new JassTheRipperJassStrategy(config);
+	private static final StrengthLevel strengthLevel = StrengthLevel.HSLU_SERVER;
+
+	public static final JassTheRipperJassStrategy RANDOM_PLAYOUT_STRATEGY = new JassTheRipperJassStrategy(
+			new Config(
+					new MCTSConfig(strengthLevel, (PlayoutSelectionPolicy) null)
+			));
+
+	public static final JassTheRipperJassStrategy LIGHT_PLAYOUT_STRATEGY = new JassTheRipperJassStrategy(
+			new Config(
+					new MCTSConfig(strengthLevel, new LightJassPlayoutSelectionPolicy())
+			));
+
+	public static final JassTheRipperJassStrategy HEAVY_PLAYOUT_STRATEGY = new JassTheRipperJassStrategy(
+			new Config(
+					new MCTSConfig(strengthLevel, new HeavyJassPlayoutSelectionPolicy())
+			));
 
 	// Base URI the Grizzly HTTP server will listen on
 	public static final String BASE_URI = "http://0.0.0.0/";
@@ -35,8 +51,8 @@ public class Server {
 	 */
 	public static HttpServer startServer() {
 		// create a resource config that scans for JAX-RS resources and providers
-		// in com.example package
-		final ResourceConfig rc = new ResourceConfig().packages("to.joeli.jass.client.rest");
+		// in to.joeli.jass.client.rest.resources package
+		final ResourceConfig rc = new ResourceConfig().packages("to.joeli.jass.client.rest.resources");
 
 		// create and start a new instance of grizzly http server
 		// exposing the Jersey application at BASE_URI
@@ -54,7 +70,9 @@ public class Server {
 		logger.info("Jersey app started with WADL available at {}sapplication.wadl", BASE_URI);
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			server.shutdownNow();
-			jassStrategy.shutDown();
+			RANDOM_PLAYOUT_STRATEGY.shutDown();
+			LIGHT_PLAYOUT_STRATEGY.shutDown();
+			HEAVY_PLAYOUT_STRATEGY.shutDown();
 			logger.info("Server shut down gracefully.");
 		}));
 	}

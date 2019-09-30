@@ -1,4 +1,4 @@
-package to.joeli.jass.client.rest
+package to.joeli.jass.client.rest.responses
 
 import to.joeli.jass.game.mode.Mode
 
