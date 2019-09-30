@@ -71,7 +71,6 @@ HSLU opponents:
 - http://10.180.39.12:5001/dnn-max-value-trump
 - http://10.180.39.12:5001/prob-ismcts-trump
 
-
 Tournament Server available on: https://jass-server.abiz.ch/
 
 This client allows you to easily develop a bot for the Jass challenge.
@@ -82,7 +81,7 @@ https://github.com/webplatformz/challenge/wiki
 ###JassChallenge2017
 If you are an enrolled student in switzerland, you are welcome to participate the **JassChallenge2017** competition in April '17
 
----------------------- LINK TO OUR REGTISTRATION PAGE ----------------------
+---------------------- LINK TO OUR REGISTRATION PAGE ----------------------
 
 
 

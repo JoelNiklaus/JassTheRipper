@@ -10,6 +10,14 @@ mainClassName = "to.joeli.jass.Application"
 def javaVersion = 1.8 // We have to use 1.8 because of the server
 def jerseyVersion = 2.29
 
+sourceSets {
+    main {
+        resources {
+            exclude 'episodes'
+        }
+    }
+}
+
 compileJava {
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -44,7 +52,7 @@ dependencies {
     compile "org.tensorflow:tensorflow:1.13.1" // 1.14.0 does somehow not work!
 
     // CBOR
-    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.4'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.10'
 
     // JSON
     compile 'com.google.code.gson:gson:2.8.5'
