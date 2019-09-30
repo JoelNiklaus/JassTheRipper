@@ -54,18 +54,22 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.9'
     compile 'commons-io:commons-io:2.6'
 
-    // Automated Benchmarks
-    testCompile 'org.seleniumhq.selenium:selenium-java:3.141.59'
-
-    // JSON Interpretation
-    testCompile 'com.shazam:shazamcrest:0.11'
-
     // REST Endpoint
     compile "org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion"
     compile "org.glassfish.jersey.core:jersey-client:$jerseyVersion"
     compile "org.glassfish.jersey.media:jersey-media-json-jackson:$jerseyVersion"
     compile "org.glassfish.jersey.containers:jersey-container-grizzly2-http:$jerseyVersion"
     compile "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
+
+    // Automated Benchmarks
+    testCompile 'org.seleniumhq.selenium:selenium-java:3.141.59'
+
+    // JSON Interpretation
+    testCompile 'com.shazam:shazamcrest:0.11'
+
+    // Micro Benchmarks
+    testCompile 'org.openjdk.jmh:jmh-core:1.21'
+    testCompile 'org.openjdk.jmh:jmh-generator-annprocess:1.21'
 
     // Tests
     testCompile 'junit:junit:4.12'
