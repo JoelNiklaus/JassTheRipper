@@ -23,7 +23,6 @@ public class NeuralNetworkBenchmarkTest {
 	 */
 	@Test
 	public void testScoreEstimatorAgainstRandomPlayout() {
-		// NOTE: Because the MCTS Trumpf Selection almost never shifts, it is inferior to the rule-based one!
 		if (RUN_BENCHMARKS) {
 			Config[] configs = {
 					new Config(true, true, false),

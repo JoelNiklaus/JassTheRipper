@@ -1,12 +1,12 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.junit.Test;
 import to.joeli.jass.client.game.GameSession;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
 import to.joeli.jass.game.Trumpf;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -35,6 +35,8 @@ public class TrumpfSelectionHelperTest {
 	private Set<Card> shiftOrBottomUp = EnumSet.of(Card.CLUB_SIX, Card.CLUB_EIGHT, Card.CLUB_NINE, Card.DIAMOND_SEVEN, Card.DIAMOND_EIGHT, Card.HEART_JACK, Card.HEART_SEVEN, Card.SPADE_EIGHT, Card.SPADE_NINE);
 	private Set<Card> definitelyShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_QUEEN, Card.DIAMOND_EIGHT, Card.DIAMOND_QUEEN, Card.HEART_EIGHT, Card.HEART_QUEEN, Card.SPADE_EIGHT, Card.SPADE_TEN);
 	private Set<Card> maybeShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_KING, Card.DIAMOND_NINE, Card.DIAMOND_KING, Card.HEART_SIX, Card.HEART_JACK, Card.SPADE_EIGHT, Card.SPADE_KING);
+	private Set<Card> topDownNotQuiteGoodEnough = EnumSet.of(Card.CLUB_ACE, Card.CLUB_JACK, Card.CLUB_NINE, Card.DIAMOND_ACE, Card.DIAMOND_TEN, Card.HEART_ACE, Card.HEART_JACK, Card.SPADE_KING, Card.SPADE_EIGHT);
+	private Set<Card> bottomUpNotQuiteGoodEnough = EnumSet.of(Card.CLUB_SIX, Card.CLUB_NINE, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_TEN, Card.HEART_SIX, Card.HEART_NINE, Card.SPADE_SEVEN, Card.SPADE_QUEEN);
 
 
 	@Test
@@ -234,5 +236,28 @@ public class TrumpfSelectionHelperTest {
 		assertTrue(spades < shiftValue);
 		assertTrue(clubs < shiftValue);
 		assertNotEquals(Mode.shift(), jassStrategy.chooseTrumpf(cards, gameSession, true));
+	}
+
+	@Test
+	public void testDoesNotChooseTopDown() {
+		Set<Card> cards = topDownNotQuiteGoodEnough;
+		int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+		int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);
+		int spades = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.SPADES);
+		int clubs = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.CLUBS);
+		int obeAbe = TrumpfSelectionHelper.rateObeabe(cards);
+		int undeUfe = TrumpfSelectionHelper.rateUndeufe(cards);
+		System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
+		System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
+		assertNotEquals(Mode.topDown(), jassStrategy.chooseTrumpf(cards, gameSession, true));
+		assertEquals(Mode.trump(Color.CLUBS), jassStrategy.chooseTrumpf(cards, gameSession, true));
+	}
+
+	@Test
+	public void testUndeUfeRatingEqualsObeAbeRatingForEquivalentCards() {
+		int obeAbe = TrumpfSelectionHelper.rateObeabe(topDownNotQuiteGoodEnough);
+		int undeUfe = TrumpfSelectionHelper.rateUndeufe(bottomUpNotQuiteGoodEnough);
+		System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
+		assertEquals(undeUfe, obeAbe);
 	}
 }

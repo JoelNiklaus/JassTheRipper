@@ -1,11 +1,11 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import to.joeli.jass.game.Trumpf;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.cards.Color;
 import to.joeli.jass.game.mode.Mode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -274,6 +274,7 @@ public class TrumpfSelectionHelper {
 			Card nextCard = sortedCardOfColor.get(0);
 			// Estimate how safe you Stich with that card
 			int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
+			lowerCards += numberOfCardsInbetween;
 			safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
 			// How safe is the Stich? * Stichvalue
 			rating += safety * 20;
@@ -296,13 +297,13 @@ public class TrumpfSelectionHelper {
 		return countAces >= 2;
 	}
 
-	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsInbetween) {
+	private static float safetyOfStich(int numberOfCards, int higherCards, Card nextCard, Card lastCard, int numberOfCardsBetween) {
 		// Have the next-higher card => probability to stich is the same as with the next higher card
-		if (numberOfCardsInbetween == 0)
+		if (numberOfCardsBetween == 0)
 			return 1;
 			// Probability to stich is 1 - the probability, that enemy has a higher card + enough cards to discard
 		else
-			return 1 - ((float) 2 / 3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsInbetween));
+			return 1 - ((float) 2 / 3 * enemenyHasNoMoreCards(numberOfCards, higherCards, numberOfCardsBetween));
 	}
 
 	private static float enemenyHasNoMoreCards(int numberOfMyCards, int higherCards, int numberOfCardsBetween) {
