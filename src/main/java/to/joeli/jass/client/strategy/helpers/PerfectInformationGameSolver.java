@@ -135,9 +135,12 @@ public class PerfectInformationGameSolver {
 			advisableCards.addAll(JassHelper.getTrumpfs(possibleCards, mode));
 
 		// BOCK SPIELEN
-		// TODO This method is a performance bottleneck!
+		// TODO find different method to find bocks!
+		// TODO game.getAlreadyPlayedCards() method is a performance bottleneck!
+
 		final Map<Color, List<Card>> orderedRemainingCards = JassHelper.getCardsStillInGameInStrengthOrder(game);
 		final Set<Card> bocks = JassHelper.getBocks(game.getMode(), orderedRemainingCards);
+		//final Set<Card> bocks = JassHelper.getBocks(game);
 		for (Card bock : bocks)
 			if (possibleCards.contains(bock))
 				advisableCards.add(bock);

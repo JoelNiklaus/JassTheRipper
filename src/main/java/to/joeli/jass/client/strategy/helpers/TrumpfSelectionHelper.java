@@ -92,7 +92,7 @@ public class TrumpfSelectionHelper {
 			// rateObeabe and rateUndeUfe are 180 at max; 180 = can make all Stich
 			float noTrumpfWeight = 0.9f; // INFO: slightly favor trumpf to topdown and bottomup because bot is probably better in cardplay relative to humans there
 			if (isGschobe)
-				noTrumpfWeight -= 0.1f; // INFO: make obeabe and undeufe just a little bit more unlikely because when shifted there is more risk involved
+				noTrumpfWeight -= 0.15f; // INFO: make obeabe and undeufe just a little bit more unlikely because when shifted there is more risk involved
 			trumpfRatings.put(Mode.topDown(), Math.round(noTrumpfWeight * rateObeabe(availableCards)));
 			trumpfRatings.put(Mode.bottomUp(), Math.round(noTrumpfWeight * rateUndeufe(availableCards)));
 		}
@@ -149,14 +149,14 @@ public class TrumpfSelectionHelper {
 		Set<Card> cardsOfColor = JassHelper.getCardsOfColor(cards, color);
 		if (cardsOfColor.size() <= 1)
 			return 0;
-		List<Card> cardsOfColorL = new ArrayList<>(cardsOfColor);
+		List<Card> cardsOfColorTemp = new ArrayList<>(cardsOfColor);
 		boolean[] prospectiveTrumpfCards = new boolean[9];
 		for (int i = 0; i < 9; i++) {
-			if (cardsOfColorL.isEmpty())
+			if (cardsOfColorTemp.isEmpty())
 				break;
-			if (cardsOfColorL.get(0).getRank() == i + 1) {
+			if (cardsOfColorTemp.get(0).getRank() == i + 1) {
 				prospectiveTrumpfCards[i] = true;
-				cardsOfColorL.remove(0);
+				cardsOfColorTemp.remove(0);
 			}
 		}
 		int rating = 0;
@@ -208,42 +208,41 @@ public class TrumpfSelectionHelper {
 			else
 				rating += 30;
 
-		// Try to consider the value of the other cards; is kind of similar to ObeAbe, but a lot less valuable…
+		// Try to consider the value of the "Handkarten" (cards of the other colors); is kind of similar to ObeAbe, but a lot less valuable…
 		for (Color c : Color.values()) {
-			// Does it make sense to exclude the own color?
-			//if (c != color)
-			rating += (rateObeabeColor(cards, c) / 4);
+			if (c != color)
+				rating += (rateObeabeColor(cards, c) / 3);
 		}
 		return rating;
 	}
 
 	public static int rateObeabeColor(Set<Card> cards, Color color) {
 		// Get the cards in descending order
-		List<Card> sortedCardOfColor = JassHelper.sortCardsOfColorDescending(cards, color);
-		if (sortedCardOfColor.isEmpty())
+		List<Card> sortedCardsOfColor = JassHelper.sortCardsOfColorDescending(cards, color);
+		if (sortedCardsOfColor.isEmpty())
 			return 0;
 		// Number of cards I have that are higher than the nextCard
 		int higherCards = 0;
 		// Number of the cards I have of this color
-		int numberOfMyCards = sortedCardOfColor.size();
+		int numberOfMyCards = sortedCardsOfColor.size();
 		// Estimate how safe you make a Stich with your highest card
-		float safety = calculateInitialSafetyObeabe(sortedCardOfColor);
+		float safety = calculateInitialSafetyObeabe(sortedCardsOfColor);
 		// The last card rated
-		Card lastCard = sortedCardOfColor.get(0);
+		Card lastCard = sortedCardsOfColor.get(0);
 		// 1 Stich entspricht 20 ratingPoints
 		float rating = safety * 20;
 		// remove the last card tested
-		sortedCardOfColor.remove(lastCard);
-		while (!sortedCardOfColor.isEmpty()) {
+		sortedCardsOfColor.remove(lastCard);
+		while (!sortedCardsOfColor.isEmpty()) {
 			// The next card to be tested
-			Card nextCard = sortedCardOfColor.get(0);
+			Card nextCard = sortedCardsOfColor.get(0);
 			// Estimate how safe you Stich with that card
-			int numberOfCardsInbetween = lastCard.getRank() - nextCard.getRank() - 1;
-			higherCards += numberOfCardsInbetween;
-			safety *= safetyOfStich(numberOfMyCards, higherCards, nextCard, lastCard, numberOfCardsInbetween);
+			int numberOfCardsBetween = lastCard.getRank() - nextCard.getRank() - 1;
+			higherCards += numberOfCardsBetween;
+			safety *= safetyOfStich(numberOfMyCards, higherCards, nextCard, lastCard, numberOfCardsBetween);
 			// How safe is the Stich? * Stichvalue
 			rating += safety * 20;
-			sortedCardOfColor.remove(0);
+			sortedCardsOfColor.remove(0);
 			// One card is higher than the last
 			higherCards++;
 			lastCard = nextCard;
@@ -254,31 +253,31 @@ public class TrumpfSelectionHelper {
 
 	public static int rateUndeufeColor(Set<Card> cards, Color color) {
 		// Get the cards in ascending order
-		List<Card> sortedCardOfColor = JassHelper.sortCardsOfColorAscending(cards, color);
-		if (sortedCardOfColor.isEmpty())
+		List<Card> sortedCardsOfColor = JassHelper.sortCardsOfColorAscending(cards, color);
+		if (sortedCardsOfColor.isEmpty())
 			return 0;
 		// Number of cards I have that are lower than the nextCard
 		int lowerCards = 0;
 		// Number of the cards I have of this color
-		int numberOfMyCards = sortedCardOfColor.size();
+		int numberOfMyCards = sortedCardsOfColor.size();
 		// Estimate how safe you make a Stich with your highest card
-		float safety = calculateInitialSafetyUndeUfe(sortedCardOfColor);
+		float safety = calculateInitialSafetyUndeUfe(sortedCardsOfColor);
 		// The last card rated
-		Card lastCard = sortedCardOfColor.get(0);
+		Card lastCard = sortedCardsOfColor.get(0);
 		// 1 Stich entspricht 20 ratingPoints
 		float rating = safety * 20;
 		// remove the last card tested
-		sortedCardOfColor.remove(lastCard);
-		while (!sortedCardOfColor.isEmpty()) {
+		sortedCardsOfColor.remove(lastCard);
+		while (!sortedCardsOfColor.isEmpty()) {
 			// The next card to be tested
-			Card nextCard = sortedCardOfColor.get(0);
+			Card nextCard = sortedCardsOfColor.get(0);
 			// Estimate how safe you Stich with that card
-			int numberOfCardsInbetween = nextCard.getRank() - lastCard.getRank() - 1;
-			lowerCards += numberOfCardsInbetween;
-			safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsInbetween);
+			int numberOfCardsBetween = nextCard.getRank() - lastCard.getRank() - 1;
+			lowerCards += numberOfCardsBetween;
+			safety *= safetyOfStich(numberOfMyCards, lowerCards, nextCard, lastCard, numberOfCardsBetween);
 			// How safe is the Stich? * Stichvalue
 			rating += safety * 20;
-			sortedCardOfColor.remove(0);
+			sortedCardsOfColor.remove(0);
 			// One card is higher than the last
 			lowerCards++;
 			lastCard = nextCard;
