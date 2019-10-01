@@ -29,7 +29,7 @@ public class MCTS {
 	private PlayoutSelectionPolicy playoutSelectionPolicy;
 
 	private ExecutorService threadPool;
-	private ArrayList<FutureTask<Move>> futures;
+	private ArrayList<FutureTask<Node>> futures;
 
 	private int numRuns;
 	private int numDeterminizations;
@@ -47,7 +47,7 @@ public class MCTS {
 	public Move runForTime(Board startingBoard, int numDeterminizations, long endingTime) throws MCTSException {
 		if (!rootParallelisationEnabled) {
 			logger.info("Only running one determinization");
-			return executeByTime(startingBoard, endingTime);
+			return executeByTime(startingBoard, endingTime).getMove();
 		} else {
 			this.numDeterminizations = numDeterminizations;
 			logger.info("Running {} determinizations", numDeterminizations);
@@ -58,7 +58,7 @@ public class MCTS {
 
 	private void submitTimeTasks(Board startingBoard, long endingTime) {
 		for (int i = 0; i < numDeterminizations; i++)
-			futures.add((FutureTask<Move>) threadPool.submit(new MCTSTaskTime(startingBoard, endingTime)));
+			futures.add((FutureTask<Node>) threadPool.submit(new MCTSTaskTime(startingBoard, endingTime)));
 	}
 
 
@@ -72,7 +72,7 @@ public class MCTS {
 	public Move runForRuns(Board startingBoard, int numDeterminizations, long runs) throws MCTSException {
 		if (!rootParallelisationEnabled) {
 			logger.info("Only running one determinization :(");
-			return executeByRuns(startingBoard, runs);
+			return executeByRuns(startingBoard, runs).getMove();
 		} else {
 			this.numDeterminizations = numDeterminizations;
 			logger.info("Running {} determinizations :)", numDeterminizations);
@@ -84,7 +84,7 @@ public class MCTS {
 
 	private void submitRunsTasks(Board startingBoard, long runs) {
 		for (int i = 0; i < numDeterminizations; i++)
-			futures.add((FutureTask<Move>) threadPool.submit(new MCTSTaskRuns(startingBoard, runs)));
+			futures.add((FutureTask<Node>) threadPool.submit(new MCTSTaskRuns(startingBoard, runs)));
 	}
 
 
@@ -95,13 +95,13 @@ public class MCTS {
 	 * @param runs
 	 * @return the final move selected
 	 */
-	private Move executeByRuns(Board startingBoard, long runs) {
+	private Node executeByRuns(Board startingBoard, long runs) {
 		Node rootNode = new Node(startingBoard);
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < runs; i++)
 			select(startingBoard, rootNode);
 		logger.debug("Ran {} runs in {}ms.", runs, System.currentTimeMillis() - startTime);
-		return finalMoveSelection(rootNode);
+		return finalSelection(rootNode);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class MCTS {
 	 * @param endingTime
 	 * @return the final move selected
 	 */
-	private Move executeByTime(Board startingBoard, long endingTime) {
+	private Node executeByTime(Board startingBoard, long endingTime) {
 		Node rootNode = new Node(startingBoard);
 		long startTime = System.currentTimeMillis();
 		long runCounter = 0;
@@ -127,7 +127,7 @@ public class MCTS {
 			numRuns += runCounter;
 		}
 		logger.debug("Ran {} runs in {}ms.", runCounter, System.currentTimeMillis() - startTime);
-		return finalMoveSelection(rootNode);
+		return finalSelection(rootNode);
 	}
 
 	private Move collectResultsAndGetFinalSelectedMove() throws MCTSException {
@@ -137,17 +137,17 @@ public class MCTS {
 				Thread.sleep(1);
 			}
 
-			for (FutureTask<Move> future : futures) {
+			for (FutureTask<Node> future : futures) {
 				if (!future.isDone()) throw new AssertionError();
 			}
 
-			ArrayList<Move> moves = new ArrayList<>();
+			ArrayList<Node> finalNodes = new ArrayList<>();
 
-			// Collect all computed root nodes
-			for (FutureTask<Move> future : futures) {
-				final Move move = future.get();
-				if (move != null)
-					moves.add(move);
+			// Collect all final selected nodes
+			for (FutureTask<Node> future : futures) {
+				final Node node = future.get();
+				if (node != null)
+					finalNodes.add(node);
 			}
 
 			logger.info("The MCTS searched {} nodes per determinization", numRuns / numDeterminizations);
@@ -155,7 +155,7 @@ public class MCTS {
 				numRuns = 0;
 			}
 
-			return vote(moves);
+			return vote(finalNodes);
 
 		} catch (InterruptedException | ExecutionException e) {
 			logger.error("{}", e);
@@ -168,28 +168,39 @@ public class MCTS {
 	/**
 	 * This implements a majority vote from the different determinizations (mcts trees parallelised at the root)
 	 *
-	 * @param moves
+	 * @param nodes
 	 * @return
 	 * @throws MCTSException
 	 */
-	private Move vote(ArrayList<Move> moves) throws MCTSException {
-		HashMap<Move, Integer> numberOfSelections = new HashMap<>();
-		if (moves.isEmpty())
+	private Move vote(ArrayList<Node> nodes) throws MCTSException {
+		if (nodes.isEmpty())
 			throw new MCTSException("There are no moves to vote from. Maybe there was not enough time to explore the tree.");
 
-		for (Move move : moves) {
-			int number = 1;
-			if (numberOfSelections.containsKey(move)) {
-				number += numberOfSelections.get(move);
-			}
-			numberOfSelections.put(move, number);
-		}
-		// Print statistics so we can get insights into the decision process of the algorithm
-		numberOfSelections.forEach((move, numTimesSelected) -> logger.info("{} selected {} times.", move, numTimesSelected));
-		Map.Entry<Move, Integer> entryOptional = numberOfSelections.entrySet().stream()
-				.min(Map.Entry.comparingByValue(Collections.reverseOrder())).orElseThrow(() -> new IllegalStateException("There must be at least one move!"));
+		HashMap<Move, Integer> numSelections = new HashMap<>();
+		HashMap<Move, Double> summedFinalScores = new HashMap<>();
 
-		return entryOptional.getKey();
+		for (Node node : nodes) {
+			Move move = node.getMove();
+
+			int numSelectionsForMove = numSelections.getOrDefault(move, 0) + 1;
+			numSelections.put(move, numSelectionsForMove);
+
+			double summedFinalScoresForMove = summedFinalScores.getOrDefault(move, 0d) + node.getScoreForCurrentPlayer();
+			summedFinalScores.put(move, summedFinalScoresForMove);
+		}
+
+		// TODO use average final score (AFS) to behave according to risk profile. Example move not selected often but high AFS --> choose when risk-taking high
+		// TODO possibly not just choose move with most selections but bias it with AFS
+		// Print statistics so we can get insights into the decision process of the algorithm
+		numSelections.forEach((move, numTimesSelected) -> {
+			int averageFinalScore = (int) Math.round(summedFinalScores.get(move) / numTimesSelected);
+			logger.info("{} selected {} times with average final score {}", String.format("%1$-3s", move), String.format("%1$2d", numTimesSelected), String.format("%1$3d", averageFinalScore));
+		});
+
+		return numSelections.entrySet().stream()
+				.max(Map.Entry.comparingByValue())
+				.orElseThrow(() -> new IllegalStateException("There must be at least one move!"))
+				.getKey();
 	}
 
 	/**
@@ -405,26 +416,20 @@ public class MCTS {
 	 * actually make.
 	 *
 	 * @param node this is the node whose children are considered
-	 * @return the best Move the algorithm can find or null if the node is invalid
+	 * @return the node with the best Move the algorithm can find or null if the node is invalid
 	 */
-	private Move finalMoveSelection(Node node) {
+	private Node finalSelection(Node node) {
 		if (!node.isValid()) // if there was no run completed
 			return null;
 
-		Node finalMove;
 		switch (finalSelectionPolicy) {
 			case MAX_CHILD:
-				finalMove = maxChild(node);
-				break;
+				return maxChild(node);
 			case ROBUST_CHILD:
-				finalMove = robustChild(node);
-				break;
+				return robustChild(node);
 			default:
-				finalMove = robustChild(node);
-				break;
+				return robustChild(node);
 		}
-
-		return finalMove.getMove();
 	}
 
 	/**
@@ -458,7 +463,7 @@ public class MCTS {
 		ArrayList<Node> bestNodes = new ArrayList<>();
 
 		for (Node s : node.getChildren()) {
-			tempBest = s.getScore()[node.getPlayer()];
+			tempBest = s.getScores()[node.getPlayer()];
 			tempBest += s.getOpti()[node.getPlayer()] * optimisticBias;
 			tempBest += s.getPess()[node.getPlayer()] * pessimisticBias;
 			bestValue = getBestValue(bestValue, tempBest, bestNodes, s);
@@ -591,12 +596,10 @@ public class MCTS {
 	 * @param tasks
 	 * @return
 	 */
-	private boolean checkDone(ArrayList<FutureTask<Move>> tasks) {
-		for (FutureTask<Move> task : tasks) {
-			if (!task.isDone()) {
+	private boolean checkDone(ArrayList<FutureTask<Node>> tasks) {
+		for (FutureTask<Node> task : tasks)
+			if (!task.isDone())
 				return false;
-			}
-		}
 
 		return true;
 	}
@@ -605,7 +608,7 @@ public class MCTS {
 		this.random = new Random(seed);
 	}
 
-	protected abstract class MCTSTask implements Callable<Move> {
+	protected abstract class MCTSTask implements Callable<Node> {
 		protected Board board;
 
 		protected MCTSTask(Board board) {
@@ -627,7 +630,7 @@ public class MCTS {
 		}
 
 		@Override
-		public Move call() {
+		public Node call() {
 			return executeByTime(board, endingTime);
 		}
 	}
@@ -645,7 +648,7 @@ public class MCTS {
 		}
 
 		@Override
-		public Move call() {
+		public Node call() {
 			return executeByRuns(board, runs);
 		}
 	}

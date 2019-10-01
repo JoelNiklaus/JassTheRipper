@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Node {
-	private double[] score;
+	private double[] scores;
 	private double games;
 	private Move move;
 	private List<Node> unvisitedChildren;
@@ -26,7 +26,7 @@ public class Node {
 	public Node(Board board) {
 		children = new ArrayList<>();
 		player = board.getCurrentPlayer();
-		score = new double[board.getQuantityOfPlayers()];
+		scores = new double[board.getQuantityOfPlayers()];
 		pess = new double[board.getQuantityOfPlayers()];
 		opti = new double[board.getQuantityOfPlayers()];
 		for (int i = 0; i < board.getQuantityOfPlayers(); i++)
@@ -47,7 +47,7 @@ public class Node {
 		Board tempBoard = board.duplicate(false);
 		tempBoard.makeMove(move);
 		player = tempBoard.getCurrentPlayer();
-		score = new double[board.getQuantityOfPlayers()];
+		scores = new double[board.getQuantityOfPlayers()];
 		pess = new double[board.getQuantityOfPlayers()];
 		opti = new double[board.getQuantityOfPlayers()];
 		for (int i = 0; i < board.getQuantityOfPlayers(); i++)
@@ -62,7 +62,7 @@ public class Node {
 	 * @return
 	 */
 	public double upperConfidenceBound(double c) {
-		return score[parent.player] / games + c * Math.sqrt(Math.log(parent.games + 1) / games);
+		return scores[parent.player] / games + c * Math.sqrt(Math.log(parent.games + 1) / games);
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class Node {
 	public void backPropagateScore(double[] score) {
 		this.games++;
 		for (int i = 0; i < score.length; i++)
-			this.score[i] += score[i];
+			this.scores[i] += score[i];
 
 		if (parent != null)
 			parent.backPropagateScore(score);
@@ -171,12 +171,12 @@ public class Node {
 		return player < 0;
 	}
 
-	public double[] getScore() {
-		return score;
+	public double[] getScores() {
+		return scores;
 	}
 
-	public void setScore(double[] score) {
-		this.score = score;
+	public void setScores(double[] scores) {
+		this.scores = scores;
 	}
 
 	public double getGames() {
@@ -211,11 +211,11 @@ public class Node {
 		this.children = children;
 	}
 
-	public Set<Integer> getrVisited() {
+	public Set<Integer> getRVisited() {
 		return rVisited;
 	}
 
-	public void setrVisited(Set<Integer> rVisited) {
+	public void setRVisited(Set<Integer> rVisited) {
 		this.rVisited = rVisited;
 	}
 
@@ -269,6 +269,12 @@ public class Node {
 
 	public void invalidate() {
 		this.valid = false;
+	}
+
+	public double getScoreForCurrentPlayer() {
+		if (parent.parent != null)
+			throw new IllegalStateException("Please only call this method on direct children of the root node!");
+		return scores[parent.player] / games;
 	}
 
 	@Override
