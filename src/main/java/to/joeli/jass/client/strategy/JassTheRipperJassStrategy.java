@@ -16,6 +16,7 @@ import to.joeli.jass.client.strategy.helpers.TrumpfSelectionHelper;
 import to.joeli.jass.client.strategy.mcts.CardMove;
 import to.joeli.jass.client.strategy.mcts.TrumpfMove;
 import to.joeli.jass.client.strategy.mcts.src.Move;
+import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.training.networks.CardsEstimator;
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 import to.joeli.jass.game.cards.Card;
@@ -135,7 +136,7 @@ TODO Make new experiments with the improvements so far:
 	@Override
 	public Mode chooseTrumpf(Set<Card> availableCards, GameSession session, boolean shifted) {
 		try {
-			final long startTime = System.currentTimeMillis();
+			final long startTime = System.nanoTime();
 			printCards(availableCards);
 
 			Mode mode = TrumpfSelectionHelper.getRandomMode(shifted);
@@ -153,8 +154,8 @@ TODO Make new experiments with the improvements so far:
 					logger.error("Something went wrong. Had to choose random trumpf, damn it!");
 				}
 
-			logger.info("Total time for move: {}ms", System.currentTimeMillis() - startTime);
-			logger.info("Chose Trumpf {}", mode);
+			logger.info("Total time for move: {}ms", (System.nanoTime() - startTime) / 1000000d);
+			logger.info("Chose trumpf {}", mode);
 			return mode;
 		} catch (Exception e) {
 			logger.error("{}", e);
@@ -168,7 +169,7 @@ TODO Make new experiments with the improvements so far:
 	public Card chooseCard(Set<Card> availableCards, GameSession session) {
 		final Game game = session.getCurrentGame();
 		try {
-			final long startTime = System.currentTimeMillis();
+			final long startTime = System.nanoTime();
 			printCards(availableCards);
 
 			final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(availableCards, game);
@@ -186,14 +187,26 @@ TODO Make new experiments with the improvements so far:
 						if (mctsHelper == null) throw new AssertionError();
 						Move move = mctsHelper.predictMove(availableCards, session, false, game.isShifted());
 						card = ((CardMove) move).getPlayedCard();
-						logger.info("Chose Card based on MCTS, Hurra!");
+						logger.info("Chose card based on MCTS, Hurra!");
 					} catch (MCTSException e) {
 						logger.error("{}", e);
 						logger.error("Something went wrong. Had to choose random card, damn it!");
 					}
-				} else { // Choose the network's prediction directly, without the mcts policy enhancement
-					card = scoreEstimator.predictMove(game).getPlayedCard();
-					logger.info("Chose card based only on score estimator network.");
+				} else {
+					final PlayoutSelectionPolicy playoutSelectionPolicy = config.getMctsConfig().getPlayoutSelectionPolicy();
+					if (getScoreEstimator() != null) {
+						// Choose the network's prediction directly, without the mcts policy enhancement
+						card = getScoreEstimator().predictMove(game).getPlayedCard();
+						logger.info("Chose card based only on score estimator network");
+					} else if (playoutSelectionPolicy != null) {
+						// Choose the result of the playout selection policy simulation directly, without the mcts policy enhancement
+						card = playoutSelectionPolicy.runPlayout(game).getPlayedCard();
+						logger.info("Chose card based only on {}", playoutSelectionPolicy);
+					} else {
+						card = CardSelectionHelper.chooseRandomCard(possibleCards);
+						logger.info("Chose random card");
+					}
+
 				}
 			}
 
@@ -202,7 +215,7 @@ TODO Make new experiments with the improvements so far:
 			//if (!session.getCurrentRound().isLastRound())
 			//	waitUntilTimeIsUp(endingTime);
 
-			logger.info("Total time for move: {}ms", System.currentTimeMillis() - startTime);
+			logger.info("Total time for move: {}ms", (System.nanoTime() - startTime) / 1000000d);
 			logger.info("Chose card {} out of possible cards {} out of available cards {}", card, possibleCards, availableCards);
 			return card;
 		} catch (Exception e) {
@@ -223,6 +236,7 @@ TODO Make new experiments with the improvements so far:
 	}
 
 	private void printCards(Set<Card> availableCards) {
+		System.out.println();
 		logger.info("Hi there! I am JassTheRipper and these are my cards: {} ", availableCards);
 	}
 

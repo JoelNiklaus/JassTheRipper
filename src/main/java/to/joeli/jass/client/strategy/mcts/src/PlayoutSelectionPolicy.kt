@@ -1,6 +1,7 @@
 package to.joeli.jass.client.strategy.mcts.src
 
 import to.joeli.jass.client.game.Game
+import to.joeli.jass.client.strategy.mcts.CardMove
 
 /**
  * Use this as a replacement for the conventional
@@ -15,5 +16,5 @@ import to.joeli.jass.client.game.Game
 interface PlayoutSelectionPolicy {
     fun getBestMove(board: Board): Move
 
-    fun runPlayout(game: Game): Move
+    fun runPlayout(game: Game): CardMove
 }

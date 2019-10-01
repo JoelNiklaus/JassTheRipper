@@ -14,7 +14,7 @@ class LightJassPlayoutSelectionPolicy : PlayoutSelectionPolicy {
         return board.getBestMove(this)
     }
 
-    override fun runPlayout(game: Game): Move {
+    override fun runPlayout(game: Game): CardMove {
         return PerfectInformationGameSolver.runLightPlayout(game)
     }
 

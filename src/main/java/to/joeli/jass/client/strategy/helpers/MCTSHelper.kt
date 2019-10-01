@@ -95,9 +95,13 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
             }
         } else {
             if (mctsConfig.playoutSelectionPolicy != null)
-                logger.info("Using a {} to determine the score", mctsConfig.playoutSelectionPolicy.toString())
+                logger.info("Using a {} to determine the score", mctsConfig.playoutSelectionPolicy)
             else
                 logger.info("Using a random playout to determine the score")
+        }
+
+        if (cardsEstimator != null) {
+            logger.info("Using a cards estimator network to better estimate the hidden cards")
         }
 
         if (mctsConfig.runMode === RunMode.RUNS) {
