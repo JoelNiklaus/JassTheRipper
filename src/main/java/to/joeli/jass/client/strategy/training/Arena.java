@@ -33,7 +33,7 @@ public class Arena {
 	public static final int SEED = 42;
 	public static final float TOTAL_POINTS = 157.0f; // INFO: We disregard Matchbonus for simplicity here
 
-	private static final boolean CARDS_ESTIMATOR_USED = true;
+	private static final boolean CARDS_ESTIMATOR_USED = false;
 	private static final boolean SCORE_ESTIMATOR_USED = false;
 
 
