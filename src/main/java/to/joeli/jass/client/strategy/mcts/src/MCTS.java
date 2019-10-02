@@ -180,6 +180,12 @@ public class MCTS {
 		HashMap<Move, Double> summedFinalScores = new HashMap<>();
 
 		for (Node node : nodes) {
+			// Some determinizations are more reliable (more nodes searched)
+			// but we choose not to weigh by the number of nodes searched because the difference is small for high strengthlevel
+			logger.info("move: {}, num games: {}, score: {}", node.getMove(), node.getParent().getGames(), node.getScoreForCurrentPlayer());
+			// TODO how many games do we need to be sufficiently sure of correctness of simulation
+
+
 			Move move = node.getMove();
 
 			int numSelectionsForMove = numSelections.getOrDefault(move, 0) + 1;
@@ -193,11 +199,16 @@ public class MCTS {
 		// TODO possibly not just choose move with most selections but bias it with AFS
 		// Print statistics so we can get insights into the decision process of the algorithm
 		numSelections.forEach((move, numTimesSelected) -> {
-			int averageFinalScore = (int) Math.round(summedFinalScores.get(move) / numTimesSelected);
-			logger.info("{} selected {} times with average final score {}", String.format("%1$-3s", move), String.format("%1$2d", numTimesSelected), String.format("%1$3d", averageFinalScore));
+			final Double summedFinalScore = summedFinalScores.get(move);
+			int averageFinalScore = (int) Math.round(summedFinalScore / numTimesSelected);
+			logger.info("{} selected {} times with average final score {} -> summed final score: {}",
+					String.format("%1$-3s", move), String.format("%1$2d", numTimesSelected), String.format("%1$3d", averageFinalScore), summedFinalScore);
 		});
 
-		return numSelections.entrySet().stream()
+
+
+		return summedFinalScores.entrySet().stream() // move with highest possible reward but still high confidence is chosen -> more risk taking
+		//return numSelections.entrySet().stream() // move which has been selected the most over all the determinizations is chosen -> more risk averse
 				.max(Map.Entry.comparingByValue())
 				.orElseThrow(() -> new IllegalStateException("There must be at least one move!"))
 				.getKey();
