@@ -182,9 +182,8 @@ public class MCTS {
 		for (Node node : nodes) {
 			// Some determinizations are more reliable (more nodes searched)
 			// but we choose not to weigh by the number of nodes searched because the difference is small for high strengthlevel
-			logger.info("move: {}, num games: {}, score: {}", node.getMove(), node.getParent().getGames(), node.getScoreForCurrentPlayer());
+			logger.info("move: {}, number of searched nodes (= played games): {}, score: {}", node.getMove(), node.getParent().getGames(), node.getScoreForCurrentPlayer());
 			// TODO how many games do we need to be sufficiently sure of correctness of simulation
-
 
 			Move move = node.getMove();
 
@@ -195,21 +194,24 @@ public class MCTS {
 			summedFinalScores.put(move, summedFinalScoresForMove);
 		}
 
-		// TODO use average final score (AFS) to behave according to risk profile. Example move not selected often but high AFS --> choose when risk-taking high
-		// TODO possibly not just choose move with most selections but bias it with AFS
+		LinkedHashMap<Move, Double> summedFinalScoresSorted = new LinkedHashMap<>();
+		summedFinalScores.entrySet().stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+				.forEachOrdered(x -> summedFinalScoresSorted.put(x.getKey(), x.getValue()));
+
+
 		// Print statistics so we can get insights into the decision process of the algorithm
-		numSelections.forEach((move, numTimesSelected) -> {
-			final Double summedFinalScore = summedFinalScores.get(move);
-			int averageFinalScore = (int) Math.round(summedFinalScore / numTimesSelected);
+		summedFinalScoresSorted.forEach((move, summedFinalScore) -> {
+			final int numTimesSelected = numSelections.get(move);
+			final long averageFinalScore = Math.round(summedFinalScore / numTimesSelected);
 			logger.info("{} selected {} times with average final score {} -> summed final score: {}",
 					String.format("%1$-3s", move), String.format("%1$2d", numTimesSelected), String.format("%1$3d", averageFinalScore), summedFinalScore);
 		});
 
 
-
-		return summedFinalScores.entrySet().stream() // move with highest possible reward but still high confidence is chosen -> more risk taking
-		//return numSelections.entrySet().stream() // move which has been selected the most over all the determinizations is chosen -> more risk averse
-				.max(Map.Entry.comparingByValue())
+		return summedFinalScoresSorted.entrySet().stream() // move with highest possible reward but still high confidence is chosen -> more risk taking
+				//return numSelections.entrySet().stream() // move which has been selected the most over all the determinizations is chosen -> more risk averse
+				.findFirst() // NOTE: map needs to be sorted, otherwise use .max(Map.Entry.comparingByValue())
 				.orElseThrow(() -> new IllegalStateException("There must be at least one move!"))
 				.getKey();
 	}

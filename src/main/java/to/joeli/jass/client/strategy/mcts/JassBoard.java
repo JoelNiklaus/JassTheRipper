@@ -9,7 +9,6 @@ import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.game.Result;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
 import to.joeli.jass.client.strategy.helpers.CardSelectionHelper;
-import to.joeli.jass.client.strategy.helpers.PerfectInformationGameSolver;
 import to.joeli.jass.client.strategy.helpers.TrumpfSelectionHelper;
 import to.joeli.jass.client.strategy.mcts.src.Board;
 import to.joeli.jass.client.strategy.mcts.src.CallLocation;
@@ -99,7 +98,7 @@ public class JassBoard implements Board {
 			CardKnowledgeBase.sampleCardDeterminizationToPlayers(this.gameSession, this.availableCards);
 		else
 			try {
-				Thread.sleep(1);
+				Thread.sleep(1); // to make comparison fairer
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -161,19 +160,15 @@ public class JassBoard implements Board {
 	@Override
 	public List<Move> getMoves(CallLocation location) {
 		ArrayList<Move> moves = new ArrayList<>();
+		final Player player = currentPlayer();
 
 		if (isChoosingTrumpf()) {
-			Player player = gameSession.getTrumpfSelectingPlayer();
-			if (shifted)
-				player = gameSession.getPartnerOfPlayer(player);
-
 			// INFO: This performs pruning: removes all the trumpfs which are obviously bad, so that more time can be spent on the good trumpfs
 			List<Mode> topTrumpfChoices = TrumpfSelectionHelper.getTopTrumpfChoices(player.getCards(), shifted);
 
 			for (Mode mode : topTrumpfChoices)
 				moves.add(new TrumpfMove(player, mode));
 		} else {
-			final Player player = game.getCurrentPlayer();
 			if ((player.getCards().isEmpty())) throw new AssertionError("The current player's cards are empty");
 
 			Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
@@ -226,7 +221,7 @@ public class JassBoard implements Board {
 				this.gameSession = null; // NOTE: this is needed so that the method isChoosingTrumpf() will evaluate to false afterwards
 			}
 		} else {
-			Player player = game.getCurrentPlayer();
+			final Player player = currentPlayer();
 
 			if (!(move instanceof CardMove)) throw new AssertionError();
 			// We can do that because we are only creating CardMoves
@@ -234,8 +229,8 @@ public class JassBoard implements Board {
 
 			if (!cardMove.getPlayer().equals(player)) throw new AssertionError();
 
-			player.onMoveMade(cardMove);
 			game.makeMove(cardMove);
+			player.onMoveMade(cardMove);
 
 			if (game.getCurrentRound().roundFinished()) {
 				game.startNextRound();

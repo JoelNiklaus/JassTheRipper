@@ -1,5 +1,6 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.game.Trumpf;
@@ -20,6 +21,7 @@ public class TrumpfSelectionHelper {
 	// --> The higher this value, the more likely shifting is. 150 --> too high, 100 --> too low
 	public static final int MAX_SHIFT_RATING_VAL = 125;
 	public static final int TOP_TRUMPF_THRESHOLD = MAX_SHIFT_RATING_VAL; // NOTE: Set to a lower value when confidence in MCTS Trumpf Selection increases
+	public static final int TOP_NUM_TRUMPFS = 3; // NOTE: Set to a higher value when confidence in MCTS Trumpf Selection increases
 
 	private TrumpfSelectionHelper() {
 
@@ -54,7 +56,6 @@ public class TrumpfSelectionHelper {
 	}
 
 	/**
-	 * Returns the trumpf choices whose ratings exceed a certain threshold (hyperparameter)
 	 * Can be used for pruning.
 	 *
 	 * @param availableCards
@@ -63,13 +64,36 @@ public class TrumpfSelectionHelper {
 	 */
 	public static List<Mode> getTopTrumpfChoices(Set<Card> availableCards, boolean isGschobe) {
 		final LinkedHashMap<Mode, Integer> trumpfRatings = rateModes(availableCards, isGschobe);
-		List<Mode> topTrumpfChoices = trumpfRatings.entrySet().stream()
+		//return getTrumpfsAboveThreshold(trumpfRatings);
+		return getTopNumTrumpfs(trumpfRatings);
+	}
+
+	/**
+	 * Returns the TOP_NUM_TRUMPFS rated trumpfs
+	 *
+	 * @param trumpfRatings
+	 * @return
+	 */
+	@NotNull
+	private static List<Mode> getTopNumTrumpfs(LinkedHashMap<Mode, Integer> trumpfRatings) {
+		return trumpfRatings.entrySet().stream()
+				.limit(TOP_NUM_TRUMPFS)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns the trumpf choices whose ratings exceed a certain threshold (hyperparameter)
+	 *
+	 * @param trumpfRatings
+	 * @return
+	 */
+	@NotNull
+	private static List<Mode> getTrumpfsAboveThreshold(LinkedHashMap<Mode, Integer> trumpfRatings) {
+		return trumpfRatings.entrySet().stream()
 				.filter(e -> e.getValue() >= TOP_TRUMPF_THRESHOLD)
 				.map(Map.Entry::getKey)
 				.collect(Collectors.toList());
-		if (topTrumpfChoices.isEmpty()) // if no trumpf can make the cut, add the best one
-			topTrumpfChoices.add(trumpfRatings.entrySet().iterator().next().getKey());
-		return topTrumpfChoices;
 	}
 
 	/**
@@ -82,7 +106,7 @@ public class TrumpfSelectionHelper {
 	 * @return
 	 */
 	private static LinkedHashMap<Mode, Integer> rateModes(Set<Card> availableCards, boolean isGschobe) {
-		LinkedHashMap<Mode, Integer> trumpfRatings = new LinkedHashMap<>();
+		HashMap<Mode, Integer> trumpfRatings = new HashMap<>();
 
 		for (Color color : Color.values())
 			trumpfRatings.put(Mode.from(Trumpf.TRUMPF, color), rateColorForTrumpf(availableCards, color));
@@ -101,8 +125,7 @@ public class TrumpfSelectionHelper {
 			trumpfRatings.put(Mode.shift(), MAX_SHIFT_RATING_VAL);
 
 		LinkedHashMap<Mode, Integer> sortedTrumpfRatings = new LinkedHashMap<>();
-		trumpfRatings.entrySet()
-				.stream()
+		trumpfRatings.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.forEachOrdered(x -> sortedTrumpfRatings.put(x.getKey(), x.getValue()));
 		logger.debug("Rule-based TrumpfRatings: {}", sortedTrumpfRatings);
