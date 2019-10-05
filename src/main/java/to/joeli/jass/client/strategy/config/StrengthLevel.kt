@@ -27,7 +27,7 @@ enum class StrengthLevel constructor(val numDeterminizationsFactor: Int, val max
     INSANE(7, 2500, 500),
     SUPERMAN(8, 5000, 1000),
     IRONMAN(9, 10000, 2000),
-    HSLU_SERVER(10, 9900, 2000),
+    HSLU_SERVER(15, 9900, 2000),
     TRUMPF(15, 10000, 2000),
 
     TEST_WEAK_TIME(1, 50, 10),
