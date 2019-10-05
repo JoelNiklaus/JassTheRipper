@@ -12,6 +12,7 @@ import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.client.strategy.mcts.HeavyJassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.LightJassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.src.FinalSelectionPolicy;
+import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 
@@ -22,14 +23,63 @@ import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD
 
 public class MCTSBenchmarkTest {
 
-	// TODO use JMH
-
 	private static final boolean RUN_BENCHMARKS = false;
 
 	private static final long SEED = 43; // To get a match at the start use 42
 	private static final int NUM_GAMES = 50;
 
 	private Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
+
+	@Test
+	public void testHeavyAgainstLightPlayoutSelectionWithDisabledMCTS() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(false, false, false),
+					new Config(false, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy()));
+			configs[1].setMctsConfig(new MCTSConfig(new LightJassPlayoutSelectionPolicy()));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testHeavyAgainstRandomPlayoutWithDisabledMCTS() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(false, false, false),
+					new Config(false, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy()));
+			configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
+
+	@Test
+	public void testScoreEstimatorAgainstRandomPlayoutWithDisabledMCTS() {
+		if (RUN_BENCHMARKS) {
+			Config[] configs = {
+					new Config(false, true, false),
+					new Config(false, false, false)
+			};
+			configs[0].setMctsConfig(new MCTSConfig());
+			configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
+
+			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+			System.out.println(performance);
+			assertTrue(performance > 100);
+		}
+	}
 
 	/**
 	 * Tests if it is worthwhile to use the MCTS trumpf selection method
@@ -42,8 +92,8 @@ public class MCTSBenchmarkTest {
 					new Config(true, false, false),
 					new Config(true, false, false)
 			};
-			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST));
-			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST));
+			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.POWERFUL));
+			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.POWERFUL));
 			configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
 			configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
@@ -80,6 +130,7 @@ public class MCTSBenchmarkTest {
 	 */
 	@Test
 	public void testHigherCardStrengthLevelNumDeterminizationsIsWorthwile() {
+		// TODO find sweet spot concerning best number of determinizations
 		if (RUN_BENCHMARKS) {
 			Config[] configs = {
 					new Config(true, false, false),
@@ -92,6 +143,9 @@ public class MCTSBenchmarkTest {
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
+
+			// For 5000ms 10 determinizations are better than 5
+			// For 10000ms 15 determinizations are better than 10 and 20 are worse than 15
 		}
 	}
 
@@ -153,15 +207,13 @@ public class MCTSBenchmarkTest {
 
 	@Test
 	public void testUsingScoreBoundsIsBad() {
-		// TODO run experiments with more games!!
-
 		if (RUN_BENCHMARKS) {
 			Config[] configs = {
 					new Config(true, false, false),
 					new Config(true, false, false)
 			};
 			configs[0].setMctsConfig(new MCTSConfig(false, 0.0, 0.0));
-			configs[1].setMctsConfig(new MCTSConfig(true, 0.0, 10.0));
+			configs[1].setMctsConfig(new MCTSConfig(true, 0.5, 0.5));
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
@@ -171,21 +223,20 @@ public class MCTSBenchmarkTest {
 	}
 
 	@Test
-	public void testMoreThanStandardExploitationIsGood() {
-		// TODO run experiments with more games!!
-
+	public void testMoreThanStandardExploitationIsBad() {
 		if (RUN_BENCHMARKS) {
 			Config[] configs = {
 					new Config(true, false, false),
 					new Config(true, false, false)
 			};
-			configs[0].setMctsConfig(new MCTSConfig(0));
-			configs[1].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
+			configs[0].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
+			configs[1].setMctsConfig(new MCTSConfig(0.5));
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 			System.out.println(performance);
 			assertTrue(performance > 100);
+			// --> No significant improvement
 		}
 	}
 
@@ -226,11 +277,9 @@ public class MCTSBenchmarkTest {
 	@Test
 	public void testHeavyPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
 		if (RUN_BENCHMARKS) {
-			MCTSConfig mctsConfig = new MCTSConfig();
-			mctsConfig.setPlayoutSelectionPolicy(null);
 			Config[] configs = {
 					new Config(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy())),
-					new Config(mctsConfig),
+					new Config(new MCTSConfig((PlayoutSelectionPolicy) null)),
 			};
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
@@ -243,11 +292,9 @@ public class MCTSBenchmarkTest {
 	@Test
 	public void testLightPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
 		if (RUN_BENCHMARKS) {
-			MCTSConfig mctsConfig = new MCTSConfig();
-			mctsConfig.setPlayoutSelectionPolicy(null);
 			Config[] configs = {
-					new Config(new MCTSConfig(new LightJassPlayoutSelectionPolicy())),
-					new Config(mctsConfig),
+					new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, new LightJassPlayoutSelectionPolicy())),
+					new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, (PlayoutSelectionPolicy) null)),
 			};
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
@@ -258,11 +305,11 @@ public class MCTSBenchmarkTest {
 	}
 
 	@Test
-	public void testHeavyPlayoutSelectionPolicyEnabledBeatsLightPlayoutSelectionPolicyEnabled() {
+	public void testLightPlayoutSelectionPolicyEnabledBeatsHeavyPlayoutSelectionPolicyEnabled() {
 		if (RUN_BENCHMARKS) {
 			Config[] configs = {
-					new Config(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy())),
 					new Config(new MCTSConfig(new LightJassPlayoutSelectionPolicy())),
+					new Config(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy())),
 			};
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
@@ -279,6 +326,8 @@ public class MCTSBenchmarkTest {
 					new Config(true, true, true, false, false),
 					new Config(true, false, false, false, false)
 			};
+			configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.FAST_TEST));
+			configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.FAST_TEST));
 
 			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
