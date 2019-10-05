@@ -35,7 +35,7 @@ public abstract class AbstractJassResource {
 	 */
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
-	public String getIt() {
+	public String info() {
 		return "The bot is available :)";
 	}
 

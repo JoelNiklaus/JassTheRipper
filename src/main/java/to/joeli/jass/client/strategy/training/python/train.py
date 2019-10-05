@@ -50,8 +50,8 @@ def train(episode_padded, network_type):
             return
         else:
             model = define_separate_model(network_type)
-            optimizer = SGD(lr=1e-2, momentum=0.9, decay=1e-6, nesterov=True)  # Tried also RAdam(), Adam()
-            # optimizer = Adam() # use adam for score estimation
+            optimizer = SGD(lr=1e-2, momentum=0.9, decay=1e-6, nesterov=True)  # use sgd for cards estimation (tried also RAdam, Adam)
+            optimizer = Adam() # use adam for score estimation
             # Reason for mse: big errors should be punished!
             loss = 'mse'  # Tried also: 'mae', 'mape', 'kullback_leibler_divergence', 'categorical_crossentropy', 'acc', 'hinge', 'logcosh'
             model.compile(loss=loss, optimizer=optimizer,
