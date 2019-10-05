@@ -1,5 +1,6 @@
 package to.joeli.jass.client.strategy.training.networks;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
@@ -18,6 +19,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore("On Travis CI this test will not work because of the missing model")
 public class CardsEstimatorTest {
 
 

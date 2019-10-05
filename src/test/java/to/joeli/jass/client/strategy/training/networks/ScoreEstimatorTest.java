@@ -1,5 +1,6 @@
 package to.joeli.jass.client.strategy.training.networks;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Move;
@@ -11,6 +12,7 @@ import to.joeli.jass.game.mode.Mode;
 
 import static junit.framework.TestCase.assertTrue;
 
+@Ignore("On Travis CI this test will not work because of the missing model")
 public class ScoreEstimatorTest {
 
 	private Game diamondsGame = GameSessionBuilder.newSession().withStartedGame(Mode.trump(Color.DIAMONDS)).createGameSession().getCurrentGame();

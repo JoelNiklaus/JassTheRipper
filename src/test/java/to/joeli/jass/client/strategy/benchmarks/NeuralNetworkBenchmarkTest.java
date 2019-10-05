@@ -1,14 +1,16 @@
 package to.joeli.jass.client.strategy.benchmarks;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import to.joeli.jass.client.strategy.config.Config;
 import to.joeli.jass.client.strategy.training.Arena;
-import org.junit.Test;
 
 import java.util.Random;
 
-import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD_PERCENTAGE;
 import static org.junit.Assert.assertTrue;
+import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD_PERCENTAGE;
 
+@Ignore("On Travis CI this test will not work because of the missing model")
 public class NeuralNetworkBenchmarkTest {
 
 	private static final boolean RUN_BENCHMARKS = false;
