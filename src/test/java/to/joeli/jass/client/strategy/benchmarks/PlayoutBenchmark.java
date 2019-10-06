@@ -29,7 +29,7 @@ public class PlayoutBenchmark {
 	@Setup(Level.Invocation)
 	public void setUp() {
 		Game game = GameSessionBuilder.startedClubsGame();
-		jassBoard = JassBoard.constructCardSelectionJassBoard(game.getCurrentPlayer().getCards(), game, false, null, null);
+		jassBoard = JassBoard.constructCardSelectionJassBoard(game.getCurrentPlayer().getCards(), game, false, false, null, null);
 	}
 
 	@Benchmark

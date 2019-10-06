@@ -73,12 +73,12 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
             strengthLevel = mctsConfig.trumpfStrengthLevel
             scoreEstimator = gameSession.trumpfSelectingPlayer.scoreEstimator
             cardsEstimator = gameSession.trumpfSelectingPlayer.cardsEstimator
-            jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, mctsConfig.cheating, scoreEstimator, cardsEstimator)
+            jassBoard = JassBoard.constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, mctsConfig.cheating, mctsConfig.hardPruningEnabled, scoreEstimator, cardsEstimator)
         } else {
             strengthLevel = mctsConfig.cardStrengthLevel
             scoreEstimator = gameSession.currentGame.currentPlayer.scoreEstimator
             cardsEstimator = gameSession.currentGame.currentPlayer.cardsEstimator
-            jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.currentGame, mctsConfig.cheating, scoreEstimator, cardsEstimator)
+            jassBoard = JassBoard.constructCardSelectionJassBoard(availableCards, gameSession.currentGame, mctsConfig.cheating, mctsConfig.hardPruningEnabled, scoreEstimator, cardsEstimator)
         }
 
         var numDeterminizations = computeNumDeterminizations(gameSession, isChoosingTrumpf, strengthLevel.numDeterminizationsFactor)
@@ -99,10 +99,13 @@ class MCTSHelper(private val mctsConfig: MCTSConfig) {
             else
                 logger.info("Using a random playout to determine the score")
         }
-
         if (cardsEstimator != null) {
             logger.info("Using a cards estimator network to better estimate the hidden cards")
         }
+        if (mctsConfig.cheating)
+            logger.info("Knowing all the hidden cards --> cheating player")
+        if (mctsConfig.hardPruningEnabled)
+            logger.info("Hard pruning is enabled")
 
         if (mctsConfig.runMode === RunMode.RUNS) {
             if (mctsConfig.cardStrengthLevel == StrengthLevel.HSLU_SERVER) // small hack to make it to 1000000 simulations every time

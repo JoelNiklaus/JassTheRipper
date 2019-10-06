@@ -290,6 +290,21 @@ public class MCTSBenchmarkTest {
 	}
 
 	@Test
+	public void testHardPruningEnabledIsBeneficial() {
+		Config[] configs = {
+				new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, true)),
+				new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, false)),
+		};
+
+		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+
+		System.out.println(performance);
+		assertTrue(performance > 100);
+
+		// 81.41% for 20 games -> not beneficial
+	}
+
+	@Test
 	public void testCardsEstimatorWinsAgainstRegularPlayer() {
 		Config[] configs = {
 				new Config(true, true, true, false, false),

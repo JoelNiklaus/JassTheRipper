@@ -11,6 +11,7 @@ class MCTSConfig {
     var cardStrengthLevel = StrengthLevel.INSANE
 
     var cheating = false // enable this for comparing the cards estimator performance to a player who knows all the cards
+    var hardPruningEnabled = false // enable this for hard pruning cards to focus more on promising areas of the tree
 
     var seed = 42
     var scoreBoundsUsed = false
@@ -36,6 +37,11 @@ class MCTSConfig {
 
     constructor(cheating: Boolean) : this() {
         this.cheating = cheating
+    }
+
+    constructor(cardStrengthLevel: StrengthLevel, hardPruningEnabled: Boolean) : this() {
+        this.cardStrengthLevel = cardStrengthLevel
+        this.hardPruningEnabled = hardPruningEnabled
     }
 
     constructor(explorationConstant: Double) : this() {

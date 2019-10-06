@@ -9,6 +9,7 @@ import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.game.Result;
 import to.joeli.jass.client.strategy.helpers.CardKnowledgeBase;
 import to.joeli.jass.client.strategy.helpers.CardSelectionHelper;
+import to.joeli.jass.client.strategy.helpers.PerfectInformationGameSolver;
 import to.joeli.jass.client.strategy.helpers.TrumpfSelectionHelper;
 import to.joeli.jass.client.strategy.mcts.src.Board;
 import to.joeli.jass.client.strategy.mcts.src.CallLocation;
@@ -36,20 +37,24 @@ public class JassBoard implements Board {
 	private boolean shifted;
 	private Game game;
 	private boolean cheating; // Determines if the player knows the cards of the other players or not (used for experiments)
+	private boolean hardPruningEnabled; // Determines if the player knows the cards of the other players or not (used for experiments)
 
 	// The neural network of the player choosing the move at the beginning. If null -> use random playout instead
 	private final ScoreEstimator scoreEstimator;
 	// The neural network of the player estimating the hidden cards of the other players. If null -> only use heuristics
 	private final CardsEstimator cardsEstimator;
 
+	private static final int HARD_PRUNING_LIMIT = 4;
+
 	public static final Logger logger = LoggerFactory.getLogger(JassBoard.class);
 
-	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, boolean cheating, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
+	private JassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, Game game, boolean cheating, boolean hardPruningEnabled, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
 		this.availableCards = availableCards;
 		this.gameSession = gameSession;
 		this.shifted = shifted;
 		this.game = game;
 		this.cheating = cheating;
+		this.hardPruningEnabled = hardPruningEnabled;
 		this.scoreEstimator = scoreEstimator;
 		this.cardsEstimator = cardsEstimator;
 	}
@@ -64,8 +69,8 @@ public class JassBoard implements Board {
 	 * @param cardsEstimator
 	 * @return
 	 */
-	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, boolean cheating, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
-		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, cheating, scoreEstimator, cardsEstimator);
+	public static JassBoard constructTrumpfSelectionJassBoard(Set<Card> availableCards, GameSession gameSession, boolean shifted, boolean cheating, boolean hardPruningEnabled, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
+		JassBoard jassBoard = new JassBoard(EnumSet.copyOf(availableCards), new GameSession(gameSession), shifted, null, cheating, hardPruningEnabled, scoreEstimator, cardsEstimator);
 		jassBoard.sampleCardDeterminizationToPlayersInTrumpfSelection();
 		return jassBoard;
 	}
@@ -79,8 +84,8 @@ public class JassBoard implements Board {
 	 * @param cardsEstimator
 	 * @return
 	 */
-	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, boolean cheating, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
-		return new JassBoard(EnumSet.copyOf(availableCards), null, game.isShifted(), new Game(game), cheating, scoreEstimator, cardsEstimator);
+	public static JassBoard constructCardSelectionJassBoard(Set<Card> availableCards, Game game, boolean cheating, boolean hardPruningEnabled, ScoreEstimator scoreEstimator, CardsEstimator cardsEstimator) {
+		return new JassBoard(EnumSet.copyOf(availableCards), null, game.isShifted(), new Game(game), cheating, hardPruningEnabled, scoreEstimator, cardsEstimator);
 	}
 
 	/**
@@ -142,9 +147,9 @@ public class JassBoard implements Board {
 	@Override
 	public Board duplicate(boolean newRandomCards) {
 		if (isChoosingTrumpf())
-			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, cheating, scoreEstimator, cardsEstimator);
+			return constructTrumpfSelectionJassBoard(availableCards, gameSession, shifted, cheating, hardPruningEnabled, scoreEstimator, cardsEstimator);
 
-		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, cheating, scoreEstimator, cardsEstimator);
+		JassBoard jassBoard = constructCardSelectionJassBoard(availableCards, game, cheating, hardPruningEnabled, scoreEstimator, cardsEstimator);
 		if (newRandomCards)
 			jassBoard.sampleCardDeterminizationToPlayersInCardPlay();
 		return jassBoard;
@@ -177,18 +182,27 @@ public class JassBoard implements Board {
 
 			// INFO: This would be pruning for cards. At the moment we do not want to do this.
 			// It could be a possibility later on if we see that the bot still plays badly in the first 1-3 moves of a game.
-			/*
-			try {
-				logger.info("Possible cards before refining: " + possibleCards);
-				possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
-				logger.info("Possible cards after refining: " + possibleCards);
-			} catch (Exception e) {
-				logger.debug("{}", e);
-				logger.info("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
-			}
-			*/
+			Set<Card> advisableCards = possibleCards;
+			if (hardPruningEnabled && possibleCards.size() > HARD_PRUNING_LIMIT) {
+				logger.debug("Possible cards (before hard pruning): " + possibleCards);
+				advisableCards = PerfectInformationGameSolver.getAdvisableCards(game, possibleCards);
+				if (advisableCards.isEmpty())
+					advisableCards = possibleCards;
+				logger.debug("Advisable cards (after hard pruning): " + advisableCards);
 
-			for (Card card : possibleCards)
+				/*
+				try {
+					logger.info("Possible cards before refining: " + possibleCards);
+					possibleCards = CardSelectionHelper.refineCardsWithJassKnowledge(possibleCards, game);
+					logger.info("Possible cards after refining: " + possibleCards);
+				} catch (Exception e) {
+					logger.debug("{}", e);
+					logger.info("Could not refine cards with Jass Knowledge. Just considering all possible cards now");
+				}
+				*/
+			}
+
+			for (Card card : advisableCards)
 				moves.add(new CardMove(player, card));
 		}
 		if (moves.isEmpty()) throw new AssertionError();
