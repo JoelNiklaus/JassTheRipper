@@ -351,20 +351,18 @@ public class MCTS {
 	}
 
 	public Move getRandomMove(Board board) {
-		Move move;
 		List<Move> moves = board.getMoves(CallLocation.PLAYOUT); // NOTE: Originally it used CallLocation.TREE_POLICY here
 		if (moves.isEmpty()) throw new AssertionError();
 		if (board.getCurrentPlayer() >= 0) {
 			// make random selection normally
-			move = moves.get(random.nextInt(moves.size()));
+			return moves.get(random.nextInt(moves.size()));
 		} else {
 			// This situation only occurs when a move
 			// is entirely random, for example a die
 			// roll. We must consider the random weights
 			// of the moves.
-			move = moves.get(getRandomChildNodeIndex(board));
+			return moves.get(getRandomChildNodeIndex(board));
 		}
-		return move;
 	}
 
 	/**
@@ -410,7 +408,8 @@ public class MCTS {
 			// from the tree and that can only happen if bounds
 			// propagation mode is enabled.
 			if (!s.isPruned()) {
-				double tempBest = s.upperConfidenceBound(explorationConstant) + optimisticBias * s.getOpti()[node.getPlayer()]
+				double tempBest = s.upperConfidenceBound(explorationConstant)
+						+ optimisticBias * s.getOpti()[node.getPlayer()]
 						+ pessimisticBias * s.getPess()[node.getPlayer()];
 
 				if (heuristicFunction != null) {

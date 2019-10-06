@@ -146,10 +146,12 @@ public class JassHelper {
 		if (isBottomUp(mode)) {
 			return rank > BRETTLI_BOUNDARY;
 		}
+		if (hasTrumpfColor(card, mode))
+			return false;
 		if (rank < BRETTLI_BOUNDARY) {
-			if (isTopDown(mode)) {
+			if (isTopDown(mode))
 				return rank != EIGHT;
-			} else return !hasTrumpfColor(card, mode);
+			return true;
 		}
 		return false;
 	}

@@ -85,8 +85,8 @@ public class MCTSBenchmarkTest {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.FAST_TEST));
-		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.FAST_TEST));
+		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.STRONG));
+		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.STRONG));
 		configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
 		configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
@@ -125,16 +125,16 @@ public class MCTSBenchmarkTest {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS));
-		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS));
+		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS));
+		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS));
 
 		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
 
-		// For 5000ms 10 determinizations are better than 5
-		// For 10000ms 15 determinizations are better than 10 and 20 are worse than 15
+		// For 5000ms 10 > 5
+		// For 10000ms 15 > 10 and 20 < 15 and 17 > 15 but 15 < 13
 	}
 
 
@@ -178,13 +178,15 @@ public class MCTSBenchmarkTest {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		configs[0].setMctsConfig(new MCTSConfig(2));
-		configs[1].setMctsConfig(new MCTSConfig(1));
+		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.HSLU_SERVER, 2));
+		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.HSLU_SERVER, 1));
 
 		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
+
+		// 3 same as 2 for 10000ms
 	}
 
 	@Test

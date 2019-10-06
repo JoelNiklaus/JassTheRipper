@@ -37,6 +37,7 @@ public class TrumpfSelectionHelperTest {
 	private Set<Card> maybeShift = EnumSet.of(Card.CLUB_SEVEN, Card.CLUB_EIGHT, Card.CLUB_KING, Card.DIAMOND_NINE, Card.DIAMOND_KING, Card.HEART_SIX, Card.HEART_JACK, Card.SPADE_EIGHT, Card.SPADE_KING);
 	private Set<Card> topDownNotQuiteGoodEnough = EnumSet.of(Card.CLUB_ACE, Card.CLUB_JACK, Card.CLUB_NINE, Card.DIAMOND_ACE, Card.DIAMOND_TEN, Card.HEART_ACE, Card.HEART_JACK, Card.SPADE_KING, Card.SPADE_EIGHT);
 	private Set<Card> bottomUpNotQuiteGoodEnough = EnumSet.of(Card.CLUB_SIX, Card.CLUB_NINE, Card.CLUB_JACK, Card.DIAMOND_SIX, Card.DIAMOND_TEN, Card.HEART_SIX, Card.HEART_NINE, Card.SPADE_SEVEN, Card.SPADE_QUEEN);
+	private Set<Card> clubsVersusDiamonds = EnumSet.of(Card.CLUB_EIGHT, Card.CLUB_NINE, Card.CLUB_ACE, Card.DIAMOND_EIGHT, Card.DIAMOND_NINE, Card.DIAMOND_KING, Card.HEART_NINE, Card.SPADE_SEVEN, Card.SPADE_QUEEN);
 
 
 	@Test
@@ -259,5 +260,25 @@ public class TrumpfSelectionHelperTest {
 		int undeUfe = TrumpfSelectionHelper.rateUndeufe(bottomUpNotQuiteGoodEnough);
 		System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
 		assertEquals(undeUfe, obeAbe);
+	}
+
+	@Test
+	public void testClubsVersusDiamonds() {
+		Set<Card> cards = clubsVersusDiamonds;
+		int diamonds = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.DIAMONDS);
+		int hearts = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.HEARTS);
+		int spades = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.SPADES);
+		int clubs = TrumpfSelectionHelper.rateColorForTrumpf(cards, Color.CLUBS);
+		int obeAbe = TrumpfSelectionHelper.rateObeabe(cards);
+		int undeUfe = TrumpfSelectionHelper.rateUndeufe(cards);
+		System.out.println("Diamonds: " + diamonds + ", Hearts: " + hearts + ", Spades: " + spades + ", Clubs: " + clubs);
+		System.out.println("Obeabe: " + obeAbe + ", Undeufe: " + undeUfe);
+		assertTrue(undeUfe < shiftValue);
+		assertTrue(obeAbe < shiftValue);
+		assertTrue(diamonds < shiftValue);
+		assertTrue(hearts < shiftValue);
+		assertTrue(spades < shiftValue);
+		assertTrue(clubs < shiftValue);
+		assertEquals(Mode.trump(Color.DIAMONDS), jassStrategy.chooseTrumpf(cards, gameSession, true));
 	}
 }

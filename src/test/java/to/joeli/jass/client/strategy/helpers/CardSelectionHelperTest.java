@@ -147,4 +147,32 @@ public class CardSelectionHelperTest {
 
 		assertFalse(CardSelectionHelper.opponentCanWinStich(game.getCurrentRound()));
 	}
+
+	@Test
+	public void testGetRoundWinningCards() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+
+		Player player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.SPADE_KING));
+		player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.SPADE_EIGHT));
+
+		final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(game.getCurrentPlayer().getCards(), game);
+		final Set<Card> roundWinningCards = CardSelectionHelper.getRoundWinningCards(possibleCards, game.getCurrentRound());
+		assertEquals(EnumSet.of(Card.SPADE_ACE, Card.CLUB_EIGHT, Card.CLUB_KING), roundWinningCards);
+	}
+
+	@Test
+	public void testGetRoundWinningCardsIsEmpty() {
+		final Game game = GameSessionBuilder.startedClubsGame();
+
+		Player player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.CLUB_QUEEN));
+		player = game.getCurrentPlayer();
+		game.makeMove(new Move(player, Card.CLUB_JACK));
+
+		final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(game.getCurrentPlayer().getCards(), game);
+		final Set<Card> roundWinningCards = CardSelectionHelper.getRoundWinningCards(possibleCards, game.getCurrentRound());
+		assertEquals(EnumSet.noneOf(Card.class), roundWinningCards);
+	}
 }

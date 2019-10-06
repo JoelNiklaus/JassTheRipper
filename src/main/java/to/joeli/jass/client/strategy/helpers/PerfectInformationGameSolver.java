@@ -1,5 +1,6 @@
 package to.joeli.jass.client.strategy.helpers;
 
+import org.jetbrains.annotations.NotNull;
 import to.joeli.jass.client.game.Game;
 import to.joeli.jass.client.game.Player;
 import to.joeli.jass.client.game.Round;
@@ -44,35 +45,37 @@ public class PerfectInformationGameSolver {
 	 * @return
 	 */
 	public static CardMove runHeavyPlayout(Game game) {
-		final Round round = game.getCurrentRound();
-		final Mode mode = game.getMode();
-		final Player player = game.getCurrentPlayer();
-		final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(player.getCards()), game);
+		final Set<Card> possibleCards = CardSelectionHelper.getCardsPossibleToPlay(EnumSet.copyOf(game.getCurrentPlayer().getCards()), game);
 
-		final Set<Card> advisableCards = EnumSet.noneOf(Card.class);
-		switch (round.numberOfPlayedCards()) {
-			case 0: // We are the leading player
-				actAsLeadingPlayer(game, round, mode, possibleCards, advisableCards);
-				break;
-			/*case 1: // We are the second player
-				boolean stichBelongsToOpponents = !CardSelectionHelper.partnerCanDefinitelyWinStich(round);  // the partner cannot win the stich
-				actAsFollowingPlayer(round, mode, possibleCards, advisableCards, stichBelongsToOpponents);
-				break;
-			case 2: // We are the third player
-				stichBelongsToOpponents = JassHelper.isOpponent(round.getWinner(), player) // The stich already belongs to the opponents
-						|| CardSelectionHelper.opponentCanWinStich(round);
-				actAsFollowingPlayer(round, mode, possibleCards, advisableCards, stichBelongsToOpponents);
-				break;*/
-			case 3: // We are the last player
-				boolean stichBelongsToOpponents = JassHelper.isOpponent(round.getWinner(), player);
-				actAsFollowingPlayer(round, mode, possibleCards, advisableCards, stichBelongsToOpponents);
-				break;
-		}
+		final Set<Card> advisableCards = getAdvisableCards(game, possibleCards);
 
 		if (advisableCards.isEmpty()) // in case there is no good option
 			advisableCards.addAll(possibleCards); // we have to choose from the possible cards
 		Card card = CardSelectionHelper.chooseRandomCard(advisableCards);
-		return new CardMove(player, card);
+		return new CardMove(game.getCurrentPlayer(), card);
+	}
+
+	@NotNull
+	public static Set<Card> getAdvisableCards(Game game, Set<Card> possibleCards) {
+		final Round round = game.getCurrentRound();
+		final Mode mode = game.getMode();
+		final Player player = game.getCurrentPlayer();
+
+		switch (round.numberOfPlayedCards()) {
+			case 0: // We are the leading player
+				return actAsLeadingPlayer(game, round, mode, possibleCards);
+			case 1: // We are the second player
+				boolean stichBelongsToOpponents = !CardSelectionHelper.partnerCanDefinitelyWinStich(round);  // the partner cannot win the stich
+				return actAsFollowingPlayer(round, mode, possibleCards, stichBelongsToOpponents);
+			case 2: // We are the third player
+				stichBelongsToOpponents = JassHelper.isOpponent(round.getWinner(), player) // The stich already belongs to the opponents
+						|| CardSelectionHelper.opponentCanWinStich(round);
+				return actAsFollowingPlayer(round, mode, possibleCards, stichBelongsToOpponents);
+			case 3: // We are the last player
+				stichBelongsToOpponents = JassHelper.isOpponent(round.getWinner(), player);
+				return actAsFollowingPlayer(round, mode, possibleCards, stichBelongsToOpponents);
+		}
+		throw new IllegalStateException("The number of played cards cannot be larger than 3!");
 	}
 
 	/**
@@ -81,10 +84,12 @@ public class PerfectInformationGameSolver {
 	 * @param round
 	 * @param mode
 	 * @param possibleCards
-	 * @param advisableCards
 	 * @param stichBelongsToOpponents
+	 * @return advisableCards
 	 */
-	private static void actAsFollowingPlayer(Round round, Mode mode, Set<Card> possibleCards, Set<Card> advisableCards, boolean stichBelongsToOpponents) {
+	private static Set<Card> actAsFollowingPlayer(Round round, Mode mode, Set<Card> possibleCards, boolean stichBelongsToOpponents) {
+		final Set<Card> advisableCards = EnumSet.noneOf(Card.class);
+
 		if (stichBelongsToOpponents) { // The stich belongs to the opponents
 			// STECHEN
 			final Set<Card> roundWinningCards = CardSelectionHelper.getRoundWinningCards(possibleCards, round);
@@ -112,6 +117,7 @@ public class PerfectInformationGameSolver {
 			if (!verwerfCards.isEmpty())
 				advisableCards.addAll(verwerfCards);
 		}
+		return advisableCards;
 	}
 
 	/**
@@ -121,9 +127,11 @@ public class PerfectInformationGameSolver {
 	 * @param round
 	 * @param mode
 	 * @param possibleCards
-	 * @param advisableCards
+	 * @return advisableCards
 	 */
-	private static void actAsLeadingPlayer(Game game, Round round, Mode mode, Set<Card> possibleCards, Set<Card> advisableCards) {
+	private static Set<Card> actAsLeadingPlayer(Game game, Round round, Mode mode, Set<Card> possibleCards) {
+		final Set<Card> advisableCards = EnumSet.noneOf(Card.class);
+
 		final List<Player> players = round.getPlayingOrder().getPlayersInCurrentOrder();
 		final Player firstOpponent = players.get(1);
 		final Player partner = players.get(2);
@@ -139,7 +147,7 @@ public class PerfectInformationGameSolver {
 		// TODO game.getAlreadyPlayedCards() method is a performance bottleneck!
 
 		final Map<Color, List<Card>> orderedRemainingCards = JassHelper.getCardsStillInGameInStrengthOrder(game);
-		final Set<Card> bocks = JassHelper.getBocks(game.getMode(), orderedRemainingCards);
+		final Set<Card> bocks = JassHelper.getBocks(mode, orderedRemainingCards);
 		//final Set<Card> bocks = JassHelper.getBocks(game);
 		for (Card bock : bocks)
 			if (possibleCards.contains(bock))
@@ -161,6 +169,7 @@ public class PerfectInformationGameSolver {
 				}
 			}
 		}
+		return advisableCards;
 	}
 
 }

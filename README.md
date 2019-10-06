@@ -73,6 +73,8 @@ HSLU opponents:
 
 Tournament Server available on: https://jass-server.abiz.ch/
 
+UI available on: https://jassteppich.abiz.ch/
+
 This client allows you to easily develop a bot for the Jass challenge.
 
 ###Wiki (Server):

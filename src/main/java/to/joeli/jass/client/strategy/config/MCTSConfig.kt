@@ -42,7 +42,8 @@ class MCTSConfig {
         this.explorationConstant = explorationConstant
     }
 
-    constructor(numPlayouts: Int) : this() {
+    constructor(cardStrengthLevel: StrengthLevel, numPlayouts: Int) : this() {
+        this.cardStrengthLevel = cardStrengthLevel
         this.numPlayouts = numPlayouts
     }
 

@@ -510,13 +510,13 @@ public class CardSelectionHelper {
 		Set<Card> cardsToRemove = EnumSet.noneOf(Card.class);
 		for (Card card : remainingCards) {
 			List<Card> cards = new LinkedList<>();
-			cards.add(card);
 			cards.add(winningCard);
-			if (round.getMode().determineWinningCard(cards).equals(winningCard))
+			cards.add(card);
+			if (round.getMode().determineWinningCard(cards).equals(winningCard)) {
 				cardsToRemove.add(card);
+			}
 		}
-		if (remainingCards.size() > cardsToRemove.size())
-			remainingCards.removeAll(cardsToRemove);
+		remainingCards.removeAll(cardsToRemove);
 		return remainingCards;
 	}
 
@@ -542,8 +542,7 @@ public class CardSelectionHelper {
 				validCards.add(card);
 		if (!validCards.isEmpty())
 			return validCards;
-		else
-			return availableCards;
+		return availableCards;
 	}
 
 

@@ -29,11 +29,12 @@ enum class StrengthLevel constructor(val numDeterminizationsFactor: Int, val max
     IRONMAN(9, 10000, 2000),
     HSLU_SERVER(15, 9900, 2000),
     TRUMPF(15, 10000, 2000),
+    CARD_VALUATION(25, 30000, 2000),
 
     TEST_WEAK_TIME(1, 50, 10),
     TEST_STRONG_TIME(1, 250, 10),
-    TEST_WEAK_NUM_DETERMINIZATIONS(1, 250, 10),
-    TEST_STRONG_NUM_DETERMINIZATIONS(5, 250, 10);
+    TEST_WEAK_NUM_DETERMINIZATIONS(10, 10000, 10),
+    TEST_STRONG_NUM_DETERMINIZATIONS(15, 10000, 10);
 
     override fun toString(): String {
         return this.name + ": {" +
