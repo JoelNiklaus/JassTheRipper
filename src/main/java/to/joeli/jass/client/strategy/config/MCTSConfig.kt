@@ -80,4 +80,10 @@ class MCTSConfig {
         this.cardStrengthLevel = cardStrengthLevel
         this.playoutSelectionPolicy = playoutSelectionPolicy
     }
+
+    override fun toString(): String {
+        return "MCTSConfig(runMode=$runMode, trumpfStrengthLevel=$trumpfStrengthLevel, cardStrengthLevel=$cardStrengthLevel, cheating=$cheating, hardPruningEnabled=$hardPruningEnabled, seed=$seed, scoreBoundsUsed=$scoreBoundsUsed, explorationConstant=$explorationConstant, pessimisticBias=$pessimisticBias, optimisticBias=$optimisticBias, numPlayouts=$numPlayouts, finalSelectionPolicy=$finalSelectionPolicy, heuristicFunction=$heuristicFunction, playoutSelectionPolicy=$playoutSelectionPolicy)"
+    }
+
+
 }

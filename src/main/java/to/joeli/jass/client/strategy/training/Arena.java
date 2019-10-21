@@ -50,6 +50,7 @@ public class Arena {
 
 	public static final Logger logger = LoggerFactory.getLogger(Arena.class);
 	public static final Logger experimentLogger = LoggerFactory.getLogger("Experiment");
+	public static final Logger resultLogger = LoggerFactory.getLogger("Result");
 
 	public static void main(String[] args) {
 		final Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, SEED);
@@ -204,6 +205,10 @@ public class Arena {
 	}
 
 	public double runMatchWithConfigs(Random random, Config[] configs) {
+		resultLogger.info("{}", configs[0]);
+		resultLogger.info("{}", configs[1]);
+		resultLogger.info("Number of evaluation games: {}", NUM_EVALUATION_GAMES);
+		resultLogger.info("Number of double games: {}", NUM_EVALUATION_GAMES / 2);
 		return performMatch(random, TrainMode.EVALUATION, -1, configs);
 	}
 
@@ -277,6 +282,8 @@ public class Arena {
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
 
+		resultLogger.info("Team1,Team2");
+		Result firstResult = null;
 		for (int i = 1; i <= numGames; i++) {
 			logger.info("Running game #{}\n", i);
 
@@ -292,6 +299,13 @@ public class Arena {
 			Result result = playGame(trainMode.isSavingData());
 
 			logger.info("Result of game #{}: {}\n", i, result);
+			if (firstResult == null)
+				firstResult = result;
+			else {
+				resultLogger.info("{},{}", result.getTeamAScore().getScore() + firstResult.getTeamAScore().getScore(),
+						result.getTeamBScore().getScore() + firstResult.getTeamBScore().getScore());
+				firstResult = null;
+			}
 
 			if (trainMode.isSavingData())
 				IOHelper.INSTANCE.saveData(cardsDataSet, scoreDataSet, episode, dataSetType, zeroPadded(i));

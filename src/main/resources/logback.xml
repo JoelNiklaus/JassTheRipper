@@ -7,16 +7,27 @@
     </appender>
 
     <property name="LOG_DIR" value="src/main/resources/" />
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+
+    <appender name="EXPERIMENT" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_DIR}/experiment.log</file>
         <append>false</append>
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
     </appender>
-
     <logger name="Experiment" level="DEBUG" additivity="false">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="EXPERIMENT" />
+    </logger>
+
+    <appender name="RESULT" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/result.csv</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="Result" level="DEBUG" additivity="false">
+        <appender-ref ref="RESULT" />
     </logger>
 
     <logger name="to.joeli" level="INFO" />
