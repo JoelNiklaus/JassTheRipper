@@ -115,7 +115,9 @@ public class Game {
 	}
 
 	private int calculateMatchBonus() {
-		return currentRound.getMode().getFactor() * 100;
+		if (GameSession.MATCH_BONUS_ENABLED)
+			return currentRound.getMode().getFactor() * 100;
+		return 0;
 	}
 
 	private void updateRoundResult() {

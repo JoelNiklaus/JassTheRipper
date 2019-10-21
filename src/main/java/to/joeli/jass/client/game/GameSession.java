@@ -14,6 +14,8 @@ import static to.joeli.jass.client.game.PlayingOrder.createOrderStartingFromPlay
 
 public class GameSession {
 
+	public static final boolean MATCH_BONUS_ENABLED = false;
+
 	private final List<Team> teams;
 	private final PlayingOrder gameStartingPlayingOrder;
 	private Game currentGame;
