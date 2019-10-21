@@ -5,8 +5,6 @@ import org.junit.Test;
 import to.joeli.jass.client.strategy.config.Config;
 import to.joeli.jass.client.strategy.training.Arena;
 
-import java.util.Random;
-
 import static org.junit.Assert.assertTrue;
 import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD_PERCENTAGE;
 
@@ -31,7 +29,7 @@ public class NeuralNetworkBenchmarkTest {
 					new Config(true, false, false)
 			};
 
-			final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+			final double performance = arena.runMatchWithConfigs(configs);
 
 			assertTrue(performance > 100);
 			System.out.println(performance);

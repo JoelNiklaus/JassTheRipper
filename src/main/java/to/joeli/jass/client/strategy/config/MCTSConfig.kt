@@ -7,8 +7,8 @@ import kotlin.math.sqrt
 
 class MCTSConfig {
     var runMode = RunMode.TIME
-    var trumpfStrengthLevel = StrengthLevel.INSANE
-    var cardStrengthLevel = StrengthLevel.INSANE
+    var trumpfStrengthLevel = StrengthLevel.POWERFUL
+    var cardStrengthLevel = StrengthLevel.POWERFUL
 
     var cheating = false // enable this for comparing the cards estimator performance to a player who knows all the cards
     var hardPruningEnabled = false // enable this for hard pruning cards to focus more on promising areas of the tree

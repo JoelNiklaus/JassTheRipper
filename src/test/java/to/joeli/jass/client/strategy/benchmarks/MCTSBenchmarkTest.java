@@ -17,8 +17,6 @@ import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.training.Arena;
 import to.joeli.jass.client.strategy.training.networks.ScoreEstimator;
 
-import java.util.Random;
-
 import static org.junit.Assert.assertTrue;
 import static to.joeli.jass.client.strategy.training.Arena.IMPROVEMENT_THRESHOLD_PERCENTAGE;
 
@@ -30,50 +28,6 @@ public class MCTSBenchmarkTest {
 
 	private Arena arena = new Arena(IMPROVEMENT_THRESHOLD_PERCENTAGE, Arena.SEED);
 
-	@Test
-	public void testHeavyAgainstLightPlayoutSelectionWithDisabledMCTS() {
-		Config[] configs = {
-				new Config(false, false, false),
-				new Config(false, false, false)
-		};
-		configs[0].setMctsConfig(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy()));
-		configs[1].setMctsConfig(new MCTSConfig(new LightJassPlayoutSelectionPolicy()));
-
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
-
-		System.out.println(performance);
-		assertTrue(performance > 100);
-	}
-
-	@Test
-	public void testHeavyAgainstRandomPlayoutWithDisabledMCTS() {
-		Config[] configs = {
-				new Config(false, false, false),
-				new Config(false, false, false)
-		};
-		configs[0].setMctsConfig(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy()));
-		configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
-
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
-
-		System.out.println(performance);
-		assertTrue(performance > 100);
-	}
-
-	@Test
-	public void testScoreEstimatorAgainstRandomPlayoutWithDisabledMCTS() {
-		Config[] configs = {
-				new Config(false, true, false),
-				new Config(false, false, false)
-		};
-		configs[0].setMctsConfig(new MCTSConfig());
-		configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
-
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
-
-		System.out.println(performance);
-		assertTrue(performance > 100);
-	}
 
 	/**
 	 * Tests if it is worthwhile to use the MCTS trumpf selection method
@@ -90,7 +44,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.RULE_BASED);
 		configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -100,18 +54,25 @@ public class MCTSBenchmarkTest {
 	 * Tests if it is worthwhile to use more search time
 	 */
 	@Test
-	public void testHigherCardStrengthLevelTimeIsWorthwile() {
+	public void testHigherCardStrengthLevelTimeIsWorthwhile() {
 		Config[] configs = {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_STRONG_TIME));
-		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TRUMPF, StrengthLevel.TEST_WEAK_TIME));
+		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_1000_MS));
+		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_500_MS));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
+
+		// 20 games
+		// 1000 vs 500 -> 106.58% (1620 vs 1520)
+		// 1000 vs 500 -> 100.51% (1574 vs 1566)
+		// 1000 vs 500 -> 111.90% (1711 vs 1529)
+		// 1000 vs 500 -> 96.50% (1542 vs 1598)
+		// 1000 vs 500 -> 99.75% (1568 vs 1572)
 	}
 
 
@@ -119,16 +80,16 @@ public class MCTSBenchmarkTest {
 	 * Tests if it is worthwhile to use more determinizations
 	 */
 	@Test
-	public void testHigherCardStrengthLevelNumDeterminizationsIsWorthwile() {
+	public void testHigherCardStrengthLevelNumDeterminizationsIsWorthwhile() {
 		// TODO find sweet spot concerning best number of determinizations
 		Config[] configs = {
 				new Config(true, false, false),
 				new Config(true, false, false)
 		};
-		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_STRONG_NUM_DETERMINIZATIONS));
-		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_WEAK_NUM_DETERMINIZATIONS));
+		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_15_DETERMINIZATIONS_FACTOR));
+		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_5_DETERMINIZATIONS_FACTOR));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -137,9 +98,29 @@ public class MCTSBenchmarkTest {
 		// For 10000ms 15 > 10 and 20 < 15 and 17 > 15 but 15 < 13
 	}
 
+	/**
+	 * Tests if it is worthwhile to use an extremely high number of determinizations
+	 */
+	@Test
+	public void testVeryHighNumDeterminizationsIsWorthwhile() {
+		Config[] configs = {
+				new Config(true, false, false),
+				new Config(true, false, false)
+		};
+		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_500_DETERMINIZATIONS_FACTOR));
+		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.TEST_15_DETERMINIZATIONS_FACTOR));
+
+		final double performance = arena.runMatchWithConfigs(configs);
+
+		System.out.println(performance);
+		assertTrue(performance > 100);
+
+		// 10 games 5000ms              500 vs 15 -> 52.98
+	}
+
 
 	@Test
-	public void testHigherTrumpfStrengthLevelIsWorthwile() {
+	public void testHigherTrumpfStrengthLevelIsWorthwhile() {
 		// NOTE: This makes only sense when the MCTS TrumpfSelectionMethod is used.
 		Config[] configs = {
 				new Config(true, false, false),
@@ -150,7 +131,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 		configs[1].setTrumpfSelectionMethod(TrumpfSelectionMethod.MCTS);
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -165,7 +146,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(FinalSelectionPolicy.ROBUST_CHILD));
 		configs[1].setMctsConfig(new MCTSConfig(FinalSelectionPolicy.MAX_CHILD));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -181,7 +162,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.HSLU_SERVER, 2));
 		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.HSLU_SERVER, 1));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -198,7 +179,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(false, 0.0, 0.0));
 		configs[1].setMctsConfig(new MCTSConfig(true, 0.5, 0.5));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -213,7 +194,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
 		configs[1].setMctsConfig(new MCTSConfig(0.5));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -229,7 +210,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(0.0));
 		configs[1].setMctsConfig(new MCTSConfig(-0.3));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -244,7 +225,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(Math.sqrt(2)));
 		configs[1].setMctsConfig(new MCTSConfig(1.7));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -257,7 +238,7 @@ public class MCTSBenchmarkTest {
 				new Config(new MCTSConfig((PlayoutSelectionPolicy) null)),
 		};
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -266,11 +247,11 @@ public class MCTSBenchmarkTest {
 	@Test
 	public void testLightPlayoutSelectionPolicyEnabledBeatsRandomPlayout() {
 		Config[] configs = {
-				new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, new LightJassPlayoutSelectionPolicy())),
-				new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, (PlayoutSelectionPolicy) null)),
+				new Config(new MCTSConfig(new LightJassPlayoutSelectionPolicy())),
+				new Config(new MCTSConfig((PlayoutSelectionPolicy) null)),
 		};
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -283,7 +264,68 @@ public class MCTSBenchmarkTest {
 				new Config(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy())),
 		};
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
+
+		System.out.println(performance);
+		assertTrue(performance > 100);
+	}
+
+
+	@Test
+	public void testHeavyAgainstLightPlayoutSelectionWithDisabledMCTS() {
+		Config[] configs = {
+				new Config(false, false, false),
+				new Config(false, false, false)
+		};
+		configs[0].setMctsConfig(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy()));
+		configs[1].setMctsConfig(new MCTSConfig(new LightJassPlayoutSelectionPolicy()));
+
+		final double performance = arena.runMatchWithConfigs(configs);
+
+		System.out.println(performance);
+		assertTrue(performance > 100);
+	}
+
+	@Test
+	public void testHeavyAgainstRandomPlayoutWithDisabledMCTS() {
+		Config[] configs = {
+				new Config(false, false, false),
+				new Config(false, false, false)
+		};
+		configs[0].setMctsConfig(new MCTSConfig(new HeavyJassPlayoutSelectionPolicy()));
+		configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
+
+		final double performance = arena.runMatchWithConfigs(configs);
+
+		System.out.println(performance);
+		assertTrue(performance > 100);
+	}
+
+	@Test
+	public void testLightAgainstRandomPlayoutWithDisabledMCTS() {
+		Config[] configs = {
+				new Config(false, false, false),
+				new Config(false, false, false)
+		};
+		configs[0].setMctsConfig(new MCTSConfig(new LightJassPlayoutSelectionPolicy()));
+		configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
+
+		final double performance = arena.runMatchWithConfigs(configs);
+
+		System.out.println(performance);
+		assertTrue(performance > 100);
+	}
+
+	@Test
+	public void testScoreEstimatorAgainstRandomPlayoutWithDisabledMCTS() {
+		Config[] configs = {
+				new Config(false, true, false),
+				new Config(false, false, false)
+		};
+		configs[0].setMctsConfig(new MCTSConfig());
+		configs[1].setMctsConfig(new MCTSConfig((PlayoutSelectionPolicy) null));
+
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -296,7 +338,7 @@ public class MCTSBenchmarkTest {
 				new Config(new MCTSConfig(StrengthLevel.HSLU_SERVER, false)),
 		};
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -313,7 +355,7 @@ public class MCTSBenchmarkTest {
 		configs[0].setMctsConfig(new MCTSConfig(StrengthLevel.FAST_TEST));
 		configs[1].setMctsConfig(new MCTSConfig(StrengthLevel.FAST_TEST));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance > 100);
@@ -327,7 +369,7 @@ public class MCTSBenchmarkTest {
 		};
 		configs[1].setMctsConfig(new MCTSConfig(true));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance < 100);
@@ -341,7 +383,7 @@ public class MCTSBenchmarkTest {
 		};
 		configs[1].setMctsConfig(new MCTSConfig(true));
 
-		final double performance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double performance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(performance);
 		assertTrue(performance < 100);
@@ -355,14 +397,14 @@ public class MCTSBenchmarkTest {
 		};
 		configs[1].setMctsConfig(new MCTSConfig(true));
 
-		final double cardsEstimatorPerformance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double cardsEstimatorPerformance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(cardsEstimatorPerformance);
 
 		configs[0].setCardsEstimatorUsed(false);
 		configs[0].setCardsEstimatorTrainable(false);
 
-		final double regularPerformance = arena.runMatchWithConfigs(new Random(SEED), configs);
+		final double regularPerformance = arena.runMatchWithConfigs(configs);
 
 		System.out.println(regularPerformance);
 		assertTrue(cardsEstimatorPerformance > regularPerformance);

@@ -84,7 +84,7 @@ public class Arena {
 		String path = DataSet.getEpisodePath(0);
 		if (!new File(path).exists()) {
 			logger.info("No dataset found. Collecting a dataset of games played using MCTS with random playouts\n");
-			runMCTSWithRandomPlayout(random);
+			runMCTSWithRandomPlayout();
 		}
 
 		logger.info("Existing dataset found. Pre-training the neural networks\n");
@@ -133,7 +133,7 @@ public class Arena {
 		experimentLogger.info("\n===========================\nEpisode #{}\n===========================", episode);
 
 		logger.info("Collecting training examples by self play with estimator enhanced MCTS\n");
-		runMCTSWithEstimators(random, episode);
+		runMCTSWithEstimators(episode);
 
 		logger.info("Training the trainable networks with the collected examples\n");
 		trainNetworks(episode);
@@ -144,7 +144,7 @@ public class Arena {
 		if (SCORE_ESTIMATOR_USED) {
 			logger.info("Pitting the 'naked' score estimators against each other to see " +
 					"if the learning network can score more than {}% of the points of the frozen network\n", improvementThresholdPercentage);
-			final boolean wasImproved = runOnlyNetworks(random) > improvementThresholdPercentage;
+			final boolean wasImproved = runOnlyNetworks() > improvementThresholdPercentage;
 			updateNetworks(episode, wasImproved);
 		}
 		if (CARDS_ESTIMATOR_USED) {
@@ -159,7 +159,7 @@ public class Arena {
 		}
 
 		logger.info("Testing MCTS with estimators against basic MCTS with random playout\n");
-		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(random);
+		final double performance = runMCTSWithEstimatorsAgainstMCTSWithoutEstimators();
 		experimentLogger.info("\nEstimator enhanced MCTS scored {}% of the points of regular MCTS", performance);
 
 		logger.info("After episode #{}, estimator enhanced MCTS scored {}% of the points of regular MCTS\n", episode, performance);
@@ -204,44 +204,44 @@ public class Arena {
 			NeuralNetwork.train(episode, NetworkType.SCORE);
 	}
 
-	public double runMatchWithConfigs(Random random, Config[] configs) {
+	public double runMatchWithConfigs(Config[] configs) {
 		resultLogger.info("{}", configs[0]);
 		resultLogger.info("{}", configs[1]);
 		resultLogger.info("Number of evaluation games: {}", NUM_EVALUATION_GAMES);
 		resultLogger.info("Number of double games: {}", NUM_EVALUATION_GAMES / 2);
-		return performMatch(random, TrainMode.EVALUATION, -1, configs);
+		return performMatch(TrainMode.EVALUATION, -1, configs);
 	}
 
-	private double runOnlyNetworks(Random random) {
+	private double runOnlyNetworks() {
 		Config[] configs = {
 				new Config(false, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(false, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)
 		};
-		return performMatch(random, TrainMode.EVALUATION, -1, configs);
+		return performMatch(TrainMode.EVALUATION, -1, configs);
 	}
 
-	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators(Random random) {
+	private double runMCTSWithEstimatorsAgainstMCTSWithoutEstimators() {
 		Config[] configs = {
 				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(true, false, false, false, false)
 		};
-		return performMatch(random, TrainMode.EVALUATION, -1, configs);
+		return performMatch(TrainMode.EVALUATION, -1, configs);
 	}
 
-	private double runMCTSWithRandomPlayout(Random random) {
+	private double runMCTSWithRandomPlayout() {
 		Config[] configs = {
 				new Config(true, false, false, false, false),
 				new Config(true, false, false, false, false)
 		};
-		return performMatch(random, TrainMode.DATA_COLLECTION, 0, configs);
+		return performMatch(TrainMode.DATA_COLLECTION, 0, configs);
 	}
 
-	private double runMCTSWithEstimators(Random random, int episode) {
+	private double runMCTSWithEstimators(int episode) {
 		Config[] configs = {
 				new Config(true, CARDS_ESTIMATOR_USED, true, SCORE_ESTIMATOR_USED, true),
 				new Config(true, CARDS_ESTIMATOR_USED, false, SCORE_ESTIMATOR_USED, false)
 		};
-		return performMatch(random, TrainMode.DATA_COLLECTION, episode, configs);
+		return performMatch(TrainMode.DATA_COLLECTION, episode, configs);
 	}
 
 	/**
@@ -251,33 +251,32 @@ public class Arena {
 	 * @param configs
 	 * @return
 	 */
-	private double performMatch(Random random, TrainMode trainMode, int episode, Config[] configs) {
+	private double performMatch(TrainMode trainMode, int episode, Config[] configs) {
 		gameSession.setConfigs(configs);
 
 		if (trainMode == TrainMode.DATA_COLLECTION) {
 			logger.info("Collecting training set\n");
-			playGames(random, NUM_GAMES_TRAIN_SET, trainMode, "train/", episode);
+			playGames(NUM_GAMES_TRAIN_SET, trainMode, "train/", episode);
 
 			logger.info("Collecting validation set\n");
-			playGames(random, NUM_GAMES_VAL_SET, trainMode, "val/", episode);
+			playGames(NUM_GAMES_VAL_SET, trainMode, "val/", episode);
 
 			logger.info("Collecting test set\n");
-			playGames(random, NUM_GAMES_TEST_SET, trainMode, "test/", episode);
+			playGames(NUM_GAMES_TEST_SET, trainMode, "test/", episode);
 		}
 		if (trainMode == TrainMode.EVALUATION)
-			return playGames(random, NUM_EVALUATION_GAMES, trainMode, null, episode);
+			return playGames(NUM_EVALUATION_GAMES, trainMode, null, episode);
 		return 0;
 	}
 
 	/**
 	 * Simulates a number of games and returns the performance of Team A in comparison with Team B.
 	 *
-	 * @param random
 	 * @param numGames
 	 * @param trainMode
 	 * @return
 	 */
-	private double playGames(Random random, int numGames, TrainMode trainMode, String dataSetType, int episode) {
+	private double playGames(int numGames, TrainMode trainMode, String dataSetType, int episode) {
 		List<Card> orthogonalCards = null;
 		List<Card> cards = Arrays.asList(Card.values());
 		Collections.shuffle(cards, random);
