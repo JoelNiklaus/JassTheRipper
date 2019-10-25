@@ -37,6 +37,11 @@ class Config {
         this.mctsConfig = mctsConfig
     }
 
+    constructor(mctsConfig: MCTSConfig, trumpfSelectionMethod: TrumpfSelectionMethod) {
+        this.mctsConfig = mctsConfig
+        this.trumpfSelectionMethod = trumpfSelectionMethod
+    }
+
     override fun toString(): String {
         return "Config(mctsConfig=$mctsConfig, isMctsEnabled=$isMctsEnabled, isScoreEstimatorUsed=$isScoreEstimatorUsed, isCardsEstimatorUsed=$isCardsEstimatorUsed, isScoreEstimatorTrainable=$isScoreEstimatorTrainable, isCardsEstimatorTrainable=$isCardsEstimatorTrainable, trumpfSelectionMethod=$trumpfSelectionMethod)"
     }

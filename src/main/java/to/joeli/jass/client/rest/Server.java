@@ -6,10 +6,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import to.joeli.jass.client.strategy.JassTheRipperJassStrategy;
-import to.joeli.jass.client.strategy.config.Config;
-import to.joeli.jass.client.strategy.config.MCTSConfig;
-import to.joeli.jass.client.strategy.config.RunMode;
-import to.joeli.jass.client.strategy.config.StrengthLevel;
+import to.joeli.jass.client.strategy.config.*;
 import to.joeli.jass.client.strategy.mcts.HeavyJassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.LightJassPlayoutSelectionPolicy;
 import to.joeli.jass.client.strategy.mcts.src.PlayoutSelectionPolicy;
@@ -42,6 +39,11 @@ public class Server {
 	public static final JassTheRipperJassStrategy RUNS_100000_STRATEGY = new JassTheRipperJassStrategy(
 			new Config(
 					new MCTSConfig(strengthLevel, RunMode.RUNS, 1)
+			));
+
+	public static final JassTheRipperJassStrategy MCTS_TRUMPF_STRATEGY = new JassTheRipperJassStrategy(
+			new Config(
+					new MCTSConfig(strengthLevel, strengthLevel), TrumpfSelectionMethod.MCTS
 			));
 
 	// Base URI the Grizzly HTTP server will listen on
