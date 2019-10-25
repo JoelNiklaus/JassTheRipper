@@ -14,6 +14,10 @@ import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
 
 import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -22,6 +26,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 public abstract class AbstractJassResource {
+
+	private String DNN_MAX_POLICY_PATH = "http://ec2-18-203-236-158.eu-west-1.compute.amazonaws.com:5001/dnn-max-policy-trump";
+	// alternatively: 18.203.236.158
 
 	public static final Logger logger = LoggerFactory.getLogger(AbstractJassResource.class);
 
@@ -105,5 +112,14 @@ public abstract class AbstractJassResource {
 				.max(Comparator.comparing(hand -> hand.getHand().size()))
 				.orElseThrow(() -> new RuntimeException("There has to be at least one hand."));
 		return EnumSet.copyOf(handOfCurrentPlayer.getCardsHand());
+	}
+
+	protected Response forwardRequest(JassRequest jassRequest, String path) {
+		Client client = ClientBuilder.newClient();
+		WebTarget target = client.target(DNN_MAX_POLICY_PATH);
+
+		return target.path(path)
+				.request(MediaType.APPLICATION_JSON)
+				.post(Entity.json(jassRequest));
 	}
 }

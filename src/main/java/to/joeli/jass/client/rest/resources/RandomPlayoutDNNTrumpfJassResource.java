@@ -8,14 +8,14 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-public abstract class TrumpfJassResource extends AbstractJassResource {
+/**
+ * Root resource (exposed at "random-playout-dnn-trumpf" path)
+ */
+@Path("random-playout-dnn-trumpf")
+public class RandomPlayoutDNNTrumpfJassResource extends AbstractJassResource {
 
 	@Override
 	protected JassTheRipperJassStrategy getJassStrategy() {
@@ -23,12 +23,10 @@ public abstract class TrumpfJassResource extends AbstractJassResource {
 	}
 
 	@POST
-	@Path("play_card")
+	@Path("select_trump")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response playCard(JassRequest jassRequest) {
-		return forwardRequest(jassRequest, "play_card");
+	public Response selectTrump(JassRequest jassRequest) {
+		return forwardRequest(jassRequest, "select_trump");
 	}
-
-
 }

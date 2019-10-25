@@ -63,6 +63,9 @@ JassTheRipper bots:
 - http://jasstheripper.joeli.to/light-playout
 - http://jasstheripper.joeli.to/heavy-playout
 - http://jasstheripper.joeli.to/runs-100000
+- http://jasstheripper.joeli.to/rule-based-trumpf
+- http://jasstheripper.joeli.to/mcts-trumpf
+- http://jasstheripper.joeli.to/random-playout-dnn-trumpf
 
 HSLU opponents:
 - http://10.180.39.12:5001/randomsimple
@@ -70,6 +73,9 @@ HSLU opponents:
 - http://10.180.39.12:5001/dnn-max-policy-trump
 - http://10.180.39.12:5001/dnn-max-value-trump
 - http://10.180.39.12:5001/prob-ismcts-trump
+- http://10.180.39.12:5001/det-mcts-random-random
+- http://10.180.39.12:5001/det-mcts-prob-random
+
 
 Tournament Server available on: https://jass-server.abiz.ch/
 
