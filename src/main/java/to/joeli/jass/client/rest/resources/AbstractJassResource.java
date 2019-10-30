@@ -27,8 +27,7 @@ import java.util.List;
 
 public abstract class AbstractJassResource {
 
-	private String DNN_MAX_POLICY_PATH = "http://ec2-18-203-236-158.eu-west-1.compute.amazonaws.com:5001/dnn-max-policy-trump";
-	// alternatively: 18.203.236.158
+	public static final String DNN_MAX_POLICY_PATH = "http://54.154.231.243:5001/dnn-max-policy-trump";
 
 	public static final Logger logger = LoggerFactory.getLogger(AbstractJassResource.class);
 
