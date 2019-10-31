@@ -75,12 +75,14 @@ public class Server {
 	 */
 	public static void main(String[] args) {
 		final HttpServer server = startServer();
-		logger.info("Jersey app started with WADL available at {}sapplication.wadl", BASE_URI);
+		logger.info("Jersey app started with WADL available at {}application.wadl", BASE_URI);
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			server.shutdownNow();
 			RANDOM_PLAYOUT_STRATEGY.shutDown();
 			LIGHT_PLAYOUT_STRATEGY.shutDown();
 			HEAVY_PLAYOUT_STRATEGY.shutDown();
+			RUNS_100000_STRATEGY.shutDown();
+			MCTS_TRUMPF_STRATEGY.shutDown();
 			logger.info("Server shut down gracefully.");
 		}));
 	}

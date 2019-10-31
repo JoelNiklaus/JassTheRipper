@@ -29,7 +29,7 @@ public class RandomPlayoutJassResourceTest {
 	private HttpServer server;
 	private WebTarget target;
 
-	private String path = "random-playout";
+	private String path = "random-playout-dnn-trumpf";
 
 	@Before
 	public void setUp() {
