@@ -23,7 +23,7 @@ public class Server {
 
 	public static final JassTheRipperJassStrategy RANDOM_PLAYOUT_STRATEGY = new JassTheRipperJassStrategy(
 			new Config(
-					new MCTSConfig(strengthLevel, (PlayoutSelectionPolicy) null)
+					new MCTSConfig(StrengthLevel.JASS_TEPPICH, (PlayoutSelectionPolicy) null)
 			));
 
 	public static final JassTheRipperJassStrategy LIGHT_PLAYOUT_STRATEGY = new JassTheRipperJassStrategy(
