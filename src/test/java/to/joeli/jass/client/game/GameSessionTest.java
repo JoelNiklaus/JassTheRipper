@@ -1,9 +1,9 @@
 package to.joeli.jass.client.game;
 
+import org.junit.Test;
 import to.joeli.jass.client.strategy.helpers.GameSessionBuilder;
 import to.joeli.jass.game.cards.Card;
 import to.joeli.jass.game.mode.Mode;
-import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -86,7 +86,11 @@ public class GameSessionTest {
 		}
 		gameSession.startNextRound();
 
-		assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo((10) * 9 + 5 + 100));
+		int score = (10) * 9 + 5;
+		if (GameSession.MATCH_BONUS_ENABLED)
+			score += 100;
+
+		assertThat(gameSession.getCurrentGame().getResult().getTeamScore(player), equalTo(score));
 	}
 
 	@Test
