@@ -22,11 +22,6 @@ or gradle:
 ./gradlew run -Pmyargs=ws://127.0.0.1:3000,1 --no-daemon # change the websocket host and port if needed. The value after the comma is the chosenTeamIndex of the bot to be started
 ```
 
-Connect to server:
-```bash
-ssh -i ~/.ssh/diufpc29 joel@diufpc29
-```
-
 Run specific test
 ```bash
 ./gradlew test --tests to.joeli.jass.client.strategy.training.ArenaTest.train
@@ -46,11 +41,6 @@ Train network
 ```bash
 python3 src/main/java/to/joeli/jass/client/strategy/training/python/train.py 0010 cards/
 nohup python3 src/main/java/to/joeli/jass/client/strategy/training/python/train.py 0010 cards/ > nohup.out &
-```
-
-Connect to digitalocean server
-```bash
-ssh -i ~/.ssh/digitalocean root@167.99.133.247
 ```
 
 Start REST endpoint: 
